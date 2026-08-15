@@ -598,18 +598,38 @@
 
         // ==========================================
         // 🚀 【終極修正版：全面確保圖片正確解析與載入】
-        // 1. 徹底解決圖片長按存成 .bin 的問題：所有圖片一律透過 Canvas 轉換標準 data:image/jpeg 格式。
-        // 2. 針對純 SVG 或錯誤字串加入防禦性驗證與 SVG Data URI 轉譯。
+        // 1. 徹底解決圖片長按存成 .bin 的問題：將所有 Data URI (包含 SVG 與 Base64) 轉換為原生 Blob URL 格式。
+        // 2. 透過 URL.createObjectURL，讓行動版瀏覽器 (如 Android Chrome) 正確辨識副檔名 (.jpg, .svg) 而不會下載成 .bin。
         // ==========================================
         const imgCache = new Map();
 
         function getFallbackImage() {
             if (!imgCache.has('fallback')) {
                 const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><rect width="120" height="120" fill="#0f172a" rx="8"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#64748b" font-size="12" font-family="sans-serif">⚠️ 無圖片</text></svg>`;
-                const dataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(fallbackSvg);
-                imgCache.set('fallback', dataUri);
+                const blob = new Blob([fallbackSvg], { type: 'image/svg+xml' });
+                imgCache.set('fallback', URL.createObjectURL(blob));
             }
             return imgCache.get('fallback');
+        }
+
+        function dataURItoBlob(dataURI) {
+            const splitData = dataURI.split(',');
+            const typeInfo = splitData[0];
+            const content = splitData[1];
+            const mimeType = typeInfo.split(':')[1].split(';')[0];
+            
+            if (typeInfo.includes('base64')) {
+                const byteString = atob(content);
+                const arrayBuffer = new ArrayBuffer(byteString.length);
+                const uint8Array = new Uint8Array(arrayBuffer);
+                for (let i = 0; i < byteString.length; i++) {
+                    uint8Array[i] = byteString.charCodeAt(i);
+                }
+                return new Blob([arrayBuffer], { type: mimeType });
+            } else {
+                const decoded = decodeURIComponent(content);
+                return new Blob([decoded], { type: mimeType });
+            }
         }
 
         window.getValidImg = function(url) {
@@ -628,12 +648,16 @@
                 if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://') || cleanUrl.startsWith('blob:')) {
                     finalUrl = cleanUrl;
                 } else if (cleanUrl.startsWith('data:image/')) {
-                    finalUrl = cleanUrl;
+                    const blob = dataURItoBlob(cleanUrl);
+                    finalUrl = URL.createObjectURL(blob);
                 } else if (cleanUrl.startsWith('<svg') || cleanUrl.startsWith('<?xml')) {
-                    finalUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(cleanUrl);
+                    const blob = new Blob([cleanUrl], { type: 'image/svg+xml' });
+                    finalUrl = URL.createObjectURL(blob);
                 } else {
                     const base64Data = cleanUrl.replace(/\s+/g, '');
-                    finalUrl = 'data:image/jpeg;base64,' + base64Data;
+                    const dataUri = 'data:image/jpeg;base64,' + base64Data;
+                    const blob = dataURItoBlob(dataUri);
+                    finalUrl = URL.createObjectURL(blob);
                 }
 
                 imgCache.set(cleanUrl, finalUrl);

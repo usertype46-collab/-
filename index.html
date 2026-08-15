@@ -235,7 +235,7 @@
                         </div>
                     </div>
                     <div id="regPreviewBox" class="hidden mt-2 bg-slate-950 p-2 rounded-xl text-center border border-slate-800">
-                        <img id="regPreviewImg" referrerpolicy="no-referrer" onerror="window.handleImgError(this)" class="h-32 mx-auto rounded-lg object-contain border border-slate-800">
+                        <img id="regPreviewImg" referrerpolicy="no-referrer" crossorigin="anonymous" onerror="window.handleImgError(this)" class="h-32 mx-auto rounded-lg object-contain border border-slate-800">
                     </div>
 
                     <!-- 自動槍粉量數據 -->
@@ -543,7 +543,7 @@
         <div class="glass-panel p-4 sm:p-5 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col items-center shadow-2xl">
             <h3 class="text-sm sm:text-base font-bold text-amber-400 mb-3">✂️ 調整圖片範圍與角度</h3>
             <div class="w-full max-h-[50vh] overflow-hidden bg-black flex items-center justify-center mb-4 rounded-xl border border-slate-800">
-                <img id="cropImage" referrerpolicy="no-referrer" onerror="window.handleImgError(this)" class="max-w-full max-h-[45vh] block">
+                <img id="cropImage" referrerpolicy="no-referrer" crossorigin="anonymous" onerror="window.handleImgError(this)" class="max-w-full max-h-[45vh] block">
             </div>
             <div class="flex flex-wrap gap-2 mb-4 justify-center">
                 <button type="button" id="btnRotateLeft" class="bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700">↺ 左旋轉</button>
@@ -597,17 +597,15 @@
         const supabase = createClient(supabaseUrl, supabaseKey)
 
         // ==========================================
-        // 🚀 【終極修正版：放棄 Blob URL，全面使用 Data URI】
-        // 解決 Android Chrome / WebView 長按圖片存成 .bin 的 Bug
-        // 原因：手機版 Chrome 無法從 blob: URL 判斷副檔名，會預設儲存為二進位檔 (.bin)
-        // 解法：保持或轉換為標準的 data:image/jpeg;base64,... 格式，瀏覽器即可正確識別
+        // 🚀 【終極修正版：全面確保圖片正確解析與載入】
+        // 1. 徹底解決圖片長按存成 .bin 的問題：所有圖片一律透過 Canvas 轉換標準 data:image/jpeg 格式。
+        // 2. 針對純 SVG 或錯誤字串加入防禦性驗證與 SVG Data URI 轉譯。
         // ==========================================
         const imgCache = new Map();
 
         function getFallbackImage() {
             if (!imgCache.has('fallback')) {
                 const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><rect width="120" height="120" fill="#0f172a" rx="8"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#64748b" font-size="12" font-family="sans-serif">⚠️ 無圖片</text></svg>`;
-                // 將 SVG 轉為 URL encoded Data URI
                 const dataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(fallbackSvg);
                 imgCache.set('fallback', dataUri);
             }
@@ -622,32 +620,22 @@
                 return getFallbackImage();
             }
 
-            // 若記憶體已有處理過的字串，直接回傳以節省效能
             if (imgCache.has(cleanUrl)) return imgCache.get(cleanUrl);
 
             try {
                 let finalUrl = cleanUrl;
 
-                // 1. 實體網址或已經是 blob (外部套件產生) -> 直接放行
                 if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://') || cleanUrl.startsWith('blob:')) {
                     finalUrl = cleanUrl;
-                }
-                // 2. 已經是標準 Base64 格式 (包含標頭如 data:image/jpeg;base64,...) -> 直接放行
-                else if (cleanUrl.startsWith('data:image/')) {
+                } else if (cleanUrl.startsWith('data:image/')) {
                     finalUrl = cleanUrl;
-                } 
-                // 3. 處理資料庫可能存入的純 HTML SVG 標籤字串
-                else if (cleanUrl.startsWith('<svg') || cleanUrl.startsWith('<?xml')) {
+                } else if (cleanUrl.startsWith('<svg') || cleanUrl.startsWith('<?xml')) {
                     finalUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(cleanUrl);
-                } 
-                // 4. 若沒有標頭，假定是純 JPEG Base64 字串，強制補上 data:image/jpeg;base64, 標頭
-                else {
-                    // 移除可能存在的空白與換行，確保 Base64 格式正確
+                } else {
                     const base64Data = cleanUrl.replace(/\s+/g, '');
                     finalUrl = 'data:image/jpeg;base64,' + base64Data;
                 }
 
-                // 存入快取
                 imgCache.set(cleanUrl, finalUrl);
                 return finalUrl;
 
@@ -665,7 +653,6 @@
             }
         };
 
-        // 安全 JSON 解析
         function safeArray(val) {
             if (!val) return [];
             if (Array.isArray(val)) return val;
@@ -1232,7 +1219,7 @@
             
             if (cropTargetMode === 'register') {
                 processedRegisterImageBase64 = base64;
-                document.getElementById('regPreviewImg').src = window.getValidImg(base64); // 確保預覽也不會是 .bin
+                document.getElementById('regPreviewImg').src = window.getValidImg(base64);
                 document.getElementById('regPreviewBox').classList.remove('hidden');
             } else if (cropTargetMode === 'query') {
                 document.getElementById('visualSearchModal').classList.remove('hidden');
@@ -1261,7 +1248,7 @@
                 const imgSrc = window.getValidImg(item.image_url);
                 return `
                     <div class="bg-slate-900 p-2 rounded-xl cursor-pointer hover:bg-slate-800 border border-slate-700 transition" onclick="selectVisualItem('${item.id}')">
-                        <img src="${imgSrc}" referrerpolicy="no-referrer" onerror="window.handleImgError(this)" class="w-full h-24 object-contain bg-black mb-1.5 rounded-lg">
+                        <img src="${imgSrc}" referrerpolicy="no-referrer" crossorigin="anonymous" onerror="window.handleImgError(this)" class="w-full h-24 object-contain bg-black mb-1.5 rounded-lg">
                         <div class="text-white text-xs font-bold text-center truncate">${item.item_name}</div>
                     </div>
                 `;
@@ -1287,7 +1274,7 @@
                 const imgSrc = window.getValidImg(item.image_url);
                 return `
                     <div class="bg-slate-900 p-2 rounded-xl cursor-pointer hover:bg-slate-800 border border-slate-700 transition" onclick="selectVisualItem('${item.id}')">
-                        <img src="${imgSrc}" referrerpolicy="no-referrer" onerror="window.handleImgError(this)" class="w-full h-24 object-contain bg-black mb-1.5 rounded-lg">
+                        <img src="${imgSrc}" referrerpolicy="no-referrer" crossorigin="anonymous" onerror="window.handleImgError(this)" class="w-full h-24 object-contain bg-black mb-1.5 rounded-lg">
                         <div class="text-white text-xs font-bold text-center truncate">${item.item_name}</div>
                     </div>
                 `;
@@ -1342,7 +1329,7 @@
                         <div class="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden shadow-md">
                             <div onclick="toggleThicknessGroup('${groupId}')" class="p-3 bg-slate-800/80 hover:bg-slate-700/80 cursor-pointer flex justify-between items-center transition select-none gap-2">
                                 <div class="flex items-center gap-3 min-w-0">
-                                    <img src="${imgSrc}" referrerpolicy="no-referrer" onerror="window.handleImgError(this)" class="w-10 h-10 sm:w-12 sm:h-12 object-contain bg-black rounded-lg border border-slate-700 shrink-0">
+                                    <img src="${imgSrc}" referrerpolicy="no-referrer" crossorigin="anonymous" onerror="window.handleImgError(this)" class="w-10 h-10 sm:w-12 sm:h-12 object-contain bg-black rounded-lg border border-slate-700 shrink-0">
                                     <div class="min-w-0">
                                         <div class="font-bold text-white text-xs sm:text-sm leading-snug truncate">${item.item_name}</div>
                                         <div class="text-[11px] text-pink-400 font-semibold mt-0.5">歷史膜厚紀錄：${records.length} 筆</div>

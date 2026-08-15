@@ -596,67 +596,97 @@
         const supabaseKey = 'sb_publishable_qUCcWVbzo-99rP85r_RhQg_EGewmxB4'
         const supabase = createClient(supabaseUrl, supabaseKey)
 
-        // 高相容性 SVG 無圖片預設檔 (內含正確的 SVG MIME type)
-        const fallbackImg = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%230f172a' rx='8'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2364748b' font-size='12' font-family='sans-serif'%3E%E2%9A%A0%EF%B8%8F%20%E7%84%A1%E5%9C%96%E7%89%87%3C/text%3E%3C/svg%3E";
+        // ==========================================
+        // 🚀 【終極修正版：Base64 to Blob URL 轉換器】
+        // 解決 Android Chrome / WebView 長按圖片或預覽時會存成 .bin 的 Bug
+        // ==========================================
+        const blobCache = new Map();
 
-        window.handleImgError = function(img) {
-            if (img && img.src !== fallbackImg) {
-                img.onerror = null;
-                img.src = fallbackImg;
+        function getFallbackImage() {
+            if (!blobCache.has('fallback')) {
+                const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><rect width="120" height="120" fill="#0f172a" rx="8"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#64748b" font-size="12" font-family="sans-serif">⚠️ 無圖片</text></svg>`;
+                const blob = new Blob([fallbackSvg], { type: 'image/svg+xml' });
+                blobCache.set('fallback', URL.createObjectURL(blob));
+            }
+            return blobCache.get('fallback');
+        }
+
+        function decodeBase64ToBlob(dataStr, mimeType) {
+            dataStr = dataStr.replace(/\s+/g, ''); // 徹底移除所有空白與換行符號
+            while (dataStr.length % 4 !== 0) dataStr += '='; // 自動補齊結尾確保解碼安全
+            const byteCharacters = atob(dataStr);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            return new Blob([new Uint8Array(byteNumbers)], { type: mimeType });
+        }
+
+        window.getValidImg = function(url) {
+            if (!url || typeof url !== 'string' || url.trim() === '') return getFallbackImage();
+            
+            let cleanUrl = url.trim().replace(/^['"]+|['"]+$/g, '');
+            if (cleanUrl.length < 10 || ['null', 'undefined', 'none', 'false', '[objectobject]', 'nan'].includes(cleanUrl.toLowerCase())) {
+                return getFallbackImage();
+            }
+
+            // 若記憶體已有轉換過的此圖片，直接回傳以節省效能
+            if (blobCache.has(cleanUrl)) return blobCache.get(cleanUrl);
+
+            try {
+                // 如果是實體網址或已經是 blob，直接放行
+                if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://') || cleanUrl.startsWith('blob:')) {
+                    return cleanUrl;
+                }
+
+                let finalMime = 'image/jpeg'; // 預設 MIME
+                let blob;
+
+                // 處理帶有 data:image/... 的標準 Base64 格式
+                if (cleanUrl.startsWith('data:image/')) {
+                    const commaIdx = cleanUrl.indexOf(',');
+                    if (commaIdx === -1) return getFallbackImage();
+                    
+                    const header = cleanUrl.substring(0, commaIdx);
+                    const dataStr = cleanUrl.substring(commaIdx + 1);
+                    
+                    const mimeMatch = header.match(/data:(image\/[a-zA-Z0-9+-]+)/);
+                    if (mimeMatch) finalMime = mimeMatch[1];
+                    
+                    if (header.includes('base64')) {
+                        blob = decodeBase64ToBlob(dataStr, finalMime);
+                    } else {
+                        // 處理 URL-encoded 的文本 (如原來的純文字 SVG)
+                        const decodedText = decodeURIComponent(dataStr);
+                        blob = new Blob([decodedText], { type: finalMime });
+                    }
+                } 
+                // 處理資料庫可能存入的純 HTML SVG 標籤字串
+                else if (cleanUrl.startsWith('<svg') || cleanUrl.startsWith('<?xml')) {
+                    blob = new Blob([cleanUrl], { type: 'image/svg+xml' });
+                } 
+                // 若沒有標頭，假定是純 JPEG Base64
+                else {
+                    blob = decodeBase64ToBlob(cleanUrl, 'image/jpeg');
+                }
+
+                // 產生虛擬 Blob URL 讓 Android 能將其當作正常副檔名檔案下載
+                const blobUrl = URL.createObjectURL(blob);
+                blobCache.set(cleanUrl, blobUrl);
+                return blobUrl;
+
+            } catch (err) {
+                console.warn("圖片解析轉譯失敗，回退至預設無圖片:", err);
+                return getFallbackImage();
             }
         };
 
-        // 【強固修正版】：徹底解決 Base64 標頭重複、URL編碼殘留、以及原始 SVG 字串導致破圖或變成 .bin 的問題
-        window.getValidImg = function(url) {
-            // 1. 若無資料或非字串，直接回傳預設無圖片 SVG
-            if (!url || typeof url !== 'string' || url.trim() === '') {
-                return fallbackImg;
+        window.handleImgError = function(img) {
+            const fb = getFallbackImage();
+            if (img && img.src !== fb) {
+                img.onerror = null;
+                img.src = fb;
             }
-            
-            // 2. 清理不可見字元與前後引號
-            let cleanUrl = url.trim().replace(/^['"]+|['"]+$/g, '');
-            
-            // 3. 基礎防呆：過濾無效的字串
-            if (cleanUrl.length < 10 || ['null', 'undefined', 'none', 'false', '[objectobject]', 'nan'].includes(cleanUrl.toLowerCase())) {
-                return fallbackImg;
-            }
-
-            // 4. 若資料庫誤存了原始 SVG 標籤字串 (例如以 <svg 開頭)，安全轉為 data URI 格式
-            if (cleanUrl.startsWith('<svg') || cleanUrl.startsWith('<?xml')) {
-                return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(cleanUrl);
-            }
-
-            // 5. 若圖片網址被 URL Encode 過，嘗試解碼
-            if (cleanUrl.includes('%3A') || cleanUrl.includes('%3B') || cleanUrl.includes('%2F')) {
-                try {
-                    cleanUrl = decodeURIComponent(cleanUrl);
-                } catch (e) {
-                    console.warn("URL 解碼失敗，略過此步驟", e);
-                }
-            }
-
-            // 6. 正常的 HTTP / HTTPS / Blob 網址或已正確帶有 data:image/ 的格式直接放行
-            if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://') || cleanUrl.startsWith('blob:') || cleanUrl.startsWith('data:image/')) {
-                return cleanUrl;
-            }
-
-            // 7. 處理 Base64 (強制重新組裝標準標頭，防止行動裝置下載成 .bin)
-            const b64Keyword = 'base64,';
-            const b64Index = cleanUrl.toLowerCase().lastIndexOf(b64Keyword);
-            
-            if (b64Index !== -1) {
-                const pureBase64 = cleanUrl.substring(b64Index + b64Keyword.length).trim();
-                if (pureBase64.length > 20) {
-                    return `data:image/jpeg;base64,${pureBase64}`;
-                }
-            } else {
-                // 若為純 Base64 字串，自動補上標準圖片標頭
-                if (cleanUrl.length > 50 && /^[A-Za-z0-9+/=_-]+$/.test(cleanUrl)) {
-                    return `data:image/jpeg;base64,${cleanUrl}`;
-                }
-            }
-            
-            return fallbackImg;
         };
 
         // 安全 JSON 解析
@@ -1226,7 +1256,7 @@
             
             if (cropTargetMode === 'register') {
                 processedRegisterImageBase64 = base64;
-                document.getElementById('regPreviewImg').src = base64;
+                document.getElementById('regPreviewImg').src = window.getValidImg(base64); // 確保預覽也不會是 .bin
                 document.getElementById('regPreviewBox').classList.remove('hidden');
             } else if (cropTargetMode === 'query') {
                 document.getElementById('visualSearchModal').classList.remove('hidden');

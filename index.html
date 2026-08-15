@@ -552,6 +552,9 @@
         const supabaseKey = 'sb_publishable_qUCcWVbzo-99rP85r_RhQg_EGewmxB4'
         const supabase = createClient(supabaseUrl, supabaseKey)
 
+        // SVG 備用圖片 (防止圖檔損毀或無效時破圖)
+        const fallbackImg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23111827'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%236b7280' font-size='11'%3E⚠️ 無法載入%3C/text%3E%3C/svg%3E";
+
         let currentSelectedData = null;
         let editModeId = null; 
         let allItemsList = [];
@@ -571,7 +574,7 @@
             return localStorage.getItem("NVIDIA_MODEL") || "nvidia/nemotron-3-ultra-550b-a55b";
         }
 
-        // 直接在前端調用 NVIDIA OpenAI 相容 API (免 Flask 中轉)
+        // 直接在前端調用 NVIDIA OpenAI 相容 API
         async function callNvidiaAI(promptText, imageBase64) {
             const apiKey = getNvidiaApiKey();
             const model = getNvidiaModel();
@@ -767,8 +770,16 @@
             document.getElementById('resultBoard').style.display = 'block';
             
             const imgContainer = document.getElementById('imageContainer');
-            if (match.image_url) {
-                document.getElementById('q_matched_image').src = match.image_url;
+            const matchedImg = document.getElementById('q_matched_image');
+            
+            // 加入 onerror 防破圖
+            matchedImg.onerror = function() {
+                this.onerror = null;
+                this.src = fallbackImg;
+            };
+
+            if (match.image_url && match.image_url.trim() !== '') {
+                matchedImg.src = match.image_url;
                 imgContainer.classList.remove('hidden');
             } else {
                 imgContainer.classList.add('hidden');
@@ -1043,8 +1054,9 @@
 
         document.getElementById('btnConfirmCrop').addEventListener('click', async () => {
             if(!cropper) return;
-            const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
-            const base64 = canvas.toDataURL('image/jpeg');
+            // 限制圖片最大寬高 600px，並進行 JPEG 0.7 壓縮，防止 Base64 數據過大截斷
+            const canvas = cropper.getCroppedCanvas({ width: 600, height: 600 });
+            const base64 = canvas.toDataURL('image/jpeg', 0.7);
             cropModal.classList.add('hidden');
             
             if (cropTargetMode === 'register') {
@@ -1075,12 +1087,15 @@
 
         function renderVisualSearch() {
             const grid = document.getElementById('visualSearchGrid');
-            grid.innerHTML = allItemsList.map(item => `
-                <div class="bg-gray-800 p-2 rounded cursor-pointer hover:bg-gray-700 border border-gray-600" onclick="selectVisualItem('${item.id}')">
-                    <img src="${item.image_url || ''}" class="w-full h-24 object-contain bg-black mb-2 rounded">
-                    <div class="text-white text-xs font-bold text-center truncate mt-2">${item.item_name}</div>
-                </div>
-            `).join('');
+            grid.innerHTML = allItemsList.map(item => {
+                const imgSrc = (item.image_url && item.image_url.trim() !== '') ? item.image_url : fallbackImg;
+                return `
+                    <div class="bg-gray-800 p-2 rounded cursor-pointer hover:bg-gray-700 border border-gray-600" onclick="selectVisualItem('${item.id}')">
+                        <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackImg}';" class="w-full h-24 object-contain bg-black mb-2 rounded">
+                        <div class="text-white text-xs font-bold text-center truncate mt-2">${item.item_name}</div>
+                    </div>
+                `;
+            }).join('');
         }
 
         window.selectVisualItem = function(id) {
@@ -1097,12 +1112,15 @@
             const term = e.target.value.toLowerCase();
             const filtered = allItemsList.filter(item => item.item_name.toLowerCase().includes(term));
             const grid = document.getElementById('visualSearchGrid');
-            grid.innerHTML = filtered.map(item => `
-                <div class="bg-gray-800 p-2 rounded cursor-pointer hover:bg-gray-700 border border-gray-600" onclick="selectVisualItem('${item.id}')">
-                    <img src="${item.image_url || ''}" class="w-full h-24 object-contain bg-black mb-2 rounded">
-                    <div class="text-white text-xs font-bold text-center truncate mt-2">${item.item_name}</div>
-                </div>
-            `).join('');
+            grid.innerHTML = filtered.map(item => {
+                const imgSrc = (item.image_url && item.image_url.trim() !== '') ? item.image_url : fallbackImg;
+                return `
+                    <div class="bg-gray-800 p-2 rounded cursor-pointer hover:bg-gray-700 border border-gray-600" onclick="selectVisualItem('${item.id}')">
+                        <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackImg}';" class="w-full h-24 object-contain bg-black mb-2 rounded">
+                        <div class="text-white text-xs font-bold text-center truncate mt-2">${item.item_name}</div>
+                    </div>
+                `;
+            }).join('');
         });
 
         const btnOpenThicknessModal = document.getElementById('btnOpenThicknessModal');
@@ -1115,8 +1133,9 @@
             allItemsList.forEach(item => {
                 if (item.thickness_records && item.thickness_records.length > 0) {
                     item.thickness_records.forEach(record => {
-                        const imgHtml = item.image_url 
-                            ? `<img src="${item.image_url}" class="w-12 h-12 object-contain bg-black rounded border border-gray-700 mx-auto">` 
+                        // 加入 onerror 自動替換，修復截圖中的破圖問題
+                        const imgHtml = (item.image_url && item.image_url.trim() !== '') 
+                            ? `<img src="${item.image_url}" onerror="this.onerror=null; this.src='${fallbackImg}';" class="w-12 h-12 object-contain bg-black rounded border border-gray-700 mx-auto">` 
                             : `<span class="text-gray-500 text-xs">無照片</span>`;
 
                         htmlContent += `

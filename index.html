@@ -600,43 +600,48 @@
         const fallbackImg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%230f172a' rx='8'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2364748b' font-size='12' font-family='sans-serif'%3E⚠️ 無圖片%3C/text%3E%3C/svg%3E";
 
         window.handleImgError = function(img) {
-            // 避免無限迴圈，確保 onerror 觸發後正確轉向 fallbackImg
             if (img && img.src !== fallbackImg) {
                 img.onerror = null;
                 img.src = fallbackImg;
             }
         };
 
-        // 【核心修正點 1】：嚴格、強效的 Base64 與 URL 解析器
+        // 【最終修正點】：徹底解決 Base64 與非標準網址解析失敗的邏輯
         window.getValidImg = function(url) {
             if (!url || typeof url !== 'string') return fallbackImg;
             
-            // 強制清除可能截斷 HTML 屬性的字元（換行、空白、引號）
+            // 移除可能破壞 HTML 屬性或造成正則失敗的隱形字元
             let cleanUrl = url.replace(/['"\r\n\t\s]/g, '');
             
-            // 過濾無效狀態的字串
+            // 阻擋明顯無效的字串
             if (!cleanUrl || cleanUrl.length < 10 || ['null', 'undefined', 'none', 'false', '[objectobject]', 'nan'].includes(cleanUrl.toLowerCase())) {
                 return fallbackImg;
             }
 
-            // 處理正常的 HTTP 或 HTTPS 圖片
-            if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+            // 1. 處理正常的 HTTP/HTTPS (或是 Blob)
+            if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://') || cleanUrl.startsWith('blob:')) {
                 return cleanUrl;
             }
 
-            // 處理已經有 data:image/ 前綴的字串（並防止重複前綴導致瀏覽器解析錯誤）
-            const dataPrefixIdx = cleanUrl.lastIndexOf('data:image/');
-            if (dataPrefixIdx !== -1) {
-                // 如果字串被錯誤重複連接 (例如 data:image/...data:image/...)，只取最後一段有效的
-                return cleanUrl.substring(dataPrefixIdx);
+            // 2. 處理完整的 data URI (包含 data:image/...) 
+            // 使用正則找尋正確起始點，避免意外的前置錯字
+            const dataUriMatch = cleanUrl.match(/data:image\/[a-zA-Z0-9.+]+;base64,/i);
+            if (dataUriMatch) {
+                const startIndex = cleanUrl.indexOf(dataUriMatch[0]);
+                return cleanUrl.substring(startIndex);
             }
 
-            // 處理純 Base64 字串，強制補齊安全前綴
+            // 3. 放寬純 Base64 解析：
+            // 如果走到這，代表字串很長但沒有標準的 data:image 前綴。
+            // 我們直接幫他加上前綴並交由瀏覽器原生解碼，不再用嚴格的正則去卡它，
+            // 這樣即使包含了 URL-safe base64 (- 或 _) 也能顯示。
             if (cleanUrl.length > 50) {
-                // 使用簡單正規表達式確認是否為合法的 Base64 字元結構
-                if (/^[A-Za-z0-9+/=]+$/.test(cleanUrl)) {
-                    return `data:image/jpeg;base64,${cleanUrl}`;
+                // 清理殘留的錯誤標頭 (如果有)
+                let rawBase64 = cleanUrl.replace(/^.*?(?:base64,)/i, '');
+                if (rawBase64.toLowerCase().startsWith('data:')) {
+                    rawBase64 = rawBase64.substring(5);
                 }
+                return `data:image/jpeg;base64,${rawBase64}`;
             }
             
             return fallbackImg;
@@ -1145,7 +1150,6 @@
 
         btnScanItemName.addEventListener('click', () => { scanNameInput.click(); });
 
-        // 【核心修正點 2】：移除會互相覆蓋覆寫的非同步邏輯，統一在按確認時才壓縮上傳
         function handleImageUpload(e, targetMode) {
             const file = e.target.files[0];
             if(!file) return;
@@ -1175,7 +1179,6 @@
         document.getElementById('btnRotateRight').addEventListener('click', () => { if(cropper) cropper.rotate(90); });
         document.getElementById('btnResetCrop').addEventListener('click', () => { if(cropper) cropper.reset(); });
 
-        // 【核心修正點 3】：加入 Canvas 空白與失敗保護機制
         document.getElementById('btnConfirmCrop').addEventListener('click', async () => {
             if(!cropper) return;
             

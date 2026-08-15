@@ -238,6 +238,7 @@
                         <img id="regPreviewImg" referrerpolicy="no-referrer" onerror="window.handleImgError(this)" class="h-32 mx-auto rounded-lg object-contain border border-slate-800">
                     </div>
 
+                    <!-- 自動槍粉量數據 -->
                     <div class="border-t border-slate-800 pt-4"><h3 class="text-blue-400 mb-3 font-bold text-xs sm:text-sm">🔫 自動槍粉量數據</h3></div>
                     <div class="grid grid-cols-4 sm:grid-cols-8 gap-2">
                         <input type="text" id="gun_1" placeholder="槍1" class="min-w-0 bg-slate-950 p-2 rounded-lg w-full text-center text-white border border-slate-800 font-mono text-xs focus:border-blue-500 focus:outline-none">
@@ -250,6 +251,7 @@
                         <input type="text" id="gun_8" placeholder="槍8" class="min-w-0 bg-slate-950 p-2 rounded-lg w-full text-center text-white border border-slate-800 font-mono text-xs focus:border-blue-500 focus:outline-none">
                     </div>
 
+                    <!-- 往復機運行參數 -->
                     <div class="border-t border-slate-800 pt-4 flex justify-between items-center mb-2">
                         <h3 class="text-amber-400 font-bold text-xs sm:text-sm">🔄 往復機運行參數</h3>
                         <button type="button" id="btnFillAuto" class="bg-amber-700 hover:bg-amber-600 text-white text-[11px] sm:text-xs px-2.5 py-1.5 rounded-lg font-bold shadow transition shrink-0">⚡ 帶入「自動」</button>
@@ -277,6 +279,7 @@
                         </div>
                     </div>
 
+                    <!-- 自動槍電壓與電流 -->
                     <div class="border-t border-slate-800 pt-4"><h3 class="text-rose-400 font-bold text-xs sm:text-sm mb-2">⚡ 自動槍電壓與電流</h3></div>
                     <div class="grid grid-cols-2 gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
                         <div class="flex items-center gap-2 min-w-0">
@@ -597,46 +600,47 @@
         const fallbackImg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%230f172a' rx='8'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2364748b' font-size='12' font-family='sans-serif'%3E⚠️ 無圖片%3C/text%3E%3C/svg%3E";
 
         window.handleImgError = function(img) {
+            // 避免無限迴圈，確保 onerror 觸發後正確轉向 fallbackImg
             if (img && img.src !== fallbackImg) {
                 img.onerror = null;
                 img.src = fallbackImg;
             }
         };
 
-        // 增強型圖片 URL / Base64 解析與修復機制
+        // 【核心修正點 1】：嚴格、強效的 Base64 與 URL 解析器
         window.getValidImg = function(url) {
-            if (!url) return fallbackImg;
-            if (typeof url !== 'string') return fallbackImg;
-            url = url.trim().replace(/^['"]|['"]$/g, '').replace(/[\r\n\t]/g, '');
-            if (!url || ['null', 'undefined', 'none', 'false', '[object object]', 'nan'].includes(url.toLowerCase())) return fallbackImg;
-            if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image/')) return url;
-            // 補充純 Base64 字串前綴
-            if (url.length > 20) return `data:image/jpeg;base64,${url}`;
+            if (!url || typeof url !== 'string') return fallbackImg;
+            
+            // 強制清除可能截斷 HTML 屬性的字元（換行、空白、引號）
+            let cleanUrl = url.replace(/['"\r\n\t\s]/g, '');
+            
+            // 過濾無效狀態的字串
+            if (!cleanUrl || cleanUrl.length < 10 || ['null', 'undefined', 'none', 'false', '[objectobject]', 'nan'].includes(cleanUrl.toLowerCase())) {
+                return fallbackImg;
+            }
+
+            // 處理正常的 HTTP 或 HTTPS 圖片
+            if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+                return cleanUrl;
+            }
+
+            // 處理已經有 data:image/ 前綴的字串（並防止重複前綴導致瀏覽器解析錯誤）
+            const dataPrefixIdx = cleanUrl.lastIndexOf('data:image/');
+            if (dataPrefixIdx !== -1) {
+                // 如果字串被錯誤重複連接 (例如 data:image/...data:image/...)，只取最後一段有效的
+                return cleanUrl.substring(dataPrefixIdx);
+            }
+
+            // 處理純 Base64 字串，強制補齊安全前綴
+            if (cleanUrl.length > 50) {
+                // 使用簡單正規表達式確認是否為合法的 Base64 字元結構
+                if (/^[A-Za-z0-9+/=]+$/.test(cleanUrl)) {
+                    return `data:image/jpeg;base64,${cleanUrl}`;
+                }
+            }
+            
             return fallbackImg;
         };
-
-        // 輔助圖片強效壓縮工具（防止儲存巨型 Base64 毀損資料）
-        function compressImageFile(file, maxDim, quality, callback) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    let w = img.width, h = img.height;
-                    if (w > maxDim || h > maxDim) {
-                        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
-                        else { w = Math.round((w * maxDim) / h); h = maxDim; }
-                    }
-                    const cvs = document.createElement('canvas');
-                    cvs.width = w; cvs.height = h;
-                    const ctx = cvs.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    callback(cvs.toDataURL('image/jpeg', quality));
-                };
-                img.onerror = () => callback(null);
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
 
         // 安全 JSON 解析
         function safeArray(val) {
@@ -646,9 +650,7 @@
                 try {
                     const parsed = JSON.parse(val);
                     return Array.isArray(parsed) ? parsed : [];
-                } catch (e) {
-                    return [];
-                }
+                } catch (e) { return []; }
             }
             return [];
         }
@@ -660,9 +662,7 @@
                 try {
                     const parsed = JSON.parse(val);
                     return (typeof parsed === 'object' && parsed !== null) ? parsed : {};
-                } catch (e) {
-                    return {};
-                }
+                } catch (e) { return {}; }
             }
             return {};
         }
@@ -966,7 +966,6 @@
             if(!currentSelectedData) return;
             editModeId = currentSelectedData.id;
             
-            // 將原有圖片設定至可編輯狀態
             if (currentSelectedData.image_url) {
                 processedRegisterImageBase64 = currentSelectedData.image_url;
                 document.getElementById('regPreviewImg').src = window.getValidImg(currentSelectedData.image_url);
@@ -1146,19 +1145,11 @@
 
         btnScanItemName.addEventListener('click', () => { scanNameInput.click(); });
 
+        // 【核心修正點 2】：移除會互相覆蓋覆寫的非同步邏輯，統一在按確認時才壓縮上傳
         function handleImageUpload(e, targetMode) {
             const file = e.target.files[0];
             if(!file) return;
             cropTargetMode = targetMode;
-
-            // 預備備援縮圖壓縮檔（防止取消裁切時丟失圖片）
-            compressImageFile(file, 360, 0.6, (compressedBase64) => {
-                if (compressedBase64 && targetMode === 'register') {
-                    processedRegisterImageBase64 = compressedBase64;
-                    document.getElementById('regPreviewImg').src = compressedBase64;
-                    document.getElementById('regPreviewBox').classList.remove('hidden');
-                }
-            });
 
             const reader = new FileReader();
             reader.onload = (event) => {
@@ -1184,11 +1175,10 @@
         document.getElementById('btnRotateRight').addEventListener('click', () => { if(cropper) cropper.rotate(90); });
         document.getElementById('btnResetCrop').addEventListener('click', () => { if(cropper) cropper.reset(); });
 
-        // 圖片傳送與雙重輕量化壓縮核心
+        // 【核心修正點 3】：加入 Canvas 空白與失敗保護機制
         document.getElementById('btnConfirmCrop').addEventListener('click', async () => {
             if(!cropper) return;
             
-            // 將裁切好的圖片強制控制尺寸在 360px 以內並進行 0.6 品質 JPEG 壓縮，輕量化輸出
             const maxDim = 360;
             let origWidth = cropper.getCroppedCanvas().width;
             let origHeight = cropper.getCroppedCanvas().height;
@@ -1206,7 +1196,17 @@
             }
 
             const canvas = cropper.getCroppedCanvas({ width: width, height: height });
+            if (!canvas) {
+                alert("⚠️ 裁切區域無效或設備記憶體不足，請重試。");
+                return;
+            }
+
             const base64 = canvas.toDataURL('image/jpeg', 0.6);
+            if (!base64 || base64 === 'data:,' || base64.length < 50) {
+                alert("⚠️ 圖片轉碼失敗，請確認圖片格式。");
+                return;
+            }
+
             cropModal.classList.add('hidden');
             
             if (cropTargetMode === 'register') {

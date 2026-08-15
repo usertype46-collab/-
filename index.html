@@ -596,8 +596,8 @@
         const supabaseKey = 'sb_publishable_qUCcWVbzo-99rP85r_RhQg_EGewmxB4'
         const supabase = createClient(supabaseUrl, supabaseKey)
 
-        // 高相容性 SVG 無圖片預設檔
-        const fallbackImg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%230f172a' rx='8'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2364748b' font-size='12' font-family='sans-serif'%3E⚠️ 無圖片%3C/text%3E%3C/svg%3E";
+        // 高相容性 SVG 無圖片預設檔 (內含正確的 SVG MIME type)
+        const fallbackImg = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%230f172a' rx='8'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2364748b' font-size='12' font-family='sans-serif'%3E%E2%9A%A0%EF%B8%8F%20%E7%84%A1%E5%9C%96%E7%89%87%3C/text%3E%3C/svg%3E";
 
         window.handleImgError = function(img) {
             if (img && img.src !== fallbackImg) {
@@ -606,22 +606,27 @@
             }
         };
 
-        // 【強固修正版】：徹底解決 Base64 標頭重複、URL編碼殘留、以及異常字元導致破圖的問題
+        // 【強固修正版】：徹底解決 Base64 標頭重複、URL編碼殘留、以及原始 SVG 字串導致破圖或變成 .bin 的問題
         window.getValidImg = function(url) {
             // 1. 若無資料或非字串，直接回傳預設無圖片 SVG
             if (!url || typeof url !== 'string' || url.trim() === '') {
                 return fallbackImg;
             }
             
-            // 2. 清理不可見字元與引號 (避免破壞 HTML 屬性)
-            let cleanUrl = url.replace(/[\r\n\t\s'"]/g, '');
+            // 2. 清理不可見字元與前後引號
+            let cleanUrl = url.trim().replace(/^['"]+|['"]+$/g, '');
             
             // 3. 基礎防呆：過濾無效的字串
-            if (cleanUrl.length < 15 || ['null', 'undefined', 'none', 'false', '[objectobject]', 'nan'].includes(cleanUrl.toLowerCase())) {
+            if (cleanUrl.length < 10 || ['null', 'undefined', 'none', 'false', '[objectobject]', 'nan'].includes(cleanUrl.toLowerCase())) {
                 return fallbackImg;
             }
 
-            // 4. 若圖片網址可能被 URL Encode 過 (包含 %2F, %3A, %3B 等)，嘗試解碼
+            // 4. 若資料庫誤存了原始 SVG 標籤字串 (例如以 <svg 開頭)，安全轉為 data URI 格式
+            if (cleanUrl.startsWith('<svg') || cleanUrl.startsWith('<?xml')) {
+                return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(cleanUrl);
+            }
+
+            // 5. 若圖片網址被 URL Encode 過，嘗試解碼
             if (cleanUrl.includes('%3A') || cleanUrl.includes('%3B') || cleanUrl.includes('%2F')) {
                 try {
                     cleanUrl = decodeURIComponent(cleanUrl);
@@ -630,26 +635,23 @@
                 }
             }
 
-            // 5. 正常的 HTTP / HTTPS / Blob 網址直接放行
-            if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://') || cleanUrl.startsWith('blob:')) {
+            // 6. 正常的 HTTP / HTTPS / Blob 網址或已正確帶有 data:image/ 的格式直接放行
+            if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://') || cleanUrl.startsWith('blob:') || cleanUrl.startsWith('data:image/')) {
                 return cleanUrl;
             }
 
-            // 6. 處理 Base64 (強制重新組裝標準標頭，解決 Supabase 可能存有重複標頭的異常)
+            // 7. 處理 Base64 (強制重新組裝標準標頭，防止行動裝置下載成 .bin)
             const b64Keyword = 'base64,';
             const b64Index = cleanUrl.toLowerCase().lastIndexOf(b64Keyword);
             
             if (b64Index !== -1) {
-                // 從「最後一個」 base64, 之後提取最純淨的圖片編碼數據
                 const pureBase64 = cleanUrl.substring(b64Index + b64Keyword.length).trim();
-                
-                // 確保擷取出來的數據長度合理 (一張極小的圖至少也要幾十個字元)
-                if (pureBase64.length > 30) {
+                if (pureBase64.length > 20) {
                     return `data:image/jpeg;base64,${pureBase64}`;
                 }
             } else {
-                // 7. 若完全沒有 base64, 標籤，但內容為極長的純 Base64 字元，自動補全標頭
-                if (cleanUrl.length > 100 && /^[A-Za-z0-9+/=_-]+$/.test(cleanUrl)) {
+                // 若為純 Base64 字串，自動補上標準圖片標頭
+                if (cleanUrl.length > 50 && /^[A-Za-z0-9+/=_-]+$/.test(cleanUrl)) {
                     return `data:image/jpeg;base64,${cleanUrl}`;
                 }
             }

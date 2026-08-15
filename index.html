@@ -100,7 +100,7 @@
                     <div class="bg-gray-800 p-4 rounded-xl border border-blue-800 flex flex-col">
                         <h3 class="font-bold mb-3 text-blue-400">左側：構件圖片與槍粉量數據</h3>
                         <div id="imageContainer" class="mb-4 bg-gray-900 p-2 rounded text-center border border-gray-700 hidden">
-                            <img id="q_matched_image" src="" class="mx-auto rounded h-44 w-full object-contain shadow-md bg-black">
+                            <img id="q_matched_image" src="" referrerpolicy="no-referrer" class="mx-auto rounded h-44 w-full object-contain shadow-md bg-black">
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-center text-sm">
                             <div class="space-y-2">
@@ -209,7 +209,7 @@
                         </div>
                     </div>
                     <div id="regPreviewBox" class="hidden mt-2 bg-gray-900 p-2 rounded text-center border border-gray-700">
-                        <img id="regPreviewImg" class="h-32 mx-auto rounded object-contain border border-gray-700">
+                        <img id="regPreviewImg" referrerpolicy="no-referrer" class="h-32 mx-auto rounded object-contain border border-gray-700">
                     </div>
 
                     <div class="border-t border-gray-700 pt-4"><h3 class="text-blue-400 mb-2 font-bold">自動槍粉量數據</h3></div>
@@ -487,7 +487,7 @@
         <div class="bg-gray-900 border border-yellow-600 p-4 rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col items-center shadow-2xl">
             <h3 class="text-lg font-bold text-yellow-500 mb-2">✂️ 調整圖片範圍與角度</h3>
             <div class="w-full max-h-[55vh] overflow-hidden bg-black flex items-center justify-center mb-4 rounded border border-gray-800">
-                <img id="cropImage" class="max-w-full max-h-[50vh] block">
+                <img id="cropImage" referrerpolicy="no-referrer" class="max-w-full max-h-[50vh] block">
             </div>
             <div class="flex flex-wrap gap-2 mb-4 justify-center">
                 <button type="button" id="btnRotateLeft" class="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded text-sm font-bold border border-gray-700">↺ 左旋轉</button>
@@ -521,27 +521,15 @@
         </div>
     </div>
 
+    <!-- 工件膜厚紀錄彈窗 (改為依品名分類/預設收回/點擊展開明細) -->
     <div id="thicknessTableModal" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-50 p-4">
         <div class="bg-gray-900 border border-pink-600 p-6 rounded-xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl relative">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-pink-400">📊 工件膜厚紀錄</h3>
+                <h3 class="text-xl font-bold text-pink-400">📊 工件膜厚紀錄 (依品名分類)</h3>
                 <button id="btnCloseThicknessModal" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-white font-bold transition shadow-md">✕ 關閉</button>
             </div>
-            <div class="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar border border-gray-700 rounded-lg shadow-inner bg-gray-800/50">
-                <table class="w-full text-sm text-left text-gray-300 whitespace-nowrap">
-                    <thead class="text-xs text-gray-400 uppercase bg-gray-800 sticky top-0 shadow-md">
-                        <tr>
-                            <th class="px-4 py-3 border-b border-gray-700">構件圖片</th>
-                            <th class="px-4 py-3 border-b border-gray-700">構件品名</th>
-                            <th class="px-4 py-3 border-b border-gray-700 text-pink-400">檢測日期</th>
-                            <th class="px-4 py-3 border-b border-gray-700">前段 (Min-Max)</th>
-                            <th class="px-4 py-3 border-b border-gray-700">中段 (Min-Max)</th>
-                            <th class="px-4 py-3 border-b border-gray-700">後段 (Min-Max)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="thicknessTableBody"></tbody>
-                </table>
-            </div>
+            <!-- 容器區塊 -->
+            <div id="thicknessListContainer" class="space-y-3 overflow-y-auto max-h-[70vh] custom-scrollbar pr-1"></div>
         </div>
     </div>
 
@@ -566,7 +554,6 @@
         let stateNG = [];
         let stateRemarks = [];
 
-        // 初始化/取得 LocalStorage 設定
         function getNvidiaApiKey() {
             return localStorage.getItem("NVIDIA_API_KEY") || "nvapi-請填入預設金鑰";
         }
@@ -574,7 +561,6 @@
             return localStorage.getItem("NVIDIA_MODEL") || "nvidia/nemotron-3-ultra-550b-a55b";
         }
 
-        // 直接在前端調用 NVIDIA OpenAI 相容 API
         async function callNvidiaAI(promptText, imageBase64) {
             const apiKey = getNvidiaApiKey();
             const model = getNvidiaModel();
@@ -772,7 +758,6 @@
             const imgContainer = document.getElementById('imageContainer');
             const matchedImg = document.getElementById('q_matched_image');
             
-            // 加入 onerror 防破圖
             matchedImg.onerror = function() {
                 this.onerror = null;
                 this.src = fallbackImg;
@@ -1054,7 +1039,6 @@
 
         document.getElementById('btnConfirmCrop').addEventListener('click', async () => {
             if(!cropper) return;
-            // 限制圖片最大寬高 600px，並進行 JPEG 0.7 壓縮，防止 Base64 數據過大截斷
             const canvas = cropper.getCroppedCanvas({ width: 600, height: 600 });
             const base64 = canvas.toDataURL('image/jpeg', 0.7);
             cropModal.classList.add('hidden');
@@ -1091,7 +1075,7 @@
                 const imgSrc = (item.image_url && item.image_url.trim() !== '') ? item.image_url : fallbackImg;
                 return `
                     <div class="bg-gray-800 p-2 rounded cursor-pointer hover:bg-gray-700 border border-gray-600" onclick="selectVisualItem('${item.id}')">
-                        <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackImg}';" class="w-full h-24 object-contain bg-black mb-2 rounded">
+                        <img src="${imgSrc}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${fallbackImg}';" class="w-full h-24 object-contain bg-black mb-2 rounded">
                         <div class="text-white text-xs font-bold text-center truncate mt-2">${item.item_name}</div>
                     </div>
                 `;
@@ -1116,47 +1100,93 @@
                 const imgSrc = (item.image_url && item.image_url.trim() !== '') ? item.image_url : fallbackImg;
                 return `
                     <div class="bg-gray-800 p-2 rounded cursor-pointer hover:bg-gray-700 border border-gray-600" onclick="selectVisualItem('${item.id}')">
-                        <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackImg}';" class="w-full h-24 object-contain bg-black mb-2 rounded">
+                        <img src="${imgSrc}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${fallbackImg}';" class="w-full h-24 object-contain bg-black mb-2 rounded">
                         <div class="text-white text-xs font-bold text-center truncate mt-2">${item.item_name}</div>
                     </div>
                 `;
             }).join('');
         });
 
+        // 全域控制切換摺疊選單展開/收回
+        window.toggleThicknessGroup = function(groupId) {
+            const target = document.getElementById(groupId);
+            const icon = document.getElementById('icon-' + groupId);
+            if (target) {
+                if (target.classList.contains('hidden')) {
+                    target.classList.remove('hidden');
+                    if (icon) icon.innerHTML = '▼ 收回';
+                } else {
+                    target.classList.add('hidden');
+                    if (icon) icon.innerHTML = '▶ 展開';
+                }
+            }
+        };
+
         const btnOpenThicknessModal = document.getElementById('btnOpenThicknessModal');
         const btnCloseThicknessModal = document.getElementById('btnCloseThicknessModal');
         const thicknessTableModal = document.getElementById('thicknessTableModal');
-        const thicknessTableBody = document.getElementById('thicknessTableBody');
+        const thicknessListContainer = document.getElementById('thicknessListContainer');
 
         btnOpenThicknessModal.addEventListener('click', () => {
             let htmlContent = '';
-            allItemsList.forEach(item => {
-                if (item.thickness_records && item.thickness_records.length > 0) {
-                    item.thickness_records.forEach(record => {
-                        // 加入 onerror 自動替換，修復截圖中的破圖問題
-                        const imgHtml = (item.image_url && item.image_url.trim() !== '') 
-                            ? `<img src="${item.image_url}" onerror="this.onerror=null; this.src='${fallbackImg}';" class="w-12 h-12 object-contain bg-black rounded border border-gray-700 mx-auto">` 
-                            : `<span class="text-gray-500 text-xs">無照片</span>`;
+            // 篩選出具有膜厚紀錄之構件
+            const itemsWithRecords = allItemsList.filter(item => item.thickness_records && item.thickness_records.length > 0);
 
-                        htmlContent += `
-                            <tr class="border-b border-gray-700 hover:bg-gray-700/60 transition duration-150 text-center md:text-left">
-                                <td class="px-4 py-3 text-center">${imgHtml}</td>
-                                <td class="px-4 py-3 font-bold text-white">${item.item_name}</td>
-                                <td class="px-4 py-3 text-pink-400 font-bold">${record.date}</td>
-                                <td class="px-4 py-3">${record.f_min} ~ ${record.f_max} μm</td>
-                                <td class="px-4 py-3">${record.m_min} ~ ${record.m_max} μm</td>
-                                <td class="px-4 py-3">${record.r_min} ~ ${record.r_max} μm</td>
-                            </tr>
-                        `;
-                    });
-                }
-            });
+            if (itemsWithRecords.length === 0) {
+                htmlContent = `<div class="p-8 text-center text-gray-400 font-bold text-base bg-gray-800/50 rounded-lg border border-gray-700">目前系統中無任何工件膜厚紀錄</div>`;
+            } else {
+                itemsWithRecords.forEach((item, index) => {
+                    const groupId = `th-group-${index}`;
+                    const imgSrc = (item.image_url && item.image_url.trim() !== '') ? item.image_url : fallbackImg;
+                    
+                    const recordsRows = item.thickness_records.map(record => `
+                        <tr class="border-b border-gray-800 hover:bg-gray-800/80 transition">
+                            <td class="px-4 py-2.5 text-pink-400 font-bold whitespace-nowrap">${record.date || '-'}</td>
+                            <td class="px-4 py-2.5 font-mono text-gray-200 whitespace-nowrap">${record.f_min} ~ ${record.f_max} μm</td>
+                            <td class="px-4 py-2.5 font-mono text-gray-200 whitespace-nowrap">${record.m_min} ~ ${record.m_max} μm</td>
+                            <td class="px-4 py-2.5 font-mono text-gray-200 whitespace-nowrap">${record.r_min} ~ ${record.r_max} μm</td>
+                        </tr>
+                    `).join('');
 
-            if (htmlContent === '') {
-                htmlContent = `<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500 font-bold text-lg">目前系統中無任何工件膜厚紀錄</td></tr>`;
+                    htmlContent += `
+                        <div class="bg-gray-800/90 border border-gray-700 rounded-xl overflow-hidden shadow-md">
+                            <!-- 分類標題列 (點擊展開/收回) -->
+                            <div onclick="toggleThicknessGroup('${groupId}')" class="p-3.5 bg-gray-800 hover:bg-gray-700/80 cursor-pointer flex justify-between items-center transition select-none">
+                                <div class="flex items-center gap-3">
+                                    <img src="${imgSrc}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${fallbackImg}';" class="w-12 h-12 object-contain bg-black rounded-lg border border-gray-700 shrink-0">
+                                    <div>
+                                        <div class="font-bold text-white text-base leading-snug">${item.item_name}</div>
+                                        <div class="text-xs text-pink-400 font-semibold mt-0.5">歷史膜厚紀錄：${item.thickness_records.length} 筆</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1.5 text-xs text-gray-300 font-bold bg-gray-900/80 px-3 py-1.5 rounded-lg border border-gray-700">
+                                    <span id="icon-${groupId}">▶ 展開</span>
+                                </div>
+                            </div>
+                            <!-- 展開之紀錄明細 (預設隱藏 hidden) -->
+                            <div id="${groupId}" class="hidden border-t border-gray-700 bg-gray-900/70 p-3">
+                                <div class="overflow-x-auto rounded-lg border border-gray-800">
+                                    <table class="w-full text-xs text-left text-gray-300">
+                                        <thead class="text-xs text-gray-400 uppercase bg-gray-800/90 border-b border-gray-700">
+                                            <tr>
+                                                <th class="px-4 py-2 text-pink-400">檢測日期</th>
+                                                <th class="px-4 py-2">前段 (Min-Max)</th>
+                                                <th class="px-4 py-2">中段 (Min-Max)</th>
+                                                <th class="px-4 py-2">後段 (Min-Max)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${recordsRows}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
             }
 
-            thicknessTableBody.innerHTML = htmlContent;
+            thicknessListContainer.innerHTML = htmlContent;
             thicknessTableModal.classList.remove('hidden');
         });
 

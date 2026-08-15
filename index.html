@@ -419,7 +419,7 @@
                         </div>
                     </div>
 
-                    <!-- 歷史膜厚輸入表單（優化防跑位網格） -->
+                    <!-- 歷史膜厚輸入表單 -->
                     <div class="border-t border-slate-800 pt-5">
                         <h3 class="text-pink-400 font-bold text-sm sm:text-base mb-2">📊 新增歷史膜厚紀錄</h3>
                         <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 mb-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
@@ -575,7 +575,7 @@
         </div>
     </div>
 
-    <!-- 彈出視窗：工件膜厚總紀錄表 (美化響應式與圖表細節) -->
+    <!-- 彈出視窗：工件膜厚總紀錄表 -->
     <div id="thicknessTableModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center hidden z-50 p-3 sm:p-4">
         <div class="glass-panel p-4 sm:p-6 rounded-2xl max-w-5xl w-full max-h-[85vh] flex flex-col shadow-2xl relative">
             <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-800 gap-2">
@@ -603,15 +603,40 @@
             }
         };
 
+        // 增強型圖片 URL / Base64 解析與修復機制
         window.getValidImg = function(url) {
-            if (!url || typeof url !== 'string') return fallbackImg;
-            url = url.trim().replace(/^['"]|['"]$/g, '');
-            if (!url || ['null', 'undefined', 'none', 'false', '[object Object]'].includes(url)) return fallbackImg;
+            if (!url) return fallbackImg;
+            if (typeof url !== 'string') return fallbackImg;
+            url = url.trim().replace(/^['"]|['"]$/g, '').replace(/[\r\n\t]/g, '');
+            if (!url || ['null', 'undefined', 'none', 'false', '[object object]', 'nan'].includes(url.toLowerCase())) return fallbackImg;
             if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image/')) return url;
-            // 純 Base64 字串修復機制
-            if (url.length > 30) return `data:image/jpeg;base64,${url}`;
+            // 補充純 Base64 字串前綴
+            if (url.length > 20) return `data:image/jpeg;base64,${url}`;
             return fallbackImg;
         };
+
+        // 輔助圖片強效壓縮工具（防止儲存巨型 Base64 毀損資料）
+        function compressImageFile(file, maxDim, quality, callback) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    let w = img.width, h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                    }
+                    const cvs = document.createElement('canvas');
+                    cvs.width = w; cvs.height = h;
+                    const ctx = cvs.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    callback(cvs.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = () => callback(null);
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
 
         // 安全 JSON 解析
         function safeArray(val) {
@@ -839,6 +864,7 @@
             editModeId = null;
             processedRegisterImageBase64 = null;
             document.getElementById('paramForm').reset();
+            document.getElementById('regPreviewImg').src = '';
             document.getElementById('regPreviewBox').classList.add('hidden');
             
             stateThickness = [];
@@ -940,6 +966,16 @@
             if(!currentSelectedData) return;
             editModeId = currentSelectedData.id;
             
+            // 將原有圖片設定至可編輯狀態
+            if (currentSelectedData.image_url) {
+                processedRegisterImageBase64 = currentSelectedData.image_url;
+                document.getElementById('regPreviewImg').src = window.getValidImg(currentSelectedData.image_url);
+                document.getElementById('regPreviewBox').classList.remove('hidden');
+            } else {
+                processedRegisterImageBase64 = null;
+                document.getElementById('regPreviewBox').classList.add('hidden');
+            }
+
             const fields = ['item_name','gun_1','gun_2','gun_3','gun_4','gun_5','gun_6','gun_7','gun_8',
                             'speed_left','speed_right','up_turn_left','up_turn_right',
                             'down_turn_left','down_turn_right','dist_left','dist_right','voltage','current'];
@@ -1114,6 +1150,16 @@
             const file = e.target.files[0];
             if(!file) return;
             cropTargetMode = targetMode;
+
+            // 預備備援縮圖壓縮檔（防止取消裁切時丟失圖片）
+            compressImageFile(file, 360, 0.6, (compressedBase64) => {
+                if (compressedBase64 && targetMode === 'register') {
+                    processedRegisterImageBase64 = compressedBase64;
+                    document.getElementById('regPreviewImg').src = compressedBase64;
+                    document.getElementById('regPreviewBox').classList.remove('hidden');
+                }
+            });
+
             const reader = new FileReader();
             reader.onload = (event) => {
                 cropImage.src = event.target.result;
@@ -1138,12 +1184,12 @@
         document.getElementById('btnRotateRight').addEventListener('click', () => { if(cropper) cropper.rotate(90); });
         document.getElementById('btnResetCrop').addEventListener('click', () => { if(cropper) cropper.reset(); });
 
-        // 圖片壓縮優化核心邏輯（解決圖片無法顯示）
+        // 圖片傳送與雙重輕量化壓縮核心
         document.getElementById('btnConfirmCrop').addEventListener('click', async () => {
             if(!cropper) return;
             
-            // 將裁切後的圖片限制最大尺寸並壓縮品質，避免 Base64 檔案太大毀損
-            const maxDim = 480;
+            // 將裁切好的圖片強制控制尺寸在 360px 以內並進行 0.6 品質 JPEG 壓縮，輕量化輸出
+            const maxDim = 360;
             let origWidth = cropper.getCroppedCanvas().width;
             let origHeight = cropper.getCroppedCanvas().height;
             let width = origWidth;
@@ -1160,7 +1206,7 @@
             }
 
             const canvas = cropper.getCroppedCanvas({ width: width, height: height });
-            const base64 = canvas.toDataURL('image/jpeg', 0.65);
+            const base64 = canvas.toDataURL('image/jpeg', 0.6);
             cropModal.classList.add('hidden');
             
             if (cropTargetMode === 'register') {
@@ -1249,7 +1295,6 @@
         btnOpenThicknessModal.addEventListener('click', () => {
             let htmlContent = '';
             
-            // 安全過濾有膜厚紀錄的工件
             const itemsWithRecords = allItemsList.filter(item => {
                 const records = safeArray(item.thickness_records);
                 return records.length > 0;

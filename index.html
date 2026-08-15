@@ -100,7 +100,7 @@
                     <div class="bg-gray-800 p-4 rounded-xl border border-blue-800 flex flex-col">
                         <h3 class="font-bold mb-3 text-blue-400">左側：構件圖片與槍粉量數據</h3>
                         <div id="imageContainer" class="mb-4 bg-gray-900 p-2 rounded text-center border border-gray-700 hidden">
-                            <img id="q_matched_image" src="" referrerpolicy="no-referrer" class="mx-auto rounded h-44 w-full object-contain shadow-md bg-black">
+                            <img id="q_matched_image" src="" referrerpolicy="no-referrer" onerror="window.handleImgError(this)" class="mx-auto rounded h-44 w-full object-contain shadow-md bg-black">
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-center text-sm">
                             <div class="space-y-2">
@@ -209,7 +209,7 @@
                         </div>
                     </div>
                     <div id="regPreviewBox" class="hidden mt-2 bg-gray-900 p-2 rounded text-center border border-gray-700">
-                        <img id="regPreviewImg" referrerpolicy="no-referrer" class="h-32 mx-auto rounded object-contain border border-gray-700">
+                        <img id="regPreviewImg" referrerpolicy="no-referrer" onerror="window.handleImgError(this)" class="h-32 mx-auto rounded object-contain border border-gray-700">
                     </div>
 
                     <div class="border-t border-gray-700 pt-4"><h3 class="text-blue-400 mb-2 font-bold">自動槍粉量數據</h3></div>
@@ -487,7 +487,7 @@
         <div class="bg-gray-900 border border-yellow-600 p-4 rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col items-center shadow-2xl">
             <h3 class="text-lg font-bold text-yellow-500 mb-2">✂️ 調整圖片範圍與角度</h3>
             <div class="w-full max-h-[55vh] overflow-hidden bg-black flex items-center justify-center mb-4 rounded border border-gray-800">
-                <img id="cropImage" referrerpolicy="no-referrer" class="max-w-full max-h-[50vh] block">
+                <img id="cropImage" referrerpolicy="no-referrer" onerror="window.handleImgError(this)" class="max-w-full max-h-[50vh] block">
             </div>
             <div class="flex flex-wrap gap-2 mb-4 justify-center">
                 <button type="button" id="btnRotateLeft" class="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded text-sm font-bold border border-gray-700">↺ 左旋轉</button>
@@ -521,14 +521,13 @@
         </div>
     </div>
 
-    <!-- 工件膜厚紀錄彈窗 (改為依品名分類/預設收回/點擊展開明細) -->
+    <!-- 工件膜厚紀錄彈窗 -->
     <div id="thicknessTableModal" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-50 p-4">
         <div class="bg-gray-900 border border-pink-600 p-6 rounded-xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl relative">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-pink-400">📊 工件膜厚紀錄 (依品名分類)</h3>
                 <button id="btnCloseThicknessModal" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-white font-bold transition shadow-md">✕ 關閉</button>
             </div>
-            <!-- 容器區塊 -->
             <div id="thicknessListContainer" class="space-y-3 overflow-y-auto max-h-[70vh] custom-scrollbar pr-1"></div>
         </div>
     </div>
@@ -541,7 +540,31 @@
         const supabase = createClient(supabaseUrl, supabaseKey)
 
         // SVG 備用圖片 (防止圖檔損毀或無效時破圖)
-        const fallbackImg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23111827'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%236b7280' font-size='11'%3E⚠️ 無法載入%3C/text%3E%3C/svg%3E";
+        const fallbackImg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23111827'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%236b7280' font-size='11'%3E⚠️ 無圖片%3C/text%3E%3C/svg%3E";
+
+        // 全域無縫接軌修復破圖
+        window.handleImgError = function(img) {
+            if (img.src !== fallbackImg) {
+                img.onerror = null;
+                img.src = fallbackImg;
+            }
+        };
+
+        // 嚴格檢測與修復圖片 Src
+        window.getValidImg = function(url) {
+            if (!url || typeof url !== 'string') return fallbackImg;
+            url = url.trim();
+            if (url === '' || url === 'null' || url === 'undefined' || url === 'none' || url === 'false') return fallbackImg;
+            
+            // 補充遺失的 Base64 前綴
+            if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('data:image/')) {
+                if (url.length > 50) {
+                    return `data:image/jpeg;base64,${url}`;
+                }
+                return fallbackImg;
+            }
+            return url;
+        };
 
         let currentSelectedData = null;
         let editModeId = null; 
@@ -758,17 +781,9 @@
             const imgContainer = document.getElementById('imageContainer');
             const matchedImg = document.getElementById('q_matched_image');
             
-            matchedImg.onerror = function() {
-                this.onerror = null;
-                this.src = fallbackImg;
-            };
-
-            if (match.image_url && match.image_url.trim() !== '') {
-                matchedImg.src = match.image_url;
-                imgContainer.classList.remove('hidden');
-            } else {
-                imgContainer.classList.add('hidden');
-            }
+            const validSrc = window.getValidImg(match.image_url);
+            matchedImg.src = validSrc;
+            imgContainer.classList.remove('hidden');
 
             const fields = ['gun_1','gun_2','gun_3','gun_4','gun_5','gun_6','gun_7','gun_8',
                             'speed_left','speed_right','up_turn_left','up_turn_right',
@@ -1072,10 +1087,10 @@
         function renderVisualSearch() {
             const grid = document.getElementById('visualSearchGrid');
             grid.innerHTML = allItemsList.map(item => {
-                const imgSrc = (item.image_url && item.image_url.trim() !== '') ? item.image_url : fallbackImg;
+                const imgSrc = window.getValidImg(item.image_url);
                 return `
                     <div class="bg-gray-800 p-2 rounded cursor-pointer hover:bg-gray-700 border border-gray-600" onclick="selectVisualItem('${item.id}')">
-                        <img src="${imgSrc}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${fallbackImg}';" class="w-full h-24 object-contain bg-black mb-2 rounded">
+                        <img src="${imgSrc}" referrerpolicy="no-referrer" onerror="window.handleImgError(this)" class="w-full h-24 object-contain bg-black mb-2 rounded">
                         <div class="text-white text-xs font-bold text-center truncate mt-2">${item.item_name}</div>
                     </div>
                 `;
@@ -1097,17 +1112,16 @@
             const filtered = allItemsList.filter(item => item.item_name.toLowerCase().includes(term));
             const grid = document.getElementById('visualSearchGrid');
             grid.innerHTML = filtered.map(item => {
-                const imgSrc = (item.image_url && item.image_url.trim() !== '') ? item.image_url : fallbackImg;
+                const imgSrc = window.getValidImg(item.image_url);
                 return `
                     <div class="bg-gray-800 p-2 rounded cursor-pointer hover:bg-gray-700 border border-gray-600" onclick="selectVisualItem('${item.id}')">
-                        <img src="${imgSrc}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${fallbackImg}';" class="w-full h-24 object-contain bg-black mb-2 rounded">
+                        <img src="${imgSrc}" referrerpolicy="no-referrer" onerror="window.handleImgError(this)" class="w-full h-24 object-contain bg-black mb-2 rounded">
                         <div class="text-white text-xs font-bold text-center truncate mt-2">${item.item_name}</div>
                     </div>
                 `;
             }).join('');
         });
 
-        // 全域控制切換摺疊選單展開/收回
         window.toggleThicknessGroup = function(groupId) {
             const target = document.getElementById(groupId);
             const icon = document.getElementById('icon-' + groupId);
@@ -1129,7 +1143,6 @@
 
         btnOpenThicknessModal.addEventListener('click', () => {
             let htmlContent = '';
-            // 篩選出具有膜厚紀錄之構件
             const itemsWithRecords = allItemsList.filter(item => item.thickness_records && item.thickness_records.length > 0);
 
             if (itemsWithRecords.length === 0) {
@@ -1137,7 +1150,7 @@
             } else {
                 itemsWithRecords.forEach((item, index) => {
                     const groupId = `th-group-${index}`;
-                    const imgSrc = (item.image_url && item.image_url.trim() !== '') ? item.image_url : fallbackImg;
+                    const imgSrc = window.getValidImg(item.image_url);
                     
                     const recordsRows = item.thickness_records.map(record => `
                         <tr class="border-b border-gray-800 hover:bg-gray-800/80 transition">
@@ -1150,10 +1163,9 @@
 
                     htmlContent += `
                         <div class="bg-gray-800/90 border border-gray-700 rounded-xl overflow-hidden shadow-md">
-                            <!-- 分類標題列 (點擊展開/收回) -->
                             <div onclick="toggleThicknessGroup('${groupId}')" class="p-3.5 bg-gray-800 hover:bg-gray-700/80 cursor-pointer flex justify-between items-center transition select-none">
                                 <div class="flex items-center gap-3">
-                                    <img src="${imgSrc}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${fallbackImg}';" class="w-12 h-12 object-contain bg-black rounded-lg border border-gray-700 shrink-0">
+                                    <img src="${imgSrc}" referrerpolicy="no-referrer" onerror="window.handleImgError(this)" class="w-12 h-12 object-contain bg-black rounded-lg border border-gray-700 shrink-0">
                                     <div>
                                         <div class="font-bold text-white text-base leading-snug">${item.item_name}</div>
                                         <div class="text-xs text-pink-400 font-semibold mt-0.5">歷史膜厚紀錄：${item.thickness_records.length} 筆</div>
@@ -1163,7 +1175,6 @@
                                     <span id="icon-${groupId}">▶ 展開</span>
                                 </div>
                             </div>
-                            <!-- 展開之紀錄明細 (預設隱藏 hidden) -->
                             <div id="${groupId}" class="hidden border-t border-gray-700 bg-gray-900/70 p-3">
                                 <div class="overflow-x-auto rounded-lg border border-gray-800">
                                     <table class="w-full text-xs text-left text-gray-300">

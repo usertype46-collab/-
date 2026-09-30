@@ -3,345 +3,697 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>百富粉體塗裝自動槍參數系統</title>
+    <title>每日用粉紀錄表 - 智慧數據分析系統</title>
+    <!-- Tailwind CSS (樣式庫) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS (Excel 唯讀解析引擎) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Chart.js (動態互動圖表) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome (圖標庫) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #4F46E5;
-            --background: #F3F4F6;
-            --surface: #FFFFFF;
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background);
-            color: #333;
-            margin: 0;
-            padding: 20px;
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: var(--surface);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 3px;
         }
-        h1, h2 { color: #111827; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #D1D5DB;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: opacity 0.2s;
-        }
-        button:hover { opacity: 0.9; }
-        button:disabled { background-color: #9CA3AF; cursor: not-allowed; }
-        .preview-box {
-            margin-top: 20px;
-            text-align: center;
-            border: 2px dashed #D1D5DB;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        /* 關鍵設定：確保圖片正常顯示 */
-        img#imagePreview {
-            max-width: 100%;
-            border-radius: 8px;
-            display: none;
-        }
-        .result-box {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #EEF2FF;
-            border-left: 4px solid var(--primary);
-            border-radius: 4px;
-            display: none;
-        }
-        .loader {
-            display: none;
-            font-size: 14px;
-            color: var(--primary);
-            margin-top: 10px;
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
     </style>
 </head>
-<body>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased pb-12">
 
-<div class="container">
-    <h1>百富粉體塗裝自動槍參數系統</h1>
-    <p>完全無伺服器 (Serverless) GitHub Pages 版本</p>
-
-    <!-- 系統設定區 -->
-    <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-        <h2>⚙️ 系統設定</h2>
-        <div class="form-group">
-            <label>Google Apps Script URL (GAS):</label>
-            <input type="text" id="gasUrl" placeholder="請輸入 Google Script Web App 網址">
+    <!-- 頂部導覽列 -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-slate-700/50 px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-2 rounded-lg text-white">
+                    <i class="fa-solid fa-industry text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-wide text-white">每日用粉紀錄表分析</h1>
+                    <p class="text-xs text-slate-400">KSWEB 行動唯讀編譯讀取系統</p>
+                </div>
+            </div>
+            <div id="statusBadge" class="hidden sm:flex items-center space-x-2 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="loadedStatusText">已載入 0 個檔案</span>
+            </div>
         </div>
-        <div class="form-group">
-            <label>NVIDIA API Key:</label>
-            <input type="password" id="nvApiKey" placeholder="nvapi-...">
-        </div>
-        <button onclick="saveSettings()">儲存設定</button>
-    </div>
+    </header>
 
-    <!-- 上傳與操作區 -->
-    <h2>📤 圖片分析與上傳</h2>
-    <div class="form-group">
-        <input type="file" id="imageInput" accept="image/*">
-    </div>
+    <main class="max-w-7xl mx-auto px-4 mt-6 space-y-6">
 
-    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <button id="btnUpload" onclick="processAndUpload()">上傳至 Google Drive</button>
-        <button id="btnAnalyze" onclick="analyzeImage()">AI 構件分析</button>
-        <button id="btnParse" onclick="parseItemName()">AI 解析料號/品名</button>
-    </div>
+        <!-- 檔案載入區塊 -->
+        <section class="glass-panel rounded-2xl p-6 shadow-xl">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-base font-semibold text-slate-200"><i class="fa-solid fa-folder-open text-blue-400 mr-2"></i>載入目錄/多檔 Excel 檔案</h2>
+                    <p class="text-xs text-slate-400 mt-1">點擊一鍵讀取伺服器 `./xlsx/` 目錄，或手動選擇資料夾/複選 .xlsx 檔案。</p>
+                </div>
+                <div class="flex flex-wrap gap-3 w-full md:w-auto">
+                    <!-- 自動讀取 xlsx 目錄按鈕 -->
+                    <button id="autoLoadBtn" class="flex-1 md:flex-none cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg transition duration-200 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>自動讀取 ./xlsx/ 目錄</span>
+                    </button>
+                    <!-- 選擇資料夾按鈕 -->
+                    <label class="flex-1 md:flex-none cursor-pointer bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg transition duration-200 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-folder"></i>
+                        <span>選擇整個資料夾</span>
+                        <input type="file" id="folderInput" webkitdirectory directory multiple class="hidden" accept=".xlsx, .xls">
+                    </label>
+                    <!-- 選擇檔案按鈕 -->
+                    <label class="flex-1 md:flex-none cursor-pointer bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold px-4 py-2.5 rounded-xl border border-slate-600 transition duration-200 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>選取多個檔案</span>
+                        <input type="file" id="fileInput" multiple class="hidden" accept=".xlsx, .xls">
+                    </label>
+                </div>
+            </div>
+        </section>
 
-    <div class="loader" id="loadingIndicator">處理中，請稍候...</div>
+        <!-- KPI 數據統計卡片 -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="glass-panel p-4 rounded-2xl border-l-4 border-blue-500">
+                <p class="text-xs text-slate-400 font-medium">總用量 (Kg)</p>
+                <p class="text-2xl font-bold text-white mt-1" id="statTotalUsage">0</p>
+                <p class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-calculator mr-1"></i>當前篩選累計 (整數)</p>
+            </div>
+            <div class="glass-panel p-4 rounded-2xl border-l-4 border-emerald-500">
+                <p class="text-xs text-slate-400 font-medium">總出庫量</p>
+                <p class="text-2xl font-bold text-white mt-1" id="statTotalOut">0</p>
+                <p class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-arrow-up-from-bracket mr-1"></i>當前篩選累計 (整數)</p>
+            </div>
+            <div class="glass-panel p-4 rounded-2xl border-l-4 border-amber-500">
+                <p class="text-xs text-slate-400 font-medium">總散粉量</p>
+                <p class="text-2xl font-bold text-white mt-1" id="statTotalScatter">0</p>
+                <p class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-box-open mr-1"></i>當前篩選累計 (整數)</p>
+            </div>
+            <div class="glass-panel p-4 rounded-2xl border-l-4 border-purple-500">
+                <p class="text-xs text-slate-400 font-medium">紀錄總筆數</p>
+                <p class="text-2xl font-bold text-white mt-1" id="statTotalRows">0</p>
+                <p class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-list-check mr-1"></i>已過濾資料比數</p>
+            </div>
+        </section>
 
-    <!-- 結果與預覽區 -->
-    <div class="result-box" id="resultBox"></div>
-    
-    <div class="preview-box">
-        <p id="previewText">圖片預覽將顯示於此</p>
-        <!-- 關鍵：使用 referrerpolicy="no-referrer" 確保 Google Drive 直連圖片不被阻擋 -->
-        <img id="imagePreview" referrerpolicy="no-referrer" alt="預覽圖片">
-    </div>
-</div>
+        <!-- 互動式動態篩選器 -->
+        <section class="glass-panel rounded-2xl p-5 shadow-xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-700/50 pb-3">
+                <h3 class="text-sm font-semibold text-slate-200"><i class="fa-solid fa-filter text-blue-400 mr-2"></i>多維度條件篩選</h3>
+                <button id="resetFiltersBtn" class="text-xs text-slate-400 hover:text-blue-400 transition">
+                    <i class="fa-solid fa-rotate-left mr-1"></i>重置篩選
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- 篩選：粉號 -->
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1.5 font-medium">粉號</label>
+                    <div class="relative">
+                        <select id="filterPowderCode" class="w-full bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2.5 text-slate-200 focus:outline-none focus:border-blue-500 appearance-none">
+                            <option value="">全部粉號</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-xs text-slate-500 pointer-events-none"></i>
+                    </div>
+                </div>
+                <!-- 篩選：日期 -->
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1.5 font-medium">日期 (年/月/日 或 搜尋)</label>
+                    <input type="text" id="filterDate" placeholder="例如：2026/08 或 2026/08/15" class="w-full bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2.5 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                </div>
+                <!-- 篩選：代號 -->
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1.5 font-medium">代號</label>
+                    <div class="relative">
+                        <select id="filterItemCode" class="w-full bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2.5 text-slate-200 focus:outline-none focus:border-blue-500 appearance-none">
+                            <option value="">全部代號</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-xs text-slate-500 pointer-events-none"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-<script>
-    // 預設模型設定
-    const MODEL_NAME = "nvidia/nemotron-3-ultra-550b-a55b";
-    let currentBase64 = null;
-    let driveDirectUrl = null;
+        <!-- 時間維度統計與日均分析 -->
+        <section class="glass-panel rounded-2xl p-5 shadow-xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-slate-200"><i class="fa-solid fa-calendar-days text-purple-400 mr-2"></i>時間維度分析 (年度 / 月度 / 日均)</h3>
+                <span class="text-xs text-slate-400">所有用量數據皆以整數呈現</span>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-700/50">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-800/80 text-slate-300 border-b border-slate-700 font-semibold">
+                            <th class="p-3 whitespace-nowrap">時間區間</th>
+                            <th class="p-3 whitespace-nowrap text-right">總出庫</th>
+                            <th class="p-3 whitespace-nowrap text-right">總散粉</th>
+                            <th class="p-3 whitespace-nowrap text-right">總用量</th>
+                            <th class="p-3 whitespace-nowrap text-right text-slate-400">日均出庫</th>
+                            <th class="p-3 whitespace-nowrap text-right text-slate-400">日均散粉</th>
+                            <th class="p-3 whitespace-nowrap text-right text-amber-400">日均用量</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timeStatsTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+                        <tr>
+                            <td colspan="7" class="text-center py-6 text-slate-500">
+                                尚未載入數據
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-    // 頁面載入時讀取 LocalStorage 的設定
-    window.onload = () => {
-        const savedGas = localStorage.getItem('gasUrl');
-        const savedKey = localStorage.getItem('nvApiKey');
-        if (savedGas) document.getElementById('gasUrl').value = savedGas;
-        if (savedKey) document.getElementById('nvApiKey').value = savedKey;
-        
-        // 監聽圖片選擇事件，生成預覽
-        document.getElementById('imageInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                currentBase64 = event.target.result;
-                const imgEl = document.getElementById('imagePreview');
-                imgEl.src = currentBase64;
-                imgEl.style.display = 'block';
-                document.getElementById('previewText').style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-        });
-    };
+        <!-- 圖表與視覺化區塊 -->
+        <section class="glass-panel rounded-2xl p-5 shadow-xl">
+            <h3 class="text-sm font-semibold text-slate-200 mb-4"><i class="fa-solid fa-chart-column text-emerald-400 mr-2"></i>粉號用量分析圖表 (Top 10)</h3>
+            <div class="h-64 w-full">
+                <canvas id="usageChart"></canvas>
+            </div>
+        </section>
 
-    function saveSettings() {
-        localStorage.setItem('gasUrl', document.getElementById('gasUrl').value);
-        localStorage.setItem('nvApiKey', document.getElementById('nvApiKey').value);
-        alert('設定已儲存在瀏覽器中！');
-    }
+        <!-- 唯讀資料表格 -->
+        <section class="glass-panel rounded-2xl p-5 shadow-xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-slate-200"><i class="fa-solid fa-table text-amber-400 mr-2"></i>每日用粉明細 (唯讀)</h3>
+                <span class="text-xs text-slate-400">點擊標題可檢視內容</span>
+            </div>
 
-    function showLoading(show) {
-        document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
-        document.querySelectorAll('button').forEach(btn => btn.disabled = show);
-    }
+            <!-- 手機版 RWD 滾動容器 -->
+            <div class="overflow-x-auto rounded-xl border border-slate-700/50">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-800/80 text-slate-300 border-b border-slate-700 font-semibold">
+                            <th class="p-3 whitespace-nowrap">日期</th>
+                            <th class="p-3 whitespace-nowrap">粉號</th>
+                            <th class="p-3 whitespace-nowrap">代號</th>
+                            <th class="p-3 whitespace-nowrap text-right">出</th>
+                            <th class="p-3 whitespace-nowrap text-right">散粉</th>
+                            <th class="p-3 whitespace-nowrap text-right">用量</th>
+                            <th class="p-3 whitespace-nowrap text-slate-400">來源檔案</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+                        <tr>
+                            <td colspan="7" class="text-center py-12 text-slate-500">
+                                <i class="fa-solid fa-folder-open text-3xl mb-3 block"></i>
+                                尚未載入任何 Excel 檔案，請點擊上方選擇目錄或檔案。
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-    function showResult(text) {
-        const box = document.getElementById('resultBox');
-        box.style.display = 'block';
-        box.innerHTML = `<strong>執行結果：</strong><br>${text}`;
-    }
+    </main>
 
-    // 將 Google Drive 網址轉換為直連網址
-    function convertGoogleDriveUrl(url) {
-        if (!url) return url;
-        const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-        if (match && match[1]) {
-            return `https://lh3.googleusercontent.com/d/${match[1]}`;
-        }
-        return url;
-    }
+    <!-- JavaScript 邏輯控制 -->
+    <script>
+        // 全域資料狀態
+        let rawDataset = [];
+        let filteredDataset = [];
+        let chartInstance = null;
 
-    // HTML5 Canvas 圖片壓縮 (取代原有的 Python Pillow / Node.js sharp)
-    function compressImage(base64Str, quality = 0.8) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                resolve(canvas.toDataURL('image/jpeg', quality));
-            };
-            img.src = base64Str;
-        });
-    }
+        // DOM 元素引用
+        const autoLoadBtn = document.getElementById('autoLoadBtn');
+        const folderInput = document.getElementById('folderInput');
+        const fileInput = document.getElementById('fileInput');
+        const dataTableBody = document.getElementById('dataTableBody');
+        const timeStatsTableBody = document.getElementById('timeStatsTableBody');
+        const filterPowderCode = document.getElementById('filterPowderCode');
+        const filterDate = document.getElementById('filterDate');
+        const filterItemCode = document.getElementById('filterItemCode');
+        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+        const statusBadge = document.getElementById('statusBadge');
+        const loadedStatusText = document.getElementById('loadedStatusText');
 
-    // 1. 上傳至 Google Drive
-    async function processAndUpload() {
-        const gasUrl = document.getElementById('gasUrl').value;
-        if (!gasUrl) return alert('請先設定 GAS URL');
-        if (!currentBase64) return alert('請先選擇圖片');
-
-        showLoading(true);
-        try {
-            // 進行壓縮
-            const compressedDataUrl = await compressImage(currentBase64, 0.8);
-            // 移除 Base64 標頭以符合原本的 GAS 邏輯
-            const base64Data = compressedDataUrl.replace(/^data:image\/\w+;base64,/, "");
-            const filename = `baifu_${Date.now()}.jpg`;
-
-            // 使用 text/plain 避免觸發複雜的 CORS Preflight
-            const response = await fetch(gasUrl, {
-                method: 'POST',
-                redirect: 'follow',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({
-                    fileName: filename,
-                    mimeType: 'image/jpeg',
-                    base64: base64Data
-                })
-            });
-
-            const result = JSON.parse(await response.text());
-            
-            if (result.success) {
-                driveDirectUrl = convertGoogleDriveUrl(result.url);
-                // 直接將直連網址交給 img，加上 referrerpolicy 即可完美顯示
-                document.getElementById('imagePreview').src = driveDirectUrl;
-                showResult(`✅ 上傳成功！<br>直連網址：<a href="${driveDirectUrl}" target="_blank">點擊查看</a>`);
-            } else {
-                throw new Error(result.error || "未知錯誤");
-            }
-        } catch (error) {
-            alert(`上傳失敗：${error.message}`);
-        } finally {
-            showLoading(false);
-        }
-    }
-
-    // 2. AI 構件分析 (呼叫 NVIDIA API)
-    async function analyzeImage() {
-        const apiKey = document.getElementById('nvApiKey').value;
-        if (!apiKey) return alert('請先設定 NVIDIA API Key');
-        if (!currentBase64) return alert('請先選擇圖片');
-
-        showLoading(true);
-        try {
-            // 壓縮以減少 API 傳輸量
-            const compressedDataUrl = await compressImage(currentBase64, 0.8);
-            // 模擬原有的 Items 資料庫
-            const mockItems = [{ id: "A01", name: "轉軸同心固定座" }, { id: "B02", name: "面板支架" }]; 
-
-            const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
+        // 初始化 Chart.js
+        function initChart() {
+            const ctx = document.getElementById('usageChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '總用量 (Kg)',
+                        data: [],
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
                 },
-                body: JSON.stringify({
-                    model: MODEL_NAME,
-                    messages: [
-                        {
-                            role: "user",
-                            content: [
-                                { 
-                                    type: "text", 
-                                    text: `你是一個專業的粉體塗裝自動槍參數辨識與分析助手。現有資料庫構件清單如下：${JSON.stringify(mockItems)}。請辨識圖片中最符合哪一個構件，並【僅回傳該構件的 id字串】，不要包含任何其他文字或說明。` 
-                                },
-                                { 
-                                    type: "image_url", 
-                                    image_url: { url: compressedDataUrl } 
-                                }
-                            ]
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+        }
+
+        // Excel 日期轉 YYYY/MM/DD
+        function parseExcelDate(val) {
+            if (!val && val !== 0) return '';
+            
+            // 若已經是字串格式
+            if (typeof val === 'string') {
+                val = val.trim();
+                if (val.includes('-')) val = val.replace(/-/g, '/');
+                return val;
+            }
+
+            // 若為 Excel 數值型態日期 (Serial Number)
+            if (typeof val === 'number') {
+                const dateObj = XLSX.SSF.parse_date_code(val);
+                if (dateObj) {
+                    const y = dateObj.y;
+                    const m = String(dateObj.m).padStart(2, '0');
+                    const d = String(dateObj.d).padStart(2, '0');
+                    return `${y}/${m}/${d}`;
+                }
+            }
+
+            // 若為 JS Date 物件
+            if (val instanceof Date) {
+                const y = val.getFullYear();
+                const m = String(val.getMonth() + 1).padStart(2, '0');
+                const d = String(val.getDate()).padStart(2, '0');
+                return `${y}/${m}/${d}`;
+            }
+
+            return String(val);
+        }
+
+        // 數字安全的轉化函數
+        function parseNumber(val) {
+            if (val === null || val === undefined || val === '') return 0;
+            const num = parseFloat(val);
+            return isNaN(num) ? 0 : num;
+        }
+
+        // 自動掃描並讀取伺服器下 ./xlsx/ 資料夾內的所有 xlsx 檔案 (相容 KSWEB/Nginx/Apache AutoIndex)
+        async function autoLoadXlsxFolder() {
+            try {
+                statusBadge.classList.remove('hidden');
+                loadedStatusText.innerText = '正在掃描 ./xlsx/ 目錄...';
+
+                // 發起 GET 請求獲取 ./xlsx/ 目錄 listing
+                const response = await fetch('./xlsx/');
+                if (!response.ok) {
+                    throw new Error(`無法存取 ./xlsx/ 目錄 (HTTP 狀態: ${response.status})`);
+                }
+
+                const htmlText = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
+                const links = Array.from(doc.querySelectorAll('a'));
+
+                const xlsxFiles = [];
+                links.forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && (href.toLowerCase().endsWith('.xlsx') || href.toLowerCase().endsWith('.xls'))) {
+                        // 處理 URL 路徑拼接
+                        let fullUrl = href;
+                        if (!href.startsWith('http') && !href.startsWith('/')) {
+                            fullUrl = href.startsWith('xlsx/') ? `./${href}` : `./xlsx/${href}`;
                         }
-                    ],
-                    temperature: 0.1,
-                    max_tokens: 50
-                })
+                        const fileName = decodeURIComponent(href.split('/').pop());
+                        xlsxFiles.push({ name: fileName, url: fullUrl });
+                    }
+                });
+
+                // 過濾重複檔名
+                const uniqueFiles = [];
+                const seenUrls = new Set();
+                xlsxFiles.forEach(item => {
+                    if (!seenUrls.has(item.url)) {
+                        seenUrls.add(item.url);
+                        uniqueFiles.push(item);
+                    }
+                });
+
+                if (uniqueFiles.length === 0) {
+                    alert('在 ./xlsx/ 目錄下未找到任何 .xlsx 或 .xls 檔案！\n（請確認網頁同級目錄下建立有 xlsx 資料夾，且 KSWEB/Nginx 已開啟 AutoIndex 目錄瀏覽）');
+                    loadedStatusText.innerText = '未找到 Excel 檔案';
+                    return;
+                }
+
+                rawDataset = [];
+                loadedStatusText.innerText = `找到 ${uniqueFiles.length} 個檔案，正在載入...`;
+
+                let loadedCount = 0;
+                for (const fileItem of uniqueFiles) {
+                    try {
+                        const fileRes = await fetch(fileItem.url);
+                        if (!fileRes.ok) continue;
+                        
+                        const arrayBuffer = await fileRes.arrayBuffer();
+                        const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
+                        
+                        // 尋找目標工作表名稱（優先尋找名稱包含「每日用粉紀錄表」或「用粉」）
+                        let sheetName = workbook.SheetNames.find(name => name.includes('每日用粉紀錄表') || name.includes('用粉'));
+                        if (!sheetName) sheetName = workbook.SheetNames[0];
+
+                        const worksheet = workbook.Sheets[sheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+                        parseSheetData(jsonData, fileItem.name);
+                        loadedCount++;
+                    } catch (err) {
+                        console.error(`讀取檔案失敗: ${fileItem.name}`, err);
+                    }
+                }
+
+                loadedStatusText.innerText = `自動匯入完成！共載入 ${loadedCount} 個檔案`;
+                populateFilterDropdowns();
+                applyFilters();
+            } catch (err) {
+                console.error('自動讀取 xlsx 目錄失敗:', err);
+                alert('自動讀取 ./xlsx/ 目錄失敗！\n\n可能原因：\n1. 網頁同級目錄下無 ./xlsx/ 資料夾\n2. 網頁伺服器（KSWEB / Nginx）未開啟 AutoIndex (目錄瀏覽) 功能\n\n您仍可使用「選擇整個資料夾」按鈕手動選取。');
+                loadedStatusText.innerText = '自動讀取失敗';
+            }
+        }
+
+        // 監聽檔案選擇與點擊事件
+        autoLoadBtn.addEventListener('click', autoLoadXlsxFolder);
+        folderInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        // 批次讀取處理 Excel 檔案
+        async function handleFiles(files) {
+            const excelFiles = Array.from(files).filter(f => f.name.endsWith('.xlsx') || f.name.endsWith('.xls'));
+            if (excelFiles.length === 0) {
+                alert('未找到任何 Excel 檔案 (.xlsx / .xls)');
+                return;
+            }
+
+            rawDataset = [];
+            statusBadge.classList.remove('hidden');
+            loadedStatusText.innerText = `正在讀取 ${excelFiles.length} 個檔案...`;
+
+            for (const file of excelFiles) {
+                try {
+                    const data = await file.arrayBuffer();
+                    const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+                    
+                    // 尋找目標工作表名稱（優先尋找名稱包含「每日用粉紀錄表」或「用粉」）
+                    let sheetName = workbook.SheetNames.find(name => name.includes('每日用粉紀錄表') || name.includes('用粉'));
+                    if (!sheetName) sheetName = workbook.SheetNames[0]; // 若未比對到，採用第一個 Sheet
+
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+                    parseSheetData(jsonData, file.name);
+                } catch (err) {
+                    console.error(`解析檔案失敗: ${file.name}`, err);
+                }
+            }
+
+            loadedStatusText.innerText = `已完成匯入 ${excelFiles.length} 個檔案`;
+            populateFilterDropdowns();
+            applyFilters();
+        }
+
+        // 定位並解析表格標題欄位
+        function parseSheetData(rows, fileName) {
+            if (!rows || rows.length === 0) return;
+
+            let headerRowIdx = -1;
+            let colMap = { date: -1, powderCode: -1, itemCode: -1, out: -1, scatter: -1, usage: -1 };
+
+            // 尋找表頭所在行
+            for (let i = 0; i < Math.min(rows.length, 25); i++) {
+                const row = rows[i].map(c => String(c).trim());
+                const dateIdx = row.findIndex(c => c.includes('日期'));
+                const powderIdx = row.findIndex(c => c.includes('粉號'));
+
+                if (dateIdx !== -1 && powderIdx !== -1) {
+                    headerRowIdx = i;
+                    colMap.date = dateIdx;
+                    colMap.powderCode = powderIdx;
+                    colMap.itemCode = row.findIndex(c => c.includes('代號'));
+                    colMap.out = row.findIndex(c => c === '出' || c.includes('出'));
+                    colMap.scatter = row.findIndex(c => c.includes('散粉'));
+                    colMap.usage = row.findIndex(c => c.includes('用量'));
+                    break;
+                }
+            }
+
+            if (headerRowIdx === -1) return; // 未符合欄位規範
+
+            // 提取資料列
+            for (let r = headerRowIdx + 1; r < rows.length; r++) {
+                const row = rows[r];
+                if (!row || row.length === 0) continue;
+
+                const rawDate = colMap.date !== -1 ? row[colMap.date] : '';
+                const powderCode = colMap.powderCode !== -1 ? String(row[colMap.powderCode]).trim() : '';
+
+                // 如果日期與粉號皆空白，跳過該空白行
+                if (!rawDate && !powderCode) continue;
+
+                const formattedDate = parseExcelDate(rawDate);
+                const itemCode = colMap.itemCode !== -1 ? String(row[colMap.itemCode]).trim() : '';
+                const outVal = colMap.out !== -1 ? parseNumber(row[colMap.out]) : 0;
+                const scatterVal = colMap.scatter !== -1 ? parseNumber(row[colMap.scatter]) : 0;
+                const usageVal = colMap.usage !== -1 ? parseNumber(row[colMap.usage]) : 0;
+
+                rawDataset.push({
+                    date: formattedDate,
+                    powderCode: powderCode,
+                    itemCode: itemCode,
+                    out: outVal,
+                    scatter: scatterVal,
+                    usage: usageVal,
+                    fileName: fileName
+                });
+            }
+        }
+
+        // 動態填充篩選下拉選單
+        function populateFilterDropdowns() {
+            const powderCodes = new Set();
+            const itemCodes = new Set();
+
+            rawDataset.forEach(item => {
+                if (item.powderCode) powderCodes.add(item.powderCode);
+                if (item.itemCode) itemCodes.add(item.itemCode);
             });
 
-            const data = await response.json();
-            if (data.choices && data.choices.length > 0) {
-                showResult(`🔍 構件 ID：<strong>${data.choices[0].message.content.trim()}</strong>`);
-            } else {
-                throw new Error(data.error?.message || "無法獲取 API 回應");
-            }
-        } catch (error) {
-            alert(`分析失敗：${error.message}`);
-        } finally {
-            showLoading(false);
-        }
-    }
-
-    // 3. AI 解析料號/品名 (呼叫 NVIDIA API)
-    async function parseItemName() {
-        const apiKey = document.getElementById('nvApiKey').value;
-        if (!apiKey) return alert('請先設定 NVIDIA API Key');
-        if (!currentBase64) return alert('請先選擇圖片');
-
-        showLoading(true);
-        try {
-            const compressedDataUrl = await compressImage(currentBase64, 0.8);
-
-            const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    model: MODEL_NAME,
-                    messages: [
-                        {
-                            role: "user",
-                            content: [
-                                { 
-                                    type: "text", 
-                                    text: "你是一個專業的圖面與工單標籤文字辨識助手。請仔細辨識圖片中的「料號」與「品名」。\n請將辨識結果格式化為「料號/品名」（例如：UC-280B1-C003-WE/轉軸同心固定座.白）。\n【注意事項】：\n1. 料號與品名之間使用單一斜線「/」分隔，左右不要多餘空格。\n2. 請【僅回傳格式化的 料號/品名 字串】，絕對不要包含任何額外說明、Markdown引號或標點符號。"
-                                },
-                                { 
-                                    type: "image_url", 
-                                    image_url: { url: compressedDataUrl } 
-                                }
-                            ]
-                        }
-                    ],
-                    temperature: 0.1,
-                    max_tokens: 100
-                })
+            // 填充粉號選項
+            filterPowderCode.innerHTML = '<option value="">全部粉號</option>';
+            Array.from(powderCodes).sort().forEach(code => {
+                filterPowderCode.innerHTML += `<option value="${code}">${code}</option>`;
             });
 
-            const data = await response.json();
-            if (data.choices && data.choices.length > 0) {
-                let resultText = data.choices[0].message.content.trim();
-                resultText = resultText.replace(/^[`'"]+|[`'"]+$/g, '');
-                showResult(`🏷️ 解析結果：<strong>${resultText}</strong>`);
-            } else {
-                throw new Error(data.error?.message || "無法獲取 API 回應");
-            }
-        } catch (error) {
-            alert(`解析失敗：${error.message}`);
-        } finally {
-            showLoading(false);
+            // 填充代號選項
+            filterItemCode.innerHTML = '<option value="">全部代號</option>';
+            Array.from(itemCodes).sort().forEach(code => {
+                filterItemCode.innerHTML += `<option value="${code}">${code}</option>`;
+            });
         }
-    }
-</script>
+
+        // 執行多維度動態篩選
+        function applyFilters() {
+            const selectedPowder = filterPowderCode.value.trim().toLowerCase();
+            const selectedDate = filterDate.value.trim().toLowerCase();
+            const selectedItem = filterItemCode.value.trim().toLowerCase();
+
+            filteredDataset = rawDataset.filter(item => {
+                const matchPowder = !selectedPowder || item.powderCode.toLowerCase().includes(selectedPowder);
+                const matchDate = !selectedDate || item.date.toLowerCase().includes(selectedDate);
+                const matchItem = !selectedItem || item.itemCode.toLowerCase().includes(selectedItem);
+                return matchPowder && matchDate && matchItem;
+            });
+
+            renderUI();
+        }
+
+        // 渲染整體 UI 畫面
+        function renderUI() {
+            renderTimeStats();
+            renderTable();
+            renderStatsAndChart();
+        }
+
+        // 渲染時間維度統計 (年度 / 月度 / 日均)，全整數計算
+        function renderTimeStats() {
+            const timeStatsMap = {};
+
+            filteredDataset.forEach(row => {
+                if (!row.date) return;
+                const parts = row.date.split('/');
+                if (parts.length >= 2) {
+                    const year = parts[0];
+                    const month = `${parts[0]}/${parts[1]}`;
+                    const dateKey = row.date;
+
+                    // 處理年度數據
+                    if (!timeStatsMap[year]) {
+                        timeStatsMap[year] = { type: 'year', label: `${year} 年度`, out: 0, scatter: 0, usage: 0, days: new Set() };
+                    }
+                    timeStatsMap[year].out += row.out;
+                    timeStatsMap[year].scatter += row.scatter;
+                    timeStatsMap[year].usage += row.usage;
+                    timeStatsMap[year].days.add(dateKey);
+
+                    // 處理月度數據
+                    if (!timeStatsMap[month]) {
+                        timeStatsMap[month] = { type: 'month', label: `${year} 年 ${parts[1]} 月`, out: 0, scatter: 0, usage: 0, days: new Set() };
+                    }
+                    timeStatsMap[month].out += row.out;
+                    timeStatsMap[month].scatter += row.scatter;
+                    timeStatsMap[month].usage += row.usage;
+                    timeStatsMap[month].days.add(dateKey);
+                }
+            });
+
+            // 確保排序正確：年份排前，接著排該年的月份 (降冪排列)
+            const sortedKeys = Object.keys(timeStatsMap).sort((a, b) => {
+                const isSameYear = a.substring(0,4) === b.substring(0,4);
+                if (isSameYear) {
+                    if (a.length === 4) return -1;
+                    if (b.length === 4) return 1;
+                    return b.localeCompare(a); 
+                }
+                return b.localeCompare(a); 
+            });
+
+            if (sortedKeys.length === 0) {
+                timeStatsTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-500">無符合條件的數據</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            sortedKeys.forEach(key => {
+                const data = timeStatsMap[key];
+                const daysCount = data.days.size || 1; 
+
+                // 取整數
+                const totalOut = Math.round(data.out);
+                const totalScatter = Math.round(data.scatter);
+                const totalUsage = Math.round(data.usage);
+
+                const avgOut = Math.round(data.out / daysCount);
+                const avgScatter = Math.round(data.scatter / daysCount);
+                const avgUsage = Math.round(data.usage / daysCount);
+
+                const isYear = data.type === 'year';
+                const rowClass = isYear ? 'bg-slate-700/50 font-bold text-blue-300' : 'text-slate-300 hover:bg-slate-800/50';
+                const icon = isYear ? '<i class="fa-solid fa-calendar-check mr-2"></i>' : '<i class="fa-regular fa-calendar mr-2 ml-4"></i>';
+
+                html += `
+                    <tr class="${rowClass} border-b border-slate-700/30 transition duration-150">
+                        <td class="p-3 whitespace-nowrap">${icon}${data.label}</td>
+                        <td class="p-3 whitespace-nowrap text-right font-mono">${totalOut}</td>
+                        <td class="p-3 whitespace-nowrap text-right font-mono">${totalScatter}</td>
+                        <td class="p-3 whitespace-nowrap text-right font-mono text-emerald-400 font-bold">${totalUsage}</td>
+                        <td class="p-3 whitespace-nowrap text-right font-mono text-slate-400">${avgOut}</td>
+                        <td class="p-3 whitespace-nowrap text-right font-mono text-slate-400">${avgScatter}</td>
+                        <td class="p-3 whitespace-nowrap text-right font-mono text-amber-400 font-bold">${avgUsage}</td>
+                    </tr>`;
+            });
+            timeStatsTableBody.innerHTML = html;
+        }
+
+        // 渲染資料明細表格 (強制轉整數顯示)
+        function renderTable() {
+            if (filteredDataset.length === 0) {
+                dataTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-10 text-slate-500">
+                            無符合篩選條件的用粉紀錄。
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            let html = '';
+            filteredDataset.forEach(row => {
+                html += `
+                    <tr class="hover:bg-slate-800/50 transition duration-150">
+                        <td class="p-3 whitespace-nowrap font-mono text-blue-300">${row.date}</td>
+                        <td class="p-3 whitespace-nowrap font-semibold text-white">${row.powderCode}</td>
+                        <td class="p-3 whitespace-nowrap text-slate-300">${row.itemCode}</td>
+                        <td class="p-3 whitespace-nowrap text-right font-mono">${Math.round(row.out)}</td>
+                        <td class="p-3 whitespace-nowrap text-right font-mono">${Math.round(row.scatter)}</td>
+                        <td class="p-3 whitespace-nowrap text-right font-mono text-emerald-400 font-bold">${Math.round(row.usage)}</td>
+                        <td class="p-3 whitespace-nowrap text-slate-400 text-[11px]">${row.fileName}</td>
+                    </tr>`;
+            });
+            dataTableBody.innerHTML = html;
+        }
+
+        // 更新 KPI 卡片與動態圖表 (強制轉整數顯示)
+        function renderStatsAndChart() {
+            let totalUsage = 0;
+            let totalOut = 0;
+            let totalScatter = 0;
+
+            const powderUsageGroup = {};
+
+            filteredDataset.forEach(row => {
+                totalUsage += row.usage;
+                totalOut += row.out;
+                totalScatter += row.scatter;
+
+                if (row.powderCode) {
+                    powderUsageGroup[row.powderCode] = (powderUsageGroup[row.powderCode] || 0) + row.usage;
+                }
+            });
+
+            // 更新數據卡片 (取整數)
+            document.getElementById('statTotalUsage').innerText = Math.round(totalUsage);
+            document.getElementById('statTotalOut').innerText = Math.round(totalOut);
+            document.getElementById('statTotalScatter').innerText = Math.round(totalScatter);
+            document.getElementById('statTotalRows').innerText = filteredDataset.length;
+
+            // 準備 Top 10 圖表數據
+            const sortedPowderLabels = Object.keys(powderUsageGroup)
+                .sort((a, b) => powderUsageGroup[b] - powderUsageGroup[a])
+                .slice(0, 10);
+
+            // 圖表數值同步取整數
+            const sortedPowderValues = sortedPowderLabels.map(label => Math.round(powderUsageGroup[label]));
+
+            // 更新 Chart.js
+            chartInstance.data.labels = sortedPowderLabels;
+            chartInstance.data.datasets[0].data = sortedPowderValues;
+            chartInstance.update();
+        }
+
+        // 事件監聽綁定
+        filterPowderCode.addEventListener('change', applyFilters);
+        filterItemCode.addEventListener('change', applyFilters);
+        filterDate.addEventListener('input', applyFilters);
+
+        resetFiltersBtn.addEventListener('click', () => {
+            filterPowderCode.value = '';
+            filterItemCode.value = '';
+            filterDate.value = '';
+            applyFilters();
+        });
+
+        // 頁面初次載入
+        window.addEventListener('DOMContentLoaded', () => {
+            initChart();
+        });
+    </script>
 </body>
 </html>

@@ -42,7 +42,7 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-bold tracking-wide text-white">每日用粉紀錄表分析</h1>
-                    <p class="text-xs text-slate-400">KSWEB 行動唯讀編譯讀取系統</p>
+                    <p class="text-xs text-slate-400">GitHub Pages / 本地自動讀取系統</p>
                 </div>
             </div>
             <div id="statusBadge" class="hidden sm:flex items-center space-x-2 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-full">
@@ -59,7 +59,7 @@
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
                     <h2 class="text-base font-semibold text-slate-200"><i class="fa-solid fa-folder-open text-blue-400 mr-2"></i>載入目錄/多檔 Excel 檔案</h2>
-                    <p class="text-xs text-slate-400 mt-1">點擊一鍵讀取伺服器 `./xlsx/` 目錄，或手動選擇資料夾/複選 .xlsx 檔案。</p>
+                    <p class="text-xs text-slate-400 mt-1">點擊一鍵讀取 GitHub/伺服器 `./xlsx/` 目錄，或手動選擇資料夾/複選 .xlsx 檔案。</p>
                 </div>
                 <div class="flex flex-wrap gap-3 w-full md:w-auto">
                     <!-- 自動讀取 xlsx 目錄按鈕 -->
@@ -271,14 +271,12 @@
         function parseExcelDate(val) {
             if (!val && val !== 0) return '';
             
-            // 若已經是字串格式
             if (typeof val === 'string') {
                 val = val.trim();
                 if (val.includes('-')) val = val.replace(/-/g, '/');
                 return val;
             }
 
-            // 若為 Excel 數值型態日期 (Serial Number)
             if (typeof val === 'number') {
                 const dateObj = XLSX.SSF.parse_date_code(val);
                 if (dateObj) {
@@ -289,7 +287,6 @@
                 }
             }
 
-            // 若為 JS Date 物件
             if (val instanceof Date) {
                 const y = val.getFullYear();
                 const m = String(val.getMonth() + 1).padStart(2, '0');
@@ -307,38 +304,73 @@
             return isNaN(num) ? 0 : num;
         }
 
-        // 自動掃描並讀取伺服器下 ./xlsx/ 資料夾內的所有 xlsx 檔案 (相容 KSWEB/Nginx/Apache AutoIndex)
+        // 自動掃描並讀取 ./xlsx/ 資料夾內的所有 xlsx 檔案 (兼顧 GitHub Pages API 與 本地 Nginx/KSWEB AutoIndex)
         async function autoLoadXlsxFolder() {
             try {
                 statusBadge.classList.remove('hidden');
                 loadedStatusText.innerText = '正在掃描 ./xlsx/ 目錄...';
 
-                // 發起 GET 請求獲取 ./xlsx/ 目錄 listing
-                const response = await fetch('./xlsx/');
-                if (!response.ok) {
-                    throw new Error(`無法存取 ./xlsx/ 目錄 (HTTP 狀態: ${response.status})`);
+                let xlsxFiles = [];
+                const hostname = window.location.hostname;
+                const isGitHubPages = hostname.endsWith('github.io');
+
+                // 優先模式 A：若在 GitHub Pages 上，使用 GitHub REST API 讀取目錄內容
+                if (isGitHubPages) {
+                    const owner = hostname.split('.')[0];
+                    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+                    let repo = pathSegments[0];
+                    if (!repo || repo.endsWith('.html')) {
+                        repo = `${owner}.github.io`;
+                    }
+
+                    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/xlsx`;
+
+                    try {
+                        const apiRes = await fetch(apiUrl);
+                        if (apiRes.ok) {
+                            const fileList = await apiRes.json();
+                            if (Array.isArray(fileList)) {
+                                fileList.forEach(item => {
+                                    if (item.type === 'file' && (item.name.toLowerCase().endsWith('.xlsx') || item.name.toLowerCase().endsWith('.xls'))) {
+                                        xlsxFiles.push({
+                                            name: item.name,
+                                            url: `./xlsx/${encodeURIComponent(item.name)}`
+                                        });
+                                    }
+                                });
+                            }
+                        } else {
+                            console.warn(`GitHub API 取得失敗 (Status: ${apiRes.status})，切換至備用讀取模式...`);
+                        }
+                    } catch (apiErr) {
+                        console.warn('GitHub API 請求異常:', apiErr);
+                    }
                 }
 
-                const htmlText = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlText, 'text/html');
-                const links = Array.from(doc.querySelectorAll('a'));
+                // 備用模式 B：若非 GitHub Pages 或 API 無回應，使用傳統 HTML AutoIndex 掃描 (適用 KSWEB / 本地 Apache / Nginx)
+                if (xlsxFiles.length === 0) {
+                    const response = await fetch('./xlsx/');
+                    if (response.ok) {
+                        const htmlText = await response.text();
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(htmlText, 'text/html');
+                        const links = Array.from(doc.querySelectorAll('a'));
 
-                const xlsxFiles = [];
-                links.forEach(link => {
-                    const href = link.getAttribute('href');
-                    if (href && (href.toLowerCase().endsWith('.xlsx') || href.toLowerCase().endsWith('.xls'))) {
-                        // 處理 URL 路徑拼接
-                        let fullUrl = href;
-                        if (!href.startsWith('http') && !href.startsWith('/')) {
-                            fullUrl = href.startsWith('xlsx/') ? `./${href}` : `./xlsx/${href}`;
-                        }
-                        const fileName = decodeURIComponent(href.split('/').pop());
-                        xlsxFiles.push({ name: fileName, url: fullUrl });
+                        links.forEach(link => {
+                            const href = link.getAttribute('href');
+                            if (href && (href.toLowerCase().endsWith('.xlsx') || href.toLowerCase().endsWith('.xls'))) {
+                                let fullUrl = href;
+                                if (!href.startsWith('http') && !href.startsWith('/')) {
+                                    fullUrl = href.startsWith('xlsx/') ? `./${href}` : `./xlsx/${href}`;
+                                }
+                                const fileName = decodeURIComponent(href.split('/').pop());
+                                xlsxFiles.push({ name: fileName, url: fullUrl });
+                            }
+                        });
                     }
-                });
+                }
 
-                // 過濾重複檔名
+                // 過濾重複檔案項目
                 const uniqueFiles = [];
                 const seenUrls = new Set();
                 xlsxFiles.forEach(item => {
@@ -349,7 +381,7 @@
                 });
 
                 if (uniqueFiles.length === 0) {
-                    alert('在 ./xlsx/ 目錄下未找到任何 .xlsx 或 .xls 檔案！\n（請確認網頁同級目錄下建立有 xlsx 資料夾，且 KSWEB/Nginx 已開啟 AutoIndex 目錄瀏覽）');
+                    alert('在 ./xlsx/ 目錄下未找到任何 .xlsx 或 .xls 檔案！\n（請確認 GitHub 儲存庫根目錄下建立有 xlsx/ 資料夾，且專案為公開 Public 權限）');
                     loadedStatusText.innerText = '未找到 Excel 檔案';
                     return;
                 }
@@ -366,7 +398,6 @@
                         const arrayBuffer = await fileRes.arrayBuffer();
                         const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
                         
-                        // 尋找目標工作表名稱（優先尋找名稱包含「每日用粉紀錄表」或「用粉」）
                         let sheetName = workbook.SheetNames.find(name => name.includes('每日用粉紀錄表') || name.includes('用粉'));
                         if (!sheetName) sheetName = workbook.SheetNames[0];
 
@@ -385,7 +416,7 @@
                 applyFilters();
             } catch (err) {
                 console.error('自動讀取 xlsx 目錄失敗:', err);
-                alert('自動讀取 ./xlsx/ 目錄失敗！\n\n可能原因：\n1. 網頁同級目錄下無 ./xlsx/ 資料夾\n2. 網頁伺服器（KSWEB / Nginx）未開啟 AutoIndex (目錄瀏覽) 功能\n\n您仍可使用「選擇整個資料夾」按鈕手動選取。');
+                alert('自動讀取 ./xlsx/ 目錄失敗！\n\n可能原因：\n1. 儲存庫下無 ./xlsx/ 資料夾\n2. 儲存庫設為非公開 (Private)\n\n您仍可使用「選擇整個資料夾」或「選取多個檔案」手動選取。');
                 loadedStatusText.innerText = '自動讀取失敗';
             }
         }
@@ -412,9 +443,8 @@
                     const data = await file.arrayBuffer();
                     const workbook = XLSX.read(data, { type: 'array', cellDates: true });
                     
-                    // 尋找目標工作表名稱（優先尋找名稱包含「每日用粉紀錄表」或「用粉」）
                     let sheetName = workbook.SheetNames.find(name => name.includes('每日用粉紀錄表') || name.includes('用粉'));
-                    if (!sheetName) sheetName = workbook.SheetNames[0]; // 若未比對到，採用第一個 Sheet
+                    if (!sheetName) sheetName = workbook.SheetNames[0];
 
                     const worksheet = workbook.Sheets[sheetName];
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
@@ -437,7 +467,6 @@
             let headerRowIdx = -1;
             let colMap = { date: -1, powderCode: -1, itemCode: -1, out: -1, scatter: -1, usage: -1 };
 
-            // 尋找表頭所在行
             for (let i = 0; i < Math.min(rows.length, 25); i++) {
                 const row = rows[i].map(c => String(c).trim());
                 const dateIdx = row.findIndex(c => c.includes('日期'));
@@ -455,9 +484,8 @@
                 }
             }
 
-            if (headerRowIdx === -1) return; // 未符合欄位規範
+            if (headerRowIdx === -1) return;
 
-            // 提取資料列
             for (let r = headerRowIdx + 1; r < rows.length; r++) {
                 const row = rows[r];
                 if (!row || row.length === 0) continue;
@@ -465,7 +493,6 @@
                 const rawDate = colMap.date !== -1 ? row[colMap.date] : '';
                 const powderCode = colMap.powderCode !== -1 ? String(row[colMap.powderCode]).trim() : '';
 
-                // 如果日期與粉號皆空白，跳過該空白行
                 if (!rawDate && !powderCode) continue;
 
                 const formattedDate = parseExcelDate(rawDate);
@@ -496,13 +523,11 @@
                 if (item.itemCode) itemCodes.add(item.itemCode);
             });
 
-            // 填充粉號選項
             filterPowderCode.innerHTML = '<option value="">全部粉號</option>';
             Array.from(powderCodes).sort().forEach(code => {
                 filterPowderCode.innerHTML += `<option value="${code}">${code}</option>`;
             });
 
-            // 填充代號選項
             filterItemCode.innerHTML = '<option value="">全部代號</option>';
             Array.from(itemCodes).sort().forEach(code => {
                 filterItemCode.innerHTML += `<option value="${code}">${code}</option>`;
@@ -544,7 +569,6 @@
                     const month = `${parts[0]}/${parts[1]}`;
                     const dateKey = row.date;
 
-                    // 處理年度數據
                     if (!timeStatsMap[year]) {
                         timeStatsMap[year] = { type: 'year', label: `${year} 年度`, out: 0, scatter: 0, usage: 0, days: new Set() };
                     }
@@ -553,7 +577,6 @@
                     timeStatsMap[year].usage += row.usage;
                     timeStatsMap[year].days.add(dateKey);
 
-                    // 處理月度數據
                     if (!timeStatsMap[month]) {
                         timeStatsMap[month] = { type: 'month', label: `${year} 年 ${parts[1]} 月`, out: 0, scatter: 0, usage: 0, days: new Set() };
                     }
@@ -564,7 +587,6 @@
                 }
             });
 
-            // 確保排序正確：年份排前，接著排該年的月份 (降冪排列)
             const sortedKeys = Object.keys(timeStatsMap).sort((a, b) => {
                 const isSameYear = a.substring(0,4) === b.substring(0,4);
                 if (isSameYear) {
@@ -585,7 +607,6 @@
                 const data = timeStatsMap[key];
                 const daysCount = data.days.size || 1; 
 
-                // 取整數
                 const totalOut = Math.round(data.out);
                 const totalScatter = Math.round(data.scatter);
                 const totalUsage = Math.round(data.usage);
@@ -658,21 +679,17 @@
                 }
             });
 
-            // 更新數據卡片 (取整數)
             document.getElementById('statTotalUsage').innerText = Math.round(totalUsage);
             document.getElementById('statTotalOut').innerText = Math.round(totalOut);
             document.getElementById('statTotalScatter').innerText = Math.round(totalScatter);
             document.getElementById('statTotalRows').innerText = filteredDataset.length;
 
-            // 準備 Top 10 圖表數據
             const sortedPowderLabels = Object.keys(powderUsageGroup)
                 .sort((a, b) => powderUsageGroup[b] - powderUsageGroup[a])
                 .slice(0, 10);
 
-            // 圖表數值同步取整數
             const sortedPowderValues = sortedPowderLabels.map(label => Math.round(powderUsageGroup[label]));
 
-            // 更新 Chart.js
             chartInstance.data.labels = sortedPowderLabels;
             chartInstance.data.datasets[0].data = sortedPowderValues;
             chartInstance.update();

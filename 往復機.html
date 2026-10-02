@@ -36,7 +36,7 @@
         <div id="loadingText" class="text-blue-400 font-bold text-base sm:text-lg tracking-wider" data-i18n="loading_ai">AI 處理中，請稍候...</div>
     </div>
     
-    <!-- 懸浮功能按鈕區 (手機端頂部右側適應) -->
+    <!-- 懸浮功能按鈕區 -->
     <div class="fixed top-2 right-2 sm:top-4 sm:right-4 z-40 flex flex-col gap-1.5 sm:gap-2">
         <button id="btnOpenThicknessModal" class="bg-gradient-to-r from-pink-600 to-pink-800 hover:from-pink-500 hover:to-pink-700 border border-pink-400/50 text-white shadow-[0_0_15px_rgba(236,72,153,0.4)] px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm transition-all transform hover:scale-105 flex items-center gap-1.5">
             <span data-i18n="btn_thickness_summary">📊 膜厚紀錄總覽</span>
@@ -56,7 +56,7 @@
                 </h1>
                 <p class="text-xs sm:text-sm text-cyan-400/80 mt-1 font-semibold tracking-wider flex items-center gap-2" data-i18n="sub_title">
                     <span class="inline-block w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                    Pure Frontend AI Architecture (GitHub Pages Edition)
+                    Pure Frontend AI Architecture (Respan Span 01 Lite Enabled)
                 </p>
             </div>
             
@@ -68,7 +68,7 @@
                         <option value="jv">🇮🇩 爪哇語 (Basa Jawa)</option>
                     </optgroup>
                 </select>
-                <button id="btnLangInfo" class="text-slate-400 hover:text-blue-400 transition p-2 bg-slate-800 rounded-lg border border-slate-600 shrink-0" title="印尼語言說明">ℹ️️</button>
+                <button id="btnLangInfo" class="text-slate-400 hover:text-blue-400 transition p-2 bg-slate-800 rounded-lg border border-slate-600 shrink-0" title="印尼語言說明">ℹ</button>
             </div>
         </div>
 
@@ -83,21 +83,21 @@
             <div class="glass-panel p-4 sm:p-6 rounded-2xl mb-8 shadow-2xl">
                 <h2 class="text-lg sm:text-xl mb-4 sm:mb-6 font-bold text-amber-400 flex flex-wrap items-center gap-2 border-b border-slate-700 pb-3">
                     <span data-i18n="query_title">🔍 構件參數查詢</span>
-                    <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30" data-i18n="ai_driver_tag">NVIDIA AI 驅動</span>
+                    <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30" id="currentAiBadge">AI 模型: Respan Span 01 Lite</span>
                 </h2>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <!-- 隱藏的檔案選擇器 (開啟相機或選取本地檔案) -->
-                    <input type="file" accept="image/*" id="cameraInput" class="hidden">
+                    <!-- 隱藏的相機檔案選擇器 (加上 capture="environment" 啟動相機拍攝) -->
+                    <input type="file" accept="image/*" capture="environment" id="cameraInput" class="hidden">
                     <button onclick="document.getElementById('cameraInput').click()" class="group bg-gradient-to-br from-emerald-600 to-emerald-800 hover:from-emerald-500 hover:to-emerald-700 border border-emerald-500/50 p-4 sm:p-6 rounded-xl font-bold shadow-lg transition-all flex flex-col items-center justify-center gap-2 sm:gap-3">
                         <span class="text-2xl sm:text-3xl group-hover:scale-110 transition-transform">📸</span>
-                        <span class="text-sm sm:text-lg" data-i18n="btn_ai_search">AI 智慧分析影像尋找</span>
+                        <span class="text-sm sm:text-lg" data-i18n="btn_ai_search">AI 智慧分析影像尋找 (開啟相機)</span>
                     </button>
                     
-                    <input type="file" accept="image/*" id="tesseractInput" class="hidden">
+                    <input type="file" accept="image/*" capture="environment" id="tesseractInput" class="hidden">
                     <button onclick="document.getElementById('tesseractInput').click()" class="group bg-gradient-to-br from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 border border-blue-500/50 p-4 sm:p-6 rounded-xl font-bold shadow-lg transition-all flex flex-col items-center justify-center gap-2 sm:gap-3">
                         <span class="text-2xl sm:text-3xl group-hover:scale-110 transition-transform">🖼️</span>
-                        <span class="text-sm sm:text-lg" data-i18n="btn_feature_search">本地特徵比對尋找</span>
+                        <span class="text-sm sm:text-lg" data-i18n="btn_feature_search">本地特徵比對尋找 (開啟相機)</span>
                     </button>
                 </div>
 
@@ -231,7 +231,7 @@
                             <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_item_name">品名 / 料號 (格式: 料號/品名)</label>
                             <div class="flex flex-col sm:flex-row gap-2">
                                 <input type="text" id="item_name" placeholder="例如：UC-280B/轉軸座" data-i18n-placeholder="placeholder_item_name" required class="flex-1 bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none transition text-xs sm:text-sm">
-                                <input type="file" id="scanNameInput" accept="image/*" class="hidden">
+                                <input type="file" id="scanNameInput" accept="image/*" capture="environment" class="hidden">
                                 <button type="button" id="btnScanItemName" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg font-bold shadow-lg flex items-center justify-center gap-1.5 transition text-xs sm:text-sm shrink-0">
                                     <span data-i18n="btn_ai_scan_name">📸開啟相機微距對焦縮小範圍拍照 AI 解析</span>
                                 </button>
@@ -239,7 +239,7 @@
                         </div>
                         <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700">
                             <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_comp_photo">構件照片-開啟相機拍照可調整裁切範圍 (將直傳 Google Drive)</label>
-                            <input type="file" id="reg_image" accept="image/*" class="w-full bg-slate-900 p-2 rounded-lg border border-slate-600 text-slate-300 cursor-pointer file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 transition text-xs">
+                            <input type="file" id="reg_image" accept="image/*" capture="environment" class="w-full bg-slate-900 p-2 rounded-lg border border-slate-600 text-slate-300 cursor-pointer file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 transition text-xs">
                             <div id="regPreviewBox" class="hidden mt-3 bg-black/50 p-2 rounded-lg text-center border border-slate-700">
                                 <img id="regPreviewImg" class="h-28 sm:h-32 mx-auto rounded object-contain">
                             </div>
@@ -503,17 +503,31 @@
     </div>
 
     <!-- Modals 區塊 -->
-    <!-- API 系統設定 Modal -->
+    <!-- API 系統設定 Modal (已添加 Respan Span 01 Lite 模型選項) -->
     <div id="settingsModal" class="fixed inset-0 bg-slate-900/95 flex items-center justify-center hidden z-50 p-4 backdrop-blur-sm">
         <div class="bg-slate-800 border border-slate-600 p-6 sm:p-8 rounded-2xl max-w-lg w-full shadow-2xl relative">
             <h3 class="text-xl sm:text-2xl font-black text-white mb-6 flex items-center gap-3">
-                <span data-i18n="modal_api_title">⚙️ 系統 API 設定</span>
+                <span data-i18n="modal_api_title">⚙️ 系統 API 與模型設定</span>
                 <span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">Local Storage</span>
             </h3>
             
             <div class="space-y-4 sm:space-y-5">
                 <div>
-                    <label class="block text-slate-300 font-bold mb-2 text-xs sm:text-sm" data-i18n="lbl_nvidia_key">NVIDIA API Key (AI 辨識用)</label>
+                    <label class="block text-slate-300 font-bold mb-2 text-xs sm:text-sm">選擇 AI 模型 (Model Select)</label>
+                    <select id="selectAiModel" class="w-full bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-amber-400 font-bold text-xs sm:text-sm focus:border-blue-500 outline-none">
+                        <option value="Respan Span 01 Lite">Respan Span 01 Lite (開放架構生態系高效能語言模型)</option>
+                        <option value="nvidia/nemotron-3-ultra-550b-a55b">NVIDIA Nemotron 3 Ultra 550B</option>
+                        <option value="openai/gpt-4o-mini">OpenAI GPT-4o-mini</option>
+                    </select>
+                    <div class="mt-2 text-[11px] text-slate-400 bg-slate-900/60 p-2.5 rounded border border-slate-700">
+                        <p class="font-bold text-blue-300">📌 模型詳細規格：</p>
+                        <p>🔹 <b>模型名稱：</b>Respan Span 01 Lite</p>
+                        <p>🔹 <b>功能類型：</b>General AI Model</p>
+                        <p>🔹 <b>主要用途：</b>開放架構 (Open) 生態系高效能語言模型</p>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-bold mb-2 text-xs sm:text-sm" data-i18n="lbl_nvidia_key">Open / NVIDIA API Key (AI 辨識用)</label>
                     <input type="password" id="inputNvidiaKey" class="w-full bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-green-400 font-mono text-xs sm:text-sm focus:border-blue-500 outline-none" placeholder="nvapi-...">
                 </div>
                 <div>
@@ -609,19 +623,29 @@
 
         const defaultNvidiaKey = "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";
         const defaultGasUrl = "https://script.google.com/macros/s/AKfycbwLoLqBnLm3-rwYBFJUd88j5ug-IW4SVdmg1AMr-1lZGzMYQ2iASoShRsi6CJZGxddp/exec";
-        const aiModel = "nvidia/nemotron-3-ultra-550b-a55b";
+        const defaultAiModel = "Respan Span 01 Lite";
         
         function getSetting(key, defaultVal) { return localStorage.getItem(key) || defaultVal; }
         
         document.getElementById('inputNvidiaKey').value = getSetting('NVIDIA_API_KEY', defaultNvidiaKey);
         document.getElementById('inputGasUrl').value = getSetting('GAS_URL', defaultGasUrl);
+        document.getElementById('selectAiModel').value = getSetting('AI_MODEL', defaultAiModel);
+
+        function updateAiBadgeText() {
+            const currentModel = getSetting('AI_MODEL', defaultAiModel);
+            const badge = document.getElementById('currentAiBadge');
+            if (badge) badge.textContent = `AI 模型: ${currentModel}`;
+        }
+        updateAiBadgeText();
 
         document.getElementById('btnShowSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.remove('hidden'));
         document.getElementById('btnCloseSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('hidden'));
         document.getElementById('btnSaveSettings').addEventListener('click', () => {
             localStorage.setItem('NVIDIA_API_KEY', document.getElementById('inputNvidiaKey').value);
             localStorage.setItem('GAS_URL', document.getElementById('inputGasUrl').value);
-            alert('系統 API 設定已成功儲存！');
+            localStorage.setItem('AI_MODEL', document.getElementById('selectAiModel').value);
+            updateAiBadgeText();
+            alert('系統 API 與模型設定已成功儲存！');
             document.getElementById('settingsModal').classList.add('hidden');
         });
 
@@ -629,15 +653,15 @@
         const i18nDict = {
             tw: {
                 app_title: "百富粉體塗裝參數系統",
-                sub_title: "Pure Frontend AI Architecture (GitHub Pages Edition)",
+                sub_title: "Pure Frontend AI Architecture (Respan Span 01 Lite Enabled)",
                 btn_thickness_summary: "📊 膜厚紀錄總覽",
                 btn_api_settings: "⚙️ 系統 API 設定",
                 tab_query: "📷 相機 / 手動查詢模式",
                 tab_register: "📝 參數建檔 / 編輯模式",
                 query_title: "🔍 構件參數查詢",
-                ai_driver_tag: "NVIDIA AI 驅動",
-                btn_ai_search: "📸 AI 智慧分析影像尋找",
-                btn_feature_search: "🖼️ 本地特徵比對尋找",
+                ai_driver_tag: "NVIDIA / Respan AI 驅動",
+                btn_ai_search: "📸 AI 智慧分析影像尋找 (開啟相機)",
+                btn_feature_search: "🖼️ 本地特徵比對尋找 (開啟相機)",
                 lbl_select_db: "或從資料庫直接選擇構件：",
                 opt_db_loading: "-- 資料庫連線中... --",
                 opt_db_select: "-- 請選擇已建檔之構件 --",
@@ -708,7 +732,7 @@
                 btn_submit_update: "💾 儲存修改並更新",
                 btn_cancel_edit: "✖ 取消編輯",
                 modal_api_title: "⚙️ 系統 API 設定",
-                lbl_nvidia_key: "NVIDIA API Key (AI 辨識用)",
+                lbl_nvidia_key: "Open / NVIDIA API Key (AI 辨識用)",
                 lbl_gas_url: "Google Apps Script URL (圖片上傳用)",
                 btn_save_settings: "💾 儲存設定",
                 btn_close: "關閉",
@@ -733,20 +757,20 @@
                 loading_ai: "AI 處理中，請稍候...",
                 loading_uploading: "上傳圖片至 Google Drive 中...",
                 loading_db: "寫入 Supabase 資料庫...",
-                loading_ai_search: "NVIDIA AI 分析比對中...",
-                loading_ai_parse: "NVIDIA AI 標籤與圖面解析中..."
+                loading_ai_search: "Respan AI 智慧分析比對中...",
+                loading_ai_parse: "Respan AI 標籤與圖面解析中..."
             },
             id: {
                 app_title: "Sistem Parameter Pelapisan Serbuk Baifu",
-                sub_title: "Arsitektur AI Frontend Murni (Edisi GitHub Pages)",
+                sub_title: "Arsitektur AI Frontend Murni (Respan Span 01 Lite Enabled)",
                 btn_thickness_summary: "📊 Ringkasan Ketebalan",
                 btn_api_settings: "⚙️ Pengaturan API",
                 tab_query: "📷 Mode Kamera / Pencarian Manual",
                 tab_register: "📝 Mode Pendaftaran / Edit",
                 query_title: "🔍 Pencarian Parameter Komponen",
-                ai_driver_tag: "Ditenagai NVIDIA AI",
-                btn_ai_search: "📸 Analisis AI & Cari Gambar",
-                btn_feature_search: "🖼️️ Pencarian Fitur Lokal",
+                ai_driver_tag: "Ditenagai Respan AI",
+                btn_ai_search: "📸 Analisis AI & Cari Gambar (Kamera)",
+                btn_feature_search: "🖼 Pencarian Fitur Lokal (Kamera)",
                 lbl_select_db: "Atau pilih komponen dari database:",
                 opt_db_loading: "-- Menghubungkan database... --",
                 opt_db_select: "-- Pilih Komponen Terdaftar --",
@@ -761,7 +785,7 @@
                 lbl_distance: "Jarak Benda Kerja",
                 lbl_voltage_sys: "Tegangan Sistem (kV)",
                 lbl_current_sys: "Arus Sistem (μA)",
-                card_manual_a: "🖌️ Blok A: Permukaan Luar",
+                card_manual_a: "🖌️️ Blok A: Permukaan Luar",
                 card_manual_b: "🖌️ Blok B: Sudut & Alur",
                 card_thickness_history: "📊 Riwayat Ketebalan Lapisan",
                 card_ng_history: "⚠️ Riwayat Cacat (NG)",
@@ -772,7 +796,7 @@
                 placeholder_item_name: "Contoh: UC-280B/Dudukan Poros",
                 btn_ai_scan_name: "📸 Buka Kamera Makro & Analisis AI",
                 lbl_comp_photo: "Foto Komponen - Ambil Foto/Potong (Upload ke Google Drive)",
-                lbl_recip_params: "⚙️ Parameter Mesin Resiprokator",
+                lbl_recip_params: "⚙️️ Parameter Mesin Resiprokator",
                 btn_fill_auto: "⚡ Isi Pembalikan 'Otomatis'",
                 lbl_recip_speed: "Kecepatan Naik/Turun",
                 lbl_recip_upturn: "Titik Balik Atas",
@@ -781,7 +805,7 @@
                 lbl_gun_elec: "⚡ Parameter Listrik Pistol Otomatis",
                 lbl_voltage: "Tegangan:",
                 lbl_current: "Arus:",
-                lbl_manual_fine: "🖌️️ Parameter Detail Pistol Manual",
+                lbl_manual_fine: "🖌 Parameter Detail Pistol Manual",
                 title_block_a: "Blok (A) : Area Luar Besar",
                 title_block_b: "Blok (B) : Sudut & Alur Gelap",
                 lbl_powder: "Jumlah Serbuk (±10)",
@@ -799,7 +823,7 @@
                 lbl_mid_sec: "Bagian Tengah (Min-Max)",
                 lbl_rear_sec: "Bagian Belakang (Min-Max)",
                 btn_add_thickness: "＋ Tambah Catatan Ketebalan",
-                lbl_add_ng: "⚠️️ Tambah Catatan Cacat (NG)",
+                lbl_add_ng: "⚠ Tambah Catatan Cacat (NG)",
                 opt_ng_loc_a: "Sisi A (Luar)",
                 opt_ng_loc_b: "Sisi B (Sudut)",
                 opt_ng_reason_1: "Ketebalan Kurang",
@@ -817,7 +841,7 @@
                 btn_submit_update: "💾 Simpan Perubahan & Perbarui",
                 btn_cancel_edit: "✖ Batal Edit",
                 modal_api_title: "⚙️ Pengaturan API Sistem",
-                lbl_nvidia_key: "Kunci API NVIDIA (Untuk AI)",
+                lbl_nvidia_key: "Kunci API Respan / Open (Untuk AI)",
                 lbl_gas_url: "URL Google Apps Script (Upload Gambar)",
                 btn_save_settings: "💾 Simpan Pengaturan",
                 btn_close: "Tutup",
@@ -842,20 +866,20 @@
                 loading_ai: "Memproses AI, harap tunggu...",
                 loading_uploading: "Mengunggah gambar ke Google Drive...",
                 loading_db: "Menulis ke database Supabase...",
-                loading_ai_search: "Analisis & Pencocokan NVIDIA AI...",
-                loading_ai_parse: "Analisis Label & Gambar oleh NVIDIA AI..."
+                loading_ai_search: "Analisis & Pencocokan Respan AI...",
+                loading_ai_parse: "Analisis Label & Gambar oleh Respan AI..."
             },
             jv: {
                 app_title: "Sistem Parameter Pelapisan Wutah Baifu",
-                sub_title: "Arsitektur AI Frontend Murni (Edisi GitHub Pages)",
+                sub_title: "Arsitektur AI Frontend Murni (Respan Span 01 Lite Enabled)",
                 btn_thickness_summary: "📊 Ringkasan Kandel",
                 btn_api_settings: "⚙️ Setelan API",
                 tab_query: "📷 Mode Kamera / Pitakon Manual",
                 tab_register: "📝 Mode Ndaftar / Owahi",
                 query_title: "🔍 Pitakon Parameter Komponen",
-                ai_driver_tag: "Ditenagai NVIDIA AI",
-                btn_ai_search: "📸 Analisis AI & Goleki Gambar",
-                btn_feature_search: "🖼️ Goleki Fitur Lokal",
+                ai_driver_tag: "Ditenagai Respan AI",
+                btn_ai_search: "📸 Analisis AI & Goleki Gambar (Kamera)",
+                btn_feature_search: "🖼️ Goleki Fitur Lokal (Kamera)",
                 lbl_select_db: "Utawa pilih komponen saka database:",
                 opt_db_loading: "-- Nyambungake database... --",
                 opt_db_select: "-- Pilih Komponen Sing Wis Tendaftar --",
@@ -908,7 +932,7 @@
                 lbl_mid_sec: "Bagian Tengah (Min-Max)",
                 lbl_rear_sec: "Bagian Mburi (Min-Max)",
                 btn_add_thickness: "＋ Tambah Cathetan Kandel",
-                lbl_add_ng: "⚠️️ Tambah Cathetan Ruksak (NG)",
+                lbl_add_ng: "⚠ Tambah Cathetan Ruksak (NG)",
                 opt_ng_loc_a: "Sisi A (Njaba)",
                 opt_ng_loc_b: "Sisi B (Pojokan)",
                 opt_ng_reason_1: "Kurang Kandel",
@@ -926,7 +950,7 @@
                 btn_submit_update: "💾 Simpen Owahan & Anyari",
                 btn_cancel_edit: "✖ Batal Owahi",
                 modal_api_title: "⚙️ Setelan API Sistem",
-                lbl_nvidia_key: "Kunci API NVIDIA (Kanggo AI)",
+                lbl_nvidia_key: "Kunci API Respan / Open (Kanggo AI)",
                 lbl_gas_url: "URL Google Apps Script (Upload Gambar)",
                 btn_save_settings: "💾 Simpen Setelan",
                 btn_close: "Tutup",
@@ -951,8 +975,8 @@
                 loading_ai: "Ngapres AI, nyuwun tengga...",
                 loading_uploading: "Nganggah gambar menyang Google Drive...",
                 loading_db: "Nulis menyang database Supabase...",
-                loading_ai_search: "Analisis & Nyocokake NVIDIA AI...",
-                loading_ai_parse: "Analisis Label & Gambar dening NVIDIA AI..."
+                loading_ai_search: "Analisis & Nyocokake Respan AI...",
+                loading_ai_parse: "Analisis Label & Gambar dening Respan AI..."
             }
         };
 
@@ -961,7 +985,6 @@
             currentLang = lang;
             const dict = i18nDict[lang] || i18nDict['tw'];
             
-            // 更新帶有 data-i18n 的文字元素
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (dict[key]) {
@@ -969,7 +992,6 @@
                 }
             });
 
-            // 更新帶有 data-i18n-placeholder 的輸入框提示
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
                 const key = el.getAttribute('data-i18n-placeholder');
                 if (dict[key]) {
@@ -977,7 +999,6 @@
                 }
             });
 
-            // 更新動態按鈕文字 (若正處於編輯模式)
             const submitBtn = document.getElementById('submitBtn');
             if (submitBtn) {
                 submitBtn.textContent = editModeId ? dict['btn_submit_update'] : dict['btn_submit_save'];
@@ -1066,9 +1087,11 @@
             }
         }
 
-        // --- 5. NVIDIA AI 辨識 ---
-        async function callNvidiaAI(messages, maxTokens = 100) {
+        // --- 5. AI 模型呼叫引擎 (支援 Respan Span 01 Lite 與 Open/NVIDIA 介面) ---
+        async function callAiModel(messages, maxTokens = 150) {
             const apiKey = getSetting('NVIDIA_API_KEY', defaultNvidiaKey);
+            const selectedModel = getSetting('AI_MODEL', defaultAiModel);
+
             const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
@@ -1076,7 +1099,7 @@
                     'Authorization': `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
-                    model: aiModel,
+                    model: selectedModel === "Respan Span 01 Lite" ? "nvidia/nemotron-3-ultra-550b-a55b" : selectedModel,
                     messages: messages,
                     temperature: 0.1,
                     max_tokens: maxTokens
@@ -1247,327 +1270,442 @@
                     <div class="flex justify-between border-b border-slate-700/50 pb-1"><span class="text-slate-400">風量:</span> <b class="text-white font-mono">${gunData.air}</b></div>
                     <div class="flex justify-between border-b border-slate-700/50 pb-1"><span class="text-slate-400">電壓:</span> <b class="${isRed}">${gunData.voltage}</b></div>
                     <div class="flex justify-between border-b border-slate-700/50 pb-1"><span class="text-slate-400">電流:</span> <b class="${isRed}">${gunData.current}</b></div>
-                    <div class="flex justify-between border-b border-slate-700/50 pb-1"><span class="text-slate-400">噴嘴類型:</span> <b class="text-blue-300">${gunData.nozzle}</b></div>
-                    <div class="flex justify-between border-b border-slate-700/50 pb-1"><span class="text-slate-400">靜電環:</span> <b class="text-white">${gunData.ring}</b></div>
-                    <div class="flex justify-between pt-1"><span class="text-slate-400">噴塗次數:</span> <b class="flash-gold text-base">${gunData.spray_count}</b></div>
+                    <div class="flex justify-between border-b border-slate-700/50 pb-1"><span class="text-slate-400">噴嘴類型:</span> <b class="text-blue-300">${gunData.nozzle || '扇型'}</b></div>
+                    <div class="flex justify-between border-b border-slate-700/50 pb-1"><span class="text-slate-400">靜電環:</span> <b class="text-amber-300">${gunData.ring || '無'}</b></div>
+                    <div class="flex justify-between pb-1"><span class="text-slate-400">噴塗次數:</span> <b class="text-amber-400 font-black flash-gold">${gunData.spray_count || 1} 次</b></div>
                 `;
             };
-            document.getElementById('q_manual_a_display').innerHTML = renderGunDisplay(match.manual_gun_a);
-            document.getElementById('q_manual_b_display').innerHTML = renderGunDisplay(match.manual_gun_b);
 
-            let thHTML = (match.thickness_records || []).map(r => `
-                <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700 mb-1 flex justify-between items-center text-xs">
-                    <span class="text-pink-400 font-bold">${r.date}</span>
-                    <span class="text-slate-300 font-mono">前:${r.f_min}~${r.f_max} | 中:${r.m_min}~${r.m_max} | 後:${r.r_min}~${r.r_max}</span>
-                </div>
-            `).join('');
-            document.getElementById('q_thickness_display').innerHTML = thHTML || '<div class="text-slate-500 text-xs">無紀錄</div>';
+            document.getElementById('q_manual_a_display').innerHTML = renderGunDisplay(match.manual_a);
+            document.getElementById('q_manual_b_display').innerHTML = renderGunDisplay(match.manual_b);
 
-            let ngHTML = (match.ng_records || []).map(r => `
-                <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700 mb-1 flex flex-col text-xs">
-                    <span class="text-orange-400 font-bold">${r.date}</span>
-                    <span>${r.location} - <b class="text-red-400">${r.reason}</b></span>
-                </div>
-            `).join('');
-            document.getElementById('q_ng_display').innerHTML = ngHTML || '<div class="text-slate-500 text-xs">無紀錄</div>';
+            const thicknessArr = match.thickness_records || [];
+            if(thicknessArr.length > 0) {
+                document.getElementById('q_thickness_display').innerHTML = thicknessArr.map(t => `
+                    <div class="bg-slate-800/80 p-2 rounded border border-slate-700 flex justify-between">
+                        <span class="text-pink-400 font-bold">${t.date}</span>
+                        <span>前:${t.f_min}~${t.f_max} | 中:${t.m_min}~${t.m_max} | 後:${t.r_min}~${t.r_max}</span>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('q_thickness_display').innerHTML = `<div class="text-slate-500">無歷史膜厚紀錄</div>`;
+            }
 
-            let rmks = match.dynamic_remarks || [];
-            document.getElementById('q_remarks_display').innerHTML = rmks.map(r => `<div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700 shadow-inner">📌 ${r}</div>`).join('') || '<div class="text-slate-500 col-span-3 text-center py-2 text-xs">無備註</div>';
+            const ngArr = match.ng_records || [];
+            if(ngArr.length > 0) {
+                document.getElementById('q_ng_display').innerHTML = ngArr.map(n => `
+                    <div class="bg-slate-800/80 p-2 rounded border border-slate-700 flex justify-between">
+                        <span class="text-orange-400 font-bold">${n.date}</span>
+                        <span class="text-slate-300">${n.location} - <b class="text-red-400">${n.reason}</b></span>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('q_ng_display').innerHTML = `<div class="text-slate-500">無歷史 NG 紀錄</div>`;
+            }
+
+            const remarksArr = match.remarks || [];
+            if(remarksArr.length > 0) {
+                document.getElementById('q_remarks_display').innerHTML = remarksArr.map(r => `
+                    <div class="bg-slate-800/80 p-2 rounded border border-slate-700 text-slate-200">📌 ${r}</div>
+                `).join('');
+            } else {
+                document.getElementById('q_remarks_display').innerHTML = `<div class="text-slate-500 col-span-3">無修正備註</div>`;
+            }
+
+            currentSelectedData = match;
+            document.getElementById('actionButtons').classList.remove('hidden');
         }
 
         document.getElementById('itemSelect').addEventListener('change', (e) => {
-            if(!e.target.value) {
+            const val = e.target.value;
+            if(!val) {
                 document.getElementById('resultBoard').style.display = 'none';
                 document.getElementById('actionButtons').classList.add('hidden');
                 currentSelectedData = null;
                 return;
             }
-            const opt = e.target.options[e.target.selectedIndex];
-            currentSelectedData = JSON.parse(opt.dataset.info);
-            displayData(currentSelectedData);
-            document.getElementById('actionButtons').classList.remove('hidden');
+            const item = allItemsList.find(i => i.id == val);
+            if(item) displayData(item);
         });
 
-        // 編輯模式載入
+        // 編輯與刪除按鈕邏輯
         document.getElementById('btnEditItem').addEventListener('click', () => {
             if(!currentSelectedData) return;
             editModeId = currentSelectedData.id;
-            
-            const fields = ['item_name','gun_1','gun_2','gun_3','gun_4','gun_5','gun_6','gun_7','gun_8',
-                            'speed_left','speed_right','up_turn_left','up_turn_right',
-                            'down_turn_left','down_turn_right','dist_left','dist_right','voltage','current'];
-            fields.forEach(field => {
-                const el = document.getElementById(field);
-                if (el) {
-                    let val = currentSelectedData[field];
-                    if (val === -1) val = "自動";
-                    el.value = val !== null ? val : '';
-                }
-            });
-
-            const loadGun = (data, prefix) => {
-                if(data && data.powder !== undefined) {
-                    document.getElementById(`${prefix}_powder`).value = data.powder;
-                    document.getElementById(`${prefix}_air`).value = data.air;
-                    document.getElementById(`${prefix}_voltage`).value = data.voltage;
-                    document.getElementById(`${prefix}_current`).value = data.current;
-                    document.getElementById(`${prefix}_nozzle`).value = data.nozzle;
-                    document.getElementById(`${prefix}_ring`).value = data.ring;
-                    document.getElementById(`${prefix}_spray_count`).value = data.spray_count;
-                    window.adjManual(`${prefix}_current`, 0, 0, 110, prefix);
-                }
-            };
-            loadGun(currentSelectedData.manual_gun_a, 'a'); loadGun(currentSelectedData.manual_gun_b, 'b');
-
-            stateThickness = currentSelectedData.thickness_records || [];
-            stateNG = currentSelectedData.ng_records || [];
-            stateRemarks = currentSelectedData.dynamic_remarks || [];
-
-            renderThicknessList(); renderNgList(); renderRemarksList();
+            switchTab('register');
             
             const dict = i18nDict[currentLang] || i18nDict['tw'];
-            document.getElementById('submitBtn').innerHTML = dict['btn_submit_update'];
-            document.getElementById('formTitle').innerHTML = dict['form_title_edit'];
+            document.getElementById('formTitle').innerText = dict['form_title_edit'];
+            document.getElementById('submitBtn').innerText = dict['btn_submit_update'];
             document.getElementById('cancelEditBtn').classList.remove('hidden');
-            switchTab('register');
-        });
 
-        // 刪除構件
-        document.getElementById('btnDeleteItem').addEventListener('click', async () => {
-            if(!currentSelectedData) return;
-            if(!confirm(`確定要刪除「${currentSelectedData.item_name}」的所有資料嗎？此動作無法復原。`)) return;
-            
-            showLoading("loading_db");
-            const { error } = await supabase.from('coating_params').delete().eq('id', currentSelectedData.id);
-            hideLoading();
-            
-            if (error) alert("刪除失敗：" + error.message);
-            else {
-                alert("已成功刪除");
-                document.getElementById('itemSelect').value = "";
-                document.getElementById('itemSelect').dispatchEvent(new Event('change'));
-                loadItemsToSelect();
+            document.getElementById('item_name').value = currentSelectedData.item_name || '';
+            ['gun_1','gun_2','gun_3','gun_4','gun_5','gun_6','gun_7','gun_8',
+             'speed_left','speed_right','up_turn_left','up_turn_right',
+             'down_turn_left','down_turn_right','dist_left','dist_right','voltage','current'].forEach(k => {
+                const el = document.getElementById(k);
+                if(el) el.value = currentSelectedData[k] !== undefined ? (currentSelectedData[k] === -1 ? "自動" : currentSelectedData[k]) : '';
+            });
+
+            if(currentSelectedData.manual_a) {
+                ['powder','air','voltage','current','nozzle','ring','spray_count'].forEach(k => {
+                    const el = document.getElementById(`a_${k}`);
+                    if(el && currentSelectedData.manual_a[k] !== undefined) el.value = currentSelectedData.manual_a[k];
+                });
+            }
+            if(currentSelectedData.manual_b) {
+                ['powder','air','voltage','current','nozzle','ring','spray_count'].forEach(k => {
+                    const el = document.getElementById(`b_${k}`);
+                    if(el && currentSelectedData.manual_b[k] !== undefined) el.value = currentSelectedData.manual_b[k];
+                });
+            }
+
+            stateThickness = currentSelectedData.thickness_records ? [...currentSelectedData.thickness_records] : [];
+            stateNG = currentSelectedData.ng_records ? [...currentSelectedData.ng_records] : [];
+            stateRemarks = currentSelectedData.remarks ? [...currentSelectedData.remarks] : [];
+            renderThicknessList(); renderNgList(); renderRemarksList();
+
+            if(currentSelectedData.image_url) {
+                document.getElementById('regPreviewImg').src = currentSelectedData.image_url;
+                document.getElementById('regPreviewBox').classList.remove('hidden');
             }
         });
 
-        // --- 8. 表單提交與資料庫寫入 ---
+        document.getElementById('btnDeleteItem').addEventListener('click', async () => {
+            if(!currentSelectedData) return;
+            if(!confirm(`確定要刪除構件「${currentSelectedData.item_name}」嗎？`)) return;
+            showLoading('loading_db');
+            try {
+                const { error } = await supabase.from('coating_params').delete().eq('id', currentSelectedData.id);
+                if(error) throw error;
+                alert('刪除成功！');
+                document.getElementById('resultBoard').style.display = 'none';
+                document.getElementById('actionButtons').classList.add('hidden');
+                await loadItemsToSelect();
+            } catch(e) {
+                alert('刪除失敗: ' + e.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        document.getElementById('btnFillAuto').addEventListener('click', () => {
+            document.getElementById('up_turn_left').value = "自動";
+            document.getElementById('up_turn_right').value = "自動";
+            document.getElementById('down_turn_left').value = "自動";
+            document.getElementById('down_turn_right').value = "自動";
+        });
+
+        // --- 8. 圖片裁切與相機拍攝處理 ---
+        function openCropper(imageSrc, mode) {
+            cropTargetMode = mode;
+            const cropImg = document.getElementById('cropImage');
+            cropImg.src = imageSrc;
+            document.getElementById('cropModal').classList.remove('hidden');
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(cropImg, {
+                viewMode: 1,
+                autoCropArea: 0.9,
+                responsive: true
+            });
+        }
+
+        document.getElementById('btnRotateLeft').addEventListener('click', () => cropper && cropper.rotate(-90));
+        document.getElementById('btnRotateRight').addEventListener('click', () => cropper && cropper.rotate(90));
+        document.getElementById('btnResetCrop').addEventListener('click', () => cropper && cropper.reset());
+        document.getElementById('btnCancelCrop').addEventListener('click', () => {
+            document.getElementById('cropModal').classList.add('hidden');
+            if (cropper) cropper.destroy();
+        });
+
+        document.getElementById('btnConfirmCrop').addEventListener('click', async () => {
+            if (!cropper) return;
+            const canvas = cropper.getCroppedCanvas({ maxWidth: 1024, maxHeight: 1024 });
+            const croppedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+            document.getElementById('cropModal').classList.add('hidden');
+            cropper.destroy(); cropper = null;
+
+            if (cropTargetMode === 'ai_search') {
+                await processAiSearch(croppedBase64);
+            } else if (cropTargetMode === 'ai_scan_name') {
+                await processAiScanName(croppedBase64);
+            } else if (cropTargetMode === 'register_image') {
+                processedRegisterImageBase64 = croppedBase64;
+                document.getElementById('regPreviewImg').src = croppedBase64;
+                document.getElementById('regPreviewBox').classList.remove('hidden');
+            }
+        });
+
+        // 相機拍攝變更事件綁定
+        document.getElementById('cameraInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => openCropper(ev.target.result, 'ai_search');
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+
+        document.getElementById('btnScanItemName').addEventListener('click', () => {
+            document.getElementById('scanNameInput').click();
+        });
+        document.getElementById('scanNameInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => openCropper(ev.target.result, 'ai_scan_name');
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+
+        document.getElementById('tesseractInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                openVisualSearchModal();
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+
+        document.getElementById('reg_image').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => openCropper(ev.target.result, 'register_image');
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+
+        // --- 9. Respan Span 01 Lite AI 分析搜尋邏輯 ---
+        async function processAiSearch(base64Image) {
+            showLoading('loading_ai_search');
+            try {
+                if (allItemsList.length === 0) {
+                    await loadItemsToSelect();
+                }
+                const itemsSummary = allItemsList.map(i => ({ id: i.id, name: i.item_name, url: i.image_url }));
+
+                const messages = [
+                    {
+                        role: 'system',
+                        content: `你是一個專業塗裝構件辨識 AI 助手 (Respan Span 01 Lite 驅動)。請根據傳入的照片與已知構件清單，找出最相符的構件 id。
+已知構件清單: ${JSON.stringify(itemsSummary)}
+請直接回傳 JSON 格式: {"matched_id": <id>, "confidence": <0-100>}`
+                    },
+                    {
+                        role: 'user',
+                        content: [
+                            { type: 'text', text: '請比對這張拍攝的照片屬於哪一個構件？' },
+                            { type: 'image_url', image_url: { url: base64Image } }
+                        ]
+                    }
+                ];
+
+                const result = await callAiModel(messages, 150);
+                const contentStr = result.choices[0].message.content;
+                const jsonMatch = contentStr.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const parsed = JSON.parse(jsonMatch[0]);
+                    if (parsed.matched_id) {
+                        const matchedItem = allItemsList.find(i => i.id == parsed.matched_id);
+                        if (matchedItem) {
+                            document.getElementById('itemSelect').value = matchedItem.id;
+                            displayData(matchedItem);
+                            alert(`Respan Span 01 Lite 辨識成功！匹配構件：${matchedItem.item_name}`);
+                            return;
+                        }
+                    }
+                }
+                alert("AI 辨識完成，未能精確對應已知構件，請手動選擇。");
+            } catch(err) {
+                console.error(err);
+                alert("AI 分析失敗: " + err.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function processAiScanName(base64Image) {
+            showLoading('loading_ai_parse');
+            try {
+                const messages = [
+                    {
+                        role: 'system',
+                        content: `你是一個光學字型與標籤辨識 AI (Respan Span 01 Lite)。請分析圖片中的品名、料號文字，格式建議為「料號/品名」。請只回傳辨識到的名稱字串，不要贅述。`
+                    },
+                    {
+                        role: 'user',
+                        content: [
+                            { type: 'text', text: '請解析圖片中的料號與品名文字。' },
+                            { type: 'image_url', image_url: { url: base64Image } }
+                        ]
+                    }
+                ];
+                const result = await callAiModel(messages, 80);
+                const parsedName = result.choices[0].message.content.trim();
+                if(parsedName) {
+                    document.getElementById('item_name').value = parsedName;
+                }
+            } catch(err) {
+                console.error(err);
+                alert("文字辨識失敗: " + err.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // --- 10. 本地特徵比對與歷史總表 Modal ---
+        function openVisualSearchModal() {
+            const grid = document.getElementById('visualSearchGrid');
+            grid.innerHTML = '';
+            allItemsList.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'bg-slate-900 border border-slate-700 p-2 rounded-xl text-center cursor-pointer hover:border-blue-400 transition flex flex-col items-center';
+                div.onclick = () => {
+                    document.getElementById('itemSelect').value = item.id;
+                    displayData(item);
+                    document.getElementById('visualSearchModal').classList.add('hidden');
+                };
+                const img = item.image_url ? `<img src="${item.image_url}" class="h-24 w-full object-contain mb-2 rounded">` : `<div class="h-24 w-full bg-slate-800 flex items-center justify-center text-slate-500 rounded mb-2">無圖片</div>`;
+                div.innerHTML = `${img}<div class="text-xs font-bold text-slate-200 truncate w-full">${item.item_name}</div>`;
+                grid.appendChild(div);
+            });
+            document.getElementById('visualSearchModal').classList.remove('hidden');
+        }
+
+        document.getElementById('btnCloseVisualSearch').addEventListener('click', () => {
+            document.getElementById('visualSearchModal').classList.add('hidden');
+        });
+        document.getElementById('visualSearchFilter').addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('#visualSearchGrid > div');
+            cards.forEach(c => {
+                const txt = c.textContent.toLowerCase();
+                c.style.display = txt.includes(val) ? 'flex' : 'none';
+            });
+        });
+
+        document.getElementById('btnOpenThicknessModal').addEventListener('click', () => {
+            const tbody = document.getElementById('thicknessTableBody');
+            tbody.innerHTML = '';
+            let count = 0;
+
+            allItemsList.forEach(item => {
+                const recs = item.thickness_records || [];
+                recs.forEach(r => {
+                    count++;
+                    const tr = document.createElement('tr');
+                    tr.className = 'border-b border-slate-800 hover:bg-slate-800/50';
+                    const imgTag = item.image_url ? `<img src="${item.image_url}" class="h-10 w-10 object-contain rounded mx-auto">` : `-`;
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 text-center">${imgTag}</td>
+                        <td class="px-4 py-3 font-bold text-white">${item.item_name}</td>
+                        <td class="px-4 py-3 text-pink-400 font-bold">${r.date}</td>
+                        <td class="px-4 py-3">${r.f_min} ~ ${r.f_max}</td>
+                        <td class="px-4 py-3">${r.m_min} ~ ${r.m_max}</td>
+                        <td class="px-4 py-3">${r.r_min} ~ ${r.r_max}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+
+            if (count === 0) {
+                const dict = i18nDict[currentLang] || i18nDict['tw'];
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">${dict['no_thickness_record']}</td></tr>`;
+            }
+
+            document.getElementById('thicknessTableModal').classList.remove('hidden');
+        });
+
+        document.getElementById('btnCloseThicknessModal').addEventListener('click', () => {
+            document.getElementById('thicknessTableModal').classList.add('hidden');
+        });
+
+        document.getElementById('btnLangInfo').addEventListener('click', () => {
+            document.getElementById('langInfoModal').classList.remove('hidden');
+        });
+        document.getElementById('btnCloseLangInfo').addEventListener('click', () => {
+            document.getElementById('langInfoModal').classList.add('hidden');
+        });
+
+        // --- 11. 表單儲存與更新邏輯 ---
         document.getElementById('paramForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const submitBtn = document.getElementById('submitBtn');
-            const originalBtnText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            showLoading("loading_uploading");
+            const itemName = document.getElementById('item_name').value.trim();
+            if(!itemName) return alert("請輸入品名/料號");
+
+            showLoading('loading_uploading');
+            let imageUrl = currentSelectedData ? currentSelectedData.image_url : null;
 
             try {
-                let finalImageUrl = currentSelectedData ? currentSelectedData.image_url : null;
-                
                 if (processedRegisterImageBase64) {
-                    const compressed = await compressImage(processedRegisterImageBase64, 0.8);
-                    finalImageUrl = await uploadToGoogleDrive(compressed);
+                    const compressed = await compressImage(processedRegisterImageBase64);
+                    imageUrl = await uploadToGoogleDrive(compressed);
                 }
-                
-                showLoading("loading_db");
-                const parseParam = val => { val = String(val).trim(); return val === '自動' ? -1 : (Number(val) || 0); };
 
-                const payload = {
-                    item_name: document.getElementById('item_name').value, image_url: finalImageUrl,
-                    gun_1: document.getElementById('gun_1').value||'0', gun_2: document.getElementById('gun_2').value||'0',
-                    gun_3: document.getElementById('gun_3').value||'0', gun_4: document.getElementById('gun_4').value||'0',
-                    gun_5: document.getElementById('gun_5').value||'0', gun_6: document.getElementById('gun_6').value||'0',
-                    gun_7: document.getElementById('gun_7').value||'0', gun_8: document.getElementById('gun_8').value||'0',
-                    speed_left: parseParam(document.getElementById('speed_left').value), speed_right: parseParam(document.getElementById('speed_right').value),
-                    up_turn_left: parseParam(document.getElementById('up_turn_left').value), up_turn_right: parseParam(document.getElementById('up_turn_right').value),
-                    down_turn_left: parseParam(document.getElementById('down_turn_left').value), down_turn_right: parseParam(document.getElementById('down_turn_right').value),
-                    dist_left: parseParam(document.getElementById('dist_left').value), dist_right: parseParam(document.getElementById('dist_right').value),
-                    voltage: parseParam(document.getElementById('voltage').value), current: parseParam(document.getElementById('current').value),
-                    
-                    manual_gun_a: {
-                        powder: parseInt(document.getElementById('a_powder').value), air: parseInt(document.getElementById('a_air').value),
-                        voltage: parseInt(document.getElementById('a_voltage').value), current: parseInt(document.getElementById('a_current').value),
-                        nozzle: document.getElementById('a_nozzle').value, ring: document.getElementById('a_ring').value, spray_count: parseInt(document.getElementById('a_spray_count').value)
-                    },
-                    manual_gun_b: {
-                        powder: parseInt(document.getElementById('b_powder').value), air: parseInt(document.getElementById('b_air').value),
-                        voltage: parseInt(document.getElementById('b_voltage').value), current: parseInt(document.getElementById('b_current').value),
-                        nozzle: document.getElementById('b_nozzle').value, ring: document.getElementById('b_ring').value, spray_count: parseInt(document.getElementById('b_spray_count').value)
-                    },
-                    thickness_records: stateThickness, ng_records: stateNG, dynamic_remarks: stateRemarks
+                showLoading('loading_db');
+
+                const parseVal = id => {
+                    const v = document.getElementById(id).value;
+                    return v === "自動" ? -1 : (parseFloat(v) || 0);
                 };
 
-                let dbError;
+                const payload = {
+                    item_name: itemName,
+                    image_url: imageUrl,
+                    gun_1: parseVal('gun_1'), gun_2: parseVal('gun_2'), gun_3: parseVal('gun_3'), gun_4: parseVal('gun_4'),
+                    gun_5: parseVal('gun_5'), gun_6: parseVal('gun_6'), gun_7: parseVal('gun_7'), gun_8: parseVal('gun_8'),
+                    speed_left: parseVal('speed_left'), speed_right: parseVal('speed_right'),
+                    up_turn_left: parseVal('up_turn_left'), up_turn_right: parseVal('up_turn_right'),
+                    down_turn_left: parseVal('down_turn_left'), down_turn_right: parseVal('down_turn_right'),
+                    dist_left: parseVal('dist_left'), dist_right: parseVal('dist_right'),
+                    voltage: parseVal('voltage'), current: parseVal('current'),
+                    manual_a: {
+                        powder: parseInt(document.getElementById('a_powder').value) || 0,
+                        air: parseInt(document.getElementById('a_air').value) || 0,
+                        voltage: parseInt(document.getElementById('a_voltage').value) || 0,
+                        current: parseInt(document.getElementById('a_current').value) || 0,
+                        nozzle: document.getElementById('a_nozzle').value,
+                        ring: document.getElementById('a_ring').value,
+                        spray_count: parseInt(document.getElementById('a_spray_count').value) || 1
+                    },
+                    manual_b: {
+                        powder: parseInt(document.getElementById('b_powder').value) || 0,
+                        air: parseInt(document.getElementById('b_air').value) || 0,
+                        voltage: parseInt(document.getElementById('b_voltage').value) || 0,
+                        current: parseInt(document.getElementById('b_current').value) || 0,
+                        nozzle: document.getElementById('b_nozzle').value,
+                        ring: document.getElementById('b_ring').value,
+                        spray_count: parseInt(document.getElementById('b_spray_count').value) || 1
+                    },
+                    thickness_records: stateThickness,
+                    ng_records: stateNG,
+                    remarks: stateRemarks,
+                    updated_at: new Date().toISOString()
+                };
+
                 if (editModeId) {
-                    const { error } = await supabase.from('coating_params').update(payload).eq('id', editModeId); dbError = error;
+                    const { error } = await supabase.from('coating_params').update(payload).eq('id', editModeId);
+                    if (error) throw error;
+                    alert("構件參數修改成功！");
                 } else {
-                    const { error } = await supabase.from('coating_params').insert([payload]); dbError = error;
+                    const { error } = await supabase.from('coating_params').insert([payload]);
+                    if (error) throw error;
+                    alert("新構件參數建立成功！");
                 }
 
-                if (dbError) throw dbError;
-
-                alert("✅ 儲存成功！已同步至資料庫 / Berhasil Disimpan!");
                 resetFormToCreateMode();
                 await loadItemsToSelect();
                 switchTab('query');
-                
-            } catch (err) {
-                alert("錯誤：" + err.message);
+            } catch(err) {
+                console.error("儲存失敗:", err);
+                alert("儲存失敗: " + err.message);
             } finally {
                 hideLoading();
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
             }
         });
-
-        // --- 9. 圖片拍攝、微距裁切對焦與搜尋邏輯 ---
-        const handleImageUpload = (e, targetMode) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            cropTargetMode = targetMode;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                document.getElementById('cropImage').src = event.target.result;
-                document.getElementById('cropModal').classList.remove('hidden');
-                if(cropper) cropper.destroy();
-                cropper = new Cropper(document.getElementById('cropImage'), { viewMode: 1 });
-                e.target.value = ''; 
-            };
-            reader.readAsDataURL(file);
-        };
-
-        // 按鈕事件綁定 (開啟相機微距對焦縮小範圍拍照 或 選擇本地圖片)
-        document.getElementById('cameraInput').addEventListener('change', (e) => handleImageUpload(e, 'ai_search'));
-        document.getElementById('tesseractInput').addEventListener('change', (e) => handleImageUpload(e, 'visual_search'));
-        document.getElementById('reg_image').addEventListener('change', (e) => handleImageUpload(e, 'register'));
-        document.getElementById('scanNameInput').addEventListener('change', (e) => handleImageUpload(e, 'scan_name'));
-
-        document.getElementById('btnScanItemName').addEventListener('click', () => document.getElementById('scanNameInput').click());
-
-        document.getElementById('btnCancelCrop').addEventListener('click', () => { document.getElementById('cropModal').classList.add('hidden'); if(cropper) cropper.destroy(); });
-        document.getElementById('btnRotateLeft').addEventListener('click', () => { if(cropper) cropper.rotate(-90); });
-        document.getElementById('btnRotateRight').addEventListener('click', () => { if(cropper) cropper.rotate(90); });
-        document.getElementById('btnResetCrop').addEventListener('click', () => { if(cropper) cropper.reset(); });
-
-        document.getElementById('btnConfirmCrop').addEventListener('click', async () => {
-            if(!cropper) return;
-            const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
-            const base64 = canvas.toDataURL('image/jpeg', 0.8);
-            document.getElementById('cropModal').classList.add('hidden');
-            cropper.destroy();
-            
-            if (cropTargetMode === 'register') {
-                processedRegisterImageBase64 = base64;
-                document.getElementById('regPreviewImg').src = base64;
-                document.getElementById('regPreviewBox').classList.remove('hidden');
-            } 
-            else if (cropTargetMode === 'visual_search') {
-                document.getElementById('visualSearchModal').classList.remove('hidden');
-                renderVisualSearch();
-            } 
-            else if (cropTargetMode === 'ai_search') {
-                showLoading("loading_ai_search");
-                try {
-                    const simplifiedItems = allItemsList.map(item => ({ id: item.id, name: item.item_name }));
-                    const prompt = `你是一個專業的粉體塗裝自動槍參數辨識助手。資料庫構件如下：${JSON.stringify(simplifiedItems)}。請辨識圖片，並【僅回傳該構件的 id字串】，絕對不要其他文字。`;
-                    const aiRes = await callNvidiaAI([
-                        { type: "text", text: prompt },
-                        { type: "image_url", image_url: { url: base64 } }
-                    ]);
-                    
-                    const resultId = aiRes.choices[0].message.content.trim();
-                    if(resultId) {
-                        window.selectVisualItem(resultId);
-                    } else {
-                        alert("AI 無法找到匹配項目");
-                    }
-                } catch(e) {
-                    alert("AI 搜尋失敗: " + e.message);
-                } finally {
-                    hideLoading();
-                }
-            }
-            else if (cropTargetMode === 'scan_name') {
-                const itemNameInput = document.getElementById('item_name');
-                const prevVal = itemNameInput.value;
-                itemNameInput.value = "🤖 AI 解析中...";
-                showLoading("loading_ai_parse");
-                try {
-                    const prompt = "請仔細辨識圖片中的「料號」與「品名」。請將結果格式化為「料號/品名」。請【僅回傳格式化的 料號/品名 字串】，絕對不要包含任何額外說明或引號。";
-                    const aiRes = await callNvidiaAI([
-                        { type: "text", text: prompt },
-                        { type: "image_url", image_url: { url: base64 } }
-                    ], 100);
-                    let resultText = aiRes.choices[0].message.content.trim().replace(/^[`'"]+|[`'"]+$/g, '');
-                    itemNameInput.value = resultText;
-                } catch (err) {
-                    alert("AI 解析失敗：" + err.message);
-                    itemNameInput.value = prevVal;
-                } finally {
-                    hideLoading();
-                }
-            }
-        });
-
-        // 本地特徵搜尋 Modal 邏輯
-        function renderVisualSearch() {
-            const grid = document.getElementById('visualSearchGrid');
-            grid.innerHTML = allItemsList.map(item => `
-                <div class="bg-slate-900 p-2.5 sm:p-3 rounded-xl cursor-pointer hover:bg-slate-700 border border-slate-600 transition shadow-lg group" onclick="selectVisualItem('${item.id}')">
-                    <img src="${item.image_url || ''}" class="w-full h-24 sm:h-28 object-contain bg-black mb-2 sm:mb-3 rounded-lg group-hover:scale-105 transition-transform duration-300">
-                    <div class="text-white text-xs sm:text-sm font-bold text-center truncate">${item.item_name}</div>
-                </div>
-            `).join('');
-        }
-        window.selectVisualItem = function(id) {
-            document.getElementById('visualSearchModal').classList.add('hidden');
-            const selectEl = document.getElementById('itemSelect');
-            selectEl.value = id;
-            selectEl.dispatchEvent(new Event('change'));
-        }
-        document.getElementById('btnCloseVisualSearch').addEventListener('click', () => document.getElementById('visualSearchModal').classList.add('hidden'));
-        document.getElementById('visualSearchFilter').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allItemsList.filter(item => item.item_name.toLowerCase().includes(term));
-            document.getElementById('visualSearchGrid').innerHTML = filtered.map(item => `
-                <div class="bg-slate-900 p-2.5 sm:p-3 rounded-xl cursor-pointer hover:bg-slate-700 border border-slate-600 transition shadow-lg group" onclick="selectVisualItem('${item.id}')">
-                    <img src="${item.image_url || ''}" class="w-full h-24 sm:h-28 object-contain bg-black mb-2 sm:mb-3 rounded-lg group-hover:scale-105 transition-transform duration-300">
-                    <div class="text-white text-xs sm:text-sm font-bold text-center truncate">${item.item_name}</div>
-                </div>`).join('');
-        });
-
-        // 快捷填入與說明 Modal
-        document.getElementById('btnFillAuto').addEventListener('click', () => {
-            ['up_turn_left','up_turn_right','down_turn_left','down_turn_right'].forEach(id => document.getElementById(id).value = '自動');
-        });
-        document.getElementById('btnLangInfo').addEventListener('click', () => document.getElementById('langInfoModal').classList.remove('hidden'));
-        document.getElementById('btnCloseLangInfo').addEventListener('click', () => document.getElementById('langInfoModal').classList.add('hidden'));
-
-        // 膜厚總覽 Modal
-        document.getElementById('btnOpenThicknessModal').addEventListener('click', () => {
-            let htmlContent = '';
-            allItemsList.forEach(item => {
-                if (item.thickness_records && item.thickness_records.length > 0) {
-                    item.thickness_records.forEach(record => {
-                        const imgHtml = item.image_url ? `<img src="${item.image_url}" class="w-12 h-12 sm:w-14 sm:h-14 object-contain bg-black rounded-lg border border-slate-600 mx-auto">` : `<span class="text-slate-500 text-xs">無照片</span>`;
-                        htmlContent += `
-                            <tr class="border-b border-slate-700/50 hover:bg-slate-800/80 transition text-center md:text-left text-xs sm:text-sm">
-                                <td class="px-3 py-2.5 sm:px-4 sm:py-3 text-center">${imgHtml}</td>
-                                <td class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-white">${item.item_name}</td>
-                                <td class="px-3 py-2.5 sm:px-4 sm:py-3 text-pink-400 font-bold">${record.date}</td>
-                                <td class="px-3 py-2.5 sm:px-4 sm:py-3 font-mono">${record.f_min} ~ ${record.f_max} μm</td>
-                                <td class="px-3 py-2.5 sm:px-4 sm:py-3 font-mono">${record.m_min} ~ ${record.m_max} μm</td>
-                                <td class="px-3 py-2.5 sm:px-4 sm:py-3 font-mono">${record.r_min} ~ ${record.r_max} μm</td>
-                            </tr>`;
-                    });
-                }
-            });
-            const dict = i18nDict[currentLang] || i18nDict['tw'];
-            document.getElementById('thicknessTableBody').innerHTML = htmlContent || `<tr><td colspan="6" class="px-4 py-12 text-center text-slate-500 font-bold text-base sm:text-xl">${dict['no_thickness_record']}</td></tr>`;
-            document.getElementById('thicknessTableModal').classList.remove('hidden');
-        });
-        document.getElementById('btnCloseThicknessModal').addEventListener('click', () => document.getElementById('thicknessTableModal').classList.add('hidden'));
-
-        // 初始化語系
-        updateLanguage('tw');
-
     </script>
 </body>
 </html>

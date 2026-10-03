@@ -4,17 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>百富粉體塗裝自動槍參數系統 / Sistem Parameter Pelapisan Serbuk Baifu</title>
+    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Cropper.js 供圖片裁切使用 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <style>
+        /* 基礎樣式設定 */
         body { background-color: #0f172a; }
         .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        /* 滾動條美化 */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
+        /* 特殊動畫效果 */
         @keyframes flashGolden {
             0%, 100% { color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
             50% { color: #FFF; text-shadow: none; }
@@ -22,17 +28,35 @@
         .flash-gold { animation: flashGolden 1.2s infinite; font-weight: 900; }
         .text-alert-red { color: #ef4444 !important; font-weight: bold; }
         
+        /* Loading 遮罩樣式 */
         #loadingOverlay { backdrop-filter: blur(5px); transition: opacity 0.3s ease; }
         .loader { border: 4px solid rgba(255, 255, 255, 0.1); border-left-color: #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* 彈出通知 (Toast) 樣式 */
+        .toast-notification {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.95); border: 1px solid #3b82f6;
+            color: white; padding: 12px 24px; border-radius: 50px;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            z-index: 9999; font-weight: bold; font-size: 14px;
+            opacity: 0; transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            pointer-events: none;
+        }
+        .toast-notification.show {
+            opacity: 1; transform: translate(-50%, 20px);
+        }
     </style>
 </head>
 <body class="text-white font-sans min-h-screen pb-12 relative selection:bg-blue-500 selection:text-white">
 
+    <!-- 全局提示框 (Toast) -->
+    <div id="toastMessage" class="toast-notification"></div>
+
     <!-- 全局讀取動畫 -->
     <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/80 z-[100] hidden flex-col items-center justify-center p-4 text-center">
         <div class="loader mb-4"></div>
-        <div id="loadingText" class="text-blue-400 font-bold text-base sm:text-lg tracking-wider" data-i18n="loading_ai">AI 處理中，請稍候...</div>
+        <div id="loadingText" class="text-blue-400 font-bold text-base sm:text-lg tracking-wider" data-i18n="loading_ai">處理中，請稍候...</div>
     </div>
     
     <!-- 懸浮功能按鈕區 -->
@@ -73,11 +97,13 @@
 
         <!-- 頁籤切換 -->
         <div class="flex gap-2 sm:gap-4 mb-6">
-            <button id="tabQueryBtn" class="flex-1 bg-gradient-to-r from-blue-700 to-blue-900 border border-blue-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-blue-900/20 transition-all hover:brightness-110" data-i18n="tab_query">📷 相機 / 手動查詢模式</button>
+            <button id="tabQueryBtn" class="flex-1 bg-gradient-to-r from-blue-700 to-blue-900 border border-blue-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-blue-900/20 transition-all hover:brightness-110 text-white" data-i18n="tab_query">📷 相機 / 手動查詢模式</button>
             <button id="tabRegisterBtn" class="flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white" data-i18n="tab_register">📝 參數建檔 / 編輯模式</button>
         </div>
 
+        <!-- ========================================== -->
         <!-- 查詢模式區塊 -->
+        <!-- ========================================== -->
         <div id="querySection" class="block animate-[fadeIn_0.3s_ease-in-out]">
             <div class="glass-panel p-4 sm:p-6 rounded-2xl mb-8 shadow-2xl">
                 <h2 class="text-lg sm:text-xl mb-4 sm:mb-6 font-bold text-amber-400 flex flex-wrap items-center gap-2 border-b border-slate-700 pb-3">
@@ -85,6 +111,7 @@
                     <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30" id="currentAiBadge">AI 模型: Respan Span 01 Lite</span>
                 </h2>
                 
+                <!-- 影像查詢按鈕群 -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <input type="file" accept="image/*" capture="environment" id="cameraInput" class="hidden">
                     <button onclick="document.getElementById('cameraInput').click()" class="group bg-gradient-to-br from-emerald-600 to-emerald-800 hover:from-emerald-500 hover:to-emerald-700 border border-emerald-500/50 p-4 sm:p-6 rounded-xl font-bold shadow-lg transition-all flex flex-col items-center justify-center gap-2 sm:gap-3">
@@ -99,11 +126,21 @@
                     </button>
                 </div>
 
+                <!-- 手動類別與構件選擇區 (新增類別過濾) -->
                 <div class="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-700">
-                    <label class="block text-slate-400 mb-2 font-bold text-xs sm:text-sm" data-i18n="lbl_select_db">或從資料庫直接選擇構件：</label>
-                    <select id="itemSelect" class="w-full bg-slate-900 p-3 sm:p-4 rounded-xl border border-slate-600 text-white font-bold text-xs sm:text-base focus:ring-2 focus:ring-blue-500 transition shadow-inner">
-                        <option value="" data-i18n="opt_db_loading">-- 資料庫連線中... --</option>
-                    </select>
+                    <label class="block text-slate-400 mb-3 font-bold text-xs sm:text-sm" data-i18n="lbl_select_db">或從資料庫直接選擇構件：</label>
+                    <div class="flex flex-col md:flex-row gap-3">
+                        <!-- 類別過濾選單 -->
+                        <select id="queryCategorySelect" class="w-full md:w-1/3 bg-slate-900 p-3 sm:p-4 rounded-xl border border-slate-600 text-amber-400 font-bold text-xs sm:text-base focus:ring-2 focus:ring-blue-500 transition shadow-inner">
+                            <option value="">-- 顯示所有類別 --</option>
+                            <option value="[膜厚60~90]">[膜厚60~90]</option>
+                            <option value="[模厚80~100]">[模厚80~100]</option>
+                        </select>
+                        <!-- 構件資料選單 -->
+                        <select id="itemSelect" class="w-full md:w-2/3 bg-slate-900 p-3 sm:p-4 rounded-xl border border-slate-600 text-white font-bold text-xs sm:text-base focus:ring-2 focus:ring-blue-500 transition shadow-inner">
+                            <option value="" data-i18n="opt_db_loading">-- 資料庫連線中... --</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div id="actionButtons" class="mt-6 flex gap-3 sm:gap-4 hidden">
@@ -112,19 +149,21 @@
                 </div>
             </div>
 
-            <!-- 查詢結果面版 -->
+            <!-- 查詢結果面版 (只在選擇構件後顯示) -->
             <div id="resultBoard" style="display:none;" class="space-y-6 animate-[fadeIn_0.5s_ease-in-out]">
                 <!-- 上半部：自動槍與往復機 -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                     <!-- 左：圖片與槍粉量 -->
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-blue-500 flex flex-col">
                         <h3 class="font-bold mb-3 sm:mb-4 text-blue-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_gun_powder"><span class="text-lg sm:text-xl">🔫</span> 自動槍粉量數據</h3>
+                        <!-- 顯示構件圖片 -->
                         <div id="imageContainer" class="mb-4 bg-black/50 p-2 rounded-xl text-center border border-slate-700 hidden shadow-inner relative group">
                             <img id="q_matched_image" src="" class="mx-auto rounded-lg h-36 sm:h-48 w-full object-contain">
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                                <a id="q_matched_image_link" href="#" target="_blank" class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">查看原圖</a>
+                                <a id="q_matched_image_link" href="#" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg transition-colors">🔍 查看原圖</a>
                             </div>
                         </div>
+                        <!-- 自動槍粉量 -->
                         <div class="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm font-mono mt-auto">
                             <div class="space-y-2">
                                 <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#1</span> <span id="q_gun_1" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
@@ -208,6 +247,7 @@
                     </div>
                 </div>
 
+                <!-- 修正備註區 -->
                 <div class="glass-panel p-4 sm:p-5 rounded-2xl border border-slate-600">
                     <h3 class="font-bold mb-3 text-slate-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_remarks_history">📝 修正備註</h3>
                     <div id="q_remarks_display" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs sm:text-sm"></div>
@@ -215,7 +255,9 @@
             </div>
         </div>
 
+        <!-- ========================================== -->
         <!-- 建檔/編輯模式區塊 -->
+        <!-- ========================================== -->
         <div id="registerSection" class="hidden animate-[fadeIn_0.3s_ease-in-out]">
             <div class="glass-panel p-4 sm:p-8 rounded-2xl shadow-2xl relative">
                 <h2 id="formTitle" class="text-xl sm:text-2xl mb-6 font-bold text-emerald-400 flex items-center gap-2 border-b border-slate-700 pb-4" data-i18n="form_title_create">
@@ -225,21 +267,35 @@
                 <form id="paramForm" class="space-y-6 sm:space-y-8 text-xs sm:text-sm">
                     <!-- 基本資料 -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                        <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700">
-                            <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_item_name">品名 / 料號 (格式: 料號/品名)</label>
-                            <div class="flex flex-col sm:flex-row gap-2">
-                                <input type="text" id="item_name" placeholder="例如：UC-280B/轉軸座" data-i18n-placeholder="placeholder_item_name" required class="flex-1 bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none transition text-xs sm:text-sm">
-                                <input type="file" id="scanNameInput" accept="image/*" capture="environment" class="hidden">
-                                <button type="button" id="btnScanItemName" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg font-bold shadow-lg flex items-center justify-center gap-1.5 transition text-xs sm:text-sm shrink-0">
-                                    <span data-i18n="btn_ai_scan_name">📸開啟相機微距對焦縮小範圍拍照 AI 解析</span>
-                                </button>
+                        <!-- 類別與品名 -->
+                        <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700 flex flex-col gap-4">
+                            <div>
+                                <label class="block text-amber-300 mb-2 font-bold">膜厚類別</label>
+                                <select id="reg_category" class="w-full bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-amber-400 font-bold focus:ring-2 focus:ring-blue-500 outline-none transition text-xs sm:text-sm" required>
+                                    <option value="" disabled selected>-- 必選：請選擇類別 --</option>
+                                    <option value="[膜厚60~90]">[膜厚60~90]</option>
+                                    <option value="[模厚80~100]">[模厚80~100]</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_item_name">品名 / 料號 (格式: 料號/品名)</label>
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <input type="text" id="item_name" placeholder="例如：UC-280B/轉軸座" data-i18n-placeholder="placeholder_item_name" required class="flex-1 bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none transition text-xs sm:text-sm">
+                                    <input type="file" id="scanNameInput" accept="image/*" capture="environment" class="hidden">
+                                    <button type="button" id="btnScanItemName" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg font-bold shadow-lg flex items-center justify-center gap-1.5 transition text-xs sm:text-sm shrink-0">
+                                        <span data-i18n="btn_ai_scan_name">📸 AI 解析拍照</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
+                        
+                        <!-- 圖片上傳 -->
                         <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700">
-                            <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_comp_photo">構件照片-開啟相機拍照可調整裁切範圍 (將直傳 Google Drive)</label>
+                            <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_comp_photo">構件照片-開啟相機拍照可調整裁切範圍</label>
                             <input type="file" id="reg_image" accept="image/*" capture="environment" class="w-full bg-slate-900 p-2 rounded-lg border border-slate-600 text-slate-300 cursor-pointer file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 transition text-xs">
-                            <div id="regPreviewBox" class="hidden mt-3 bg-black/50 p-2 rounded-lg text-center border border-slate-700">
+                            <div id="regPreviewBox" class="hidden mt-3 bg-black/50 p-2 rounded-lg text-center border border-slate-700 relative">
                                 <img id="regPreviewImg" class="h-28 sm:h-32 mx-auto rounded object-contain">
+                                <!-- 若是編輯模式載入的外部圖片，可能也需要預覽 -->
                             </div>
                         </div>
                     </div>
@@ -304,9 +360,9 @@
                         </div>
                     </div>
 
-                    <!-- 手動槍 A/B 面 (升級版：含方位與中間分段噴塗次數，完美調適排版) -->
+                    <!-- 手動槍 A/B 面 -->
                     <div class="pt-6 sm:pt-8 border-t border-slate-700">
-                        <h3 class="text-indigo-400 font-bold text-lg sm:text-xl mb-4 sm:mb-6 flex items-center gap-2" data-i18n="lbl_manual_fine">🖌️️ 手動槍精細參數</h3>
+                        <h3 class="text-indigo-400 font-bold text-lg sm:text-xl mb-4 sm:mb-6 flex items-center gap-2" data-i18n="lbl_manual_fine">🖌 手動槍精細參數</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
                             <!-- A 面 -->
                             <div class="bg-gradient-to-br from-slate-900 to-indigo-900/30 p-4 sm:p-5 rounded-2xl border border-indigo-500/30 shadow-lg">
@@ -750,11 +806,21 @@
                 <h3 class="text-xl sm:text-2xl font-black text-pink-400" data-i18n="modal_thickness_title">📊 工件膜厚總紀錄</h3>
                 <button id="btnCloseThicknessModal" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-white font-bold transition text-xs sm:text-sm" data-i18n="btn_close">✕ 關閉</button>
             </div>
-            <div class="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar border border-slate-700 rounded-xl bg-slate-900/50">
+            <!-- 類別過濾區塊 (膜厚總表用) -->
+            <div class="mb-4 flex items-center gap-3">
+                <label class="text-slate-300 font-bold text-sm">過濾類別：</label>
+                <select id="thicknessModalCategoryFilter" class="bg-slate-900 p-2 rounded-lg border border-slate-600 text-amber-400 font-bold text-sm focus:ring-2 focus:ring-blue-500 transition">
+                    <option value="">-- 顯示所有類別 --</option>
+                    <option value="[膜厚60~90]">[膜厚60~90]</option>
+                    <option value="[模厚80~100]">[模厚80~100]</option>
+                </select>
+            </div>
+            <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar border border-slate-700 rounded-xl bg-slate-900/50 relative">
                 <table class="w-full text-xs sm:text-sm text-left text-slate-300 whitespace-nowrap">
-                    <thead class="text-xs text-slate-400 uppercase bg-slate-900 sticky top-0 shadow-md">
+                    <thead class="text-xs text-slate-400 uppercase bg-slate-900 sticky top-0 shadow-md z-10">
                         <tr>
                             <th class="px-3 py-3 sm:px-4 sm:py-4 border-b border-slate-700 text-center" data-i18n="th_photo">構件圖片</th>
+                            <th class="px-3 py-3 sm:px-4 sm:py-4 border-b border-slate-700">類別</th>
                             <th class="px-3 py-3 sm:px-4 sm:py-4 border-b border-slate-700" data-i18n="th_name">構件品名</th>
                             <th class="px-3 py-3 sm:px-4 sm:py-4 border-b border-slate-700 text-pink-400" data-i18n="th_date">檢測日期</th>
                             <th class="px-3 py-3 sm:px-4 sm:py-4 border-b border-slate-700" data-i18n="th_front">前段 (Min-Max)</th>
@@ -768,19 +834,22 @@
         </div>
     </div>
 
-    <!-- JavaScript 邏輯引擎 -->
+    <!-- ========================================== -->
+    <!-- JavaScript 邏輯引擎與資料庫整合 -->
+    <!-- ========================================== -->
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
         
-        // --- 1. Supabase & 系統 API 設定 ---
-        const supabaseUrl = 'https://wxdrtnqizpbjfugdaglb.supabase.co';
-        const supabaseKey = 'sb_publishable_qUCcWVbzo-99rP85r_RhQg_EGewmxB4';
+        // --- 1. Supabase & 系統 API 設定 (已更新為最新配置) ---
+        const supabaseUrl = 'https://hyvcfxwoewvbpfzvfdnn.supabase.co';
+        const supabaseKey = 'sb_publishable_TR5C2Zc7eOj9uUosUUsX4g_KbBOwey2';
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         const defaultNvidiaKey = "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";
         const defaultGasUrl = "https://script.google.com/macros/s/AKfycbwLoLqBnLm3-rwYBFJUd88j5ug-IW4SVdmg1AMr-1lZGzMYQ2iASoShRsi6CJZGxddp/exec";
         const defaultAiModel = "Respan Span 01 Lite";
         
+        // --- 2. 獲取本地設定函數 ---
         function getSetting(key, defaultVal) { return localStorage.getItem(key) || defaultVal; }
         
         document.getElementById('inputNvidiaKey').value = getSetting('NVIDIA_API_KEY', defaultNvidiaKey);
@@ -794,6 +863,7 @@
         }
         updateAiBadgeText();
 
+        // 系統設定 UI 綁定
         document.getElementById('btnShowSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.remove('hidden'));
         document.getElementById('btnCloseSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('hidden'));
         document.getElementById('btnSaveSettings').addEventListener('click', () => {
@@ -801,11 +871,42 @@
             localStorage.setItem('GAS_URL', document.getElementById('inputGasUrl').value);
             localStorage.setItem('AI_MODEL', document.getElementById('selectAiModel').value);
             updateAiBadgeText();
-            alert('系統 API 與模型設定已成功儲存！');
+            showToast('系統 API 與模型設定已成功儲存！', 'success');
             document.getElementById('settingsModal').classList.add('hidden');
         });
 
-        // --- 2. 語系字典 Engine (i18n) ---
+        // --- 3. 解決 Google Drive 圖片跨網域限制 (直鏈轉換函數) ---
+        // 這是修復「膜厚紀錄讀取不到圖片」的最關鍵機制
+        function getDirectImageUrl(url) {
+            if (!url) return '';
+            // 處理 /file/d/ID/view 格式
+            const matchD = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)\//);
+            if (matchD && matchD[1]) {
+                return `https://drive.google.com/uc?export=view&id=${matchD[1]}`;
+            }
+            // 處理 ?id=ID 格式
+            const matchId = url.match(/id=([a-zA-Z0-9_-]+)/);
+            if (matchId && matchId[1]) {
+                return `https://drive.google.com/uc?export=view&id=${matchId[1]}`;
+            }
+            return url; // 無法解析則返回原網址
+        }
+
+        // --- 4. Toast 通知系統 ---
+        let toastTimeout;
+        window.showToast = function(message, type = 'info') {
+            const toast = document.getElementById('toastMessage');
+            toast.textContent = message;
+            toast.style.borderColor = type === 'error' ? '#ef4444' : (type === 'success' ? '#10b981' : '#3b82f6');
+            toast.style.boxShadow = type === 'error' ? '0 0 20px rgba(239, 68, 68, 0.5)' : (type === 'success' ? '0 0 20px rgba(16, 185, 129, 0.5)' : '0 0 20px rgba(59, 130, 246, 0.5)');
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        };
+
+        // --- 5. 語系字典 Engine (i18n) ---
         const i18nDict = {
             tw: {
                 app_title: "百富粉體塗裝參數系統",
@@ -815,12 +916,11 @@
                 tab_query: "📷 相機 / 手動查詢模式",
                 tab_register: "📝 參數建檔 / 編輯模式",
                 query_title: "🔍 構件參數查詢",
-                ai_driver_tag: "NVIDIA / Respan AI 驅動",
                 btn_ai_search: "📸 AI 智慧分析影像尋找 (開啟相機)",
-                btn_feature_search: "🖼️️ 本地特徵比對尋找 (開啟相機)",
+                btn_feature_search: "🖼 本地特徵比對尋找 (開啟相機)",
                 lbl_select_db: "或從資料庫直接選擇構件：",
+                opt_cat_all: "-- 全部膜厚類別 --",
                 opt_db_loading: "-- 資料庫連線中... --",
-                opt_db_select: "-- 請選擇已建檔之構件 --",
                 btn_edit_item: "✏️ 編輯此構件參數",
                 btn_delete_item: "🗑️ 刪除",
                 card_gun_powder: "🔫 自動槍粉量數據",
@@ -841,8 +941,8 @@
                 form_title_edit: "✏️ 參數資料編輯",
                 lbl_item_name: "品名 / 料號 (格式: 料號/品名)",
                 placeholder_item_name: "例如：UC-280B/轉軸座",
-                btn_ai_scan_name: "📸開啟相機微距對焦縮小範圍拍照 AI 解析",
-                lbl_comp_photo: "構件照片-開啟相機拍照可調整裁切範圍 (將直傳 Google Drive)",
+                btn_ai_scan_name: "📸 AI 解析拍照",
+                lbl_comp_photo: "構件照片-開啟相機拍照可調整裁切範圍",
                 lbl_recip_params: "⚙️ 往復機運行參數",
                 btn_fill_auto: "⚡ 換向填入「自動」",
                 lbl_recip_speed: "上下速度",
@@ -878,7 +978,7 @@
                 lbl_mid_sec: "中段 (Min-Max)",
                 lbl_rear_sec: "後段 (Min-Max)",
                 btn_add_thickness: "＋ 加入膜厚紀錄",
-                lbl_add_ng: "⚠️ 新增 NG 異常紀錄",
+                lbl_add_ng: "⚠️️ 新增 NG 異常紀錄",
                 opt_ng_loc_a: "A面 外觀",
                 opt_ng_loc_b: "B面 邊角",
                 opt_ng_reason_1: "膜厚不足",
@@ -932,12 +1032,11 @@
                 tab_query: "📷 Mode Kamera / Pencarian Manual",
                 tab_register: "📝 Mode Pendaftaran / Edit",
                 query_title: "🔍 Pencarian Parameter Komponen",
-                ai_driver_tag: "Ditenagai Respan AI",
                 btn_ai_search: "📸 Analisis AI & Cari Gambar (Kamera)",
                 btn_feature_search: "🖼 Pencarian Fitur Lokal (Kamera)",
                 lbl_select_db: "Atau pilih komponen dari database:",
+                opt_cat_all: "-- Semua Kategori --",
                 opt_db_loading: "-- Menghubungkan database... --",
-                opt_db_select: "-- Pilih Komponen Terdaftar --",
                 btn_edit_item: "✏️ Edit Parameter Ini",
                 btn_delete_item: "🗑️ Hapus",
                 card_gun_powder: "🔫 Data Serbuk Pistol Otomatis",
@@ -956,10 +1055,10 @@
                 card_remarks_history: "📝 Catatan Perbaikan",
                 form_title_create: "📝 Pendaftaran Parameter Baru",
                 form_title_edit: "✏️ Edit Data Parameter",
-                lbl_item_name: "Nama / No. Bagian (Format: No. Bagian/Nama)",
+                lbl_item_name: "Nama / No. Bagian",
                 placeholder_item_name: "Contoh: UC-280B/Dudukan Poros",
-                btn_ai_scan_name: "📸 Buka Kamera Makro & Analisis AI",
-                lbl_comp_photo: "Foto Komponen - Ambil Foto/Potong (Upload ke Google Drive)",
+                btn_ai_scan_name: "📸 Analisis AI",
+                lbl_comp_photo: "Foto Komponen - Ambil Foto/Potong",
                 lbl_recip_params: "⚙ Parameter Mesin Resiprokator",
                 btn_fill_auto: "⚡ Isi Pembalikan 'Otomatis'",
                 lbl_recip_speed: "Kecepatan Naik/Turun",
@@ -991,55 +1090,55 @@
                 opt_yes: "Ada",
                 opt_no: "Tidak Ada",
                 lbl_add_thickness: "📊 Tambah Catatan Ketebalan",
-                lbl_front_sec: "Bagian Depan (Min-Max)",
-                lbl_mid_sec: "Bagian Tengah (Min-Max)",
-                lbl_rear_sec: "Bagian Belakang (Min-Max)",
-                btn_add_thickness: "＋ Tambah Catatan Ketebalan",
+                lbl_front_sec: "Depan (Min-Max)",
+                lbl_mid_sec: "Tengah (Min-Max)",
+                lbl_rear_sec: "Belakang (Min-Max)",
+                btn_add_thickness: "＋ Tambah Catatan",
                 lbl_add_ng: "⚠ Tambah Catatan Cacat (NG)",
                 opt_ng_loc_a: "Sisi A (Luar)",
                 opt_ng_loc_b: "Sisi B (Sudut)",
                 opt_ng_reason_1: "Ketebalan Kurang",
                 opt_ng_reason_2: "Terlalu Tebal",
                 opt_ng_reason_3: "Alur Tanpa Serbuk",
-                opt_ng_reason_4: "Serbuk Meleleh/Menetes",
+                opt_ng_reason_4: "Serbuk Meleleh",
                 opt_ng_reason_5: "Serbuk Rontok",
                 opt_ng_reason_6: "Serbuk Meledak",
                 opt_ng_reason_7: "Kerutan",
                 btn_add_ng: "＋ Tambah NG",
                 lbl_add_remark: "📝 Kolom Catatan Perbaikan",
-                placeholder_remark: "Masukkan catatan atau instruksi khusus...",
+                placeholder_remark: "Masukkan catatan...",
                 btn_add_remark: "＋ Tambah Catatan",
-                btn_submit_save: "💾 Simpan & Unggah ke Database",
-                btn_submit_update: "💾 Simpan Perubahan & Perbarui",
+                btn_submit_save: "💾 Simpan ke Database",
+                btn_submit_update: "💾 Simpan Perubahan",
                 btn_cancel_edit: "✖ Batal Edit",
                 modal_api_title: "⚙️ Pengaturan API Sistem",
-                lbl_nvidia_key: "Kunci API Respan / Open (Untuk AI)",
-                lbl_gas_url: "URL Google Apps Script (Upload Gambar)",
+                lbl_nvidia_key: "Kunci API (Untuk AI)",
+                lbl_gas_url: "URL GAS (Upload Gambar)",
                 btn_save_settings: "💾 Simpan Pengaturan",
                 btn_close: "Tutup",
-                modal_lang_title: "🇮🇩 Keterangan Bahasa Indonesia",
-                btn_understand: "Mengerti / Paham",
-                modal_crop_title: "✂️ Sesuaikan Area & Sudut Gambar",
+                modal_lang_title: "🇮🇩 Keterangan Bahasa",
+                btn_understand: "Mengerti",
+                modal_crop_title: "✂️ Sesuaikan Gambar",
                 btn_rotate_left: "↺ Putar Kiri",
                 btn_rotate_right: "↻ Putar Kanan",
                 btn_reset: "Riset",
-                btn_confirm_crop: "✅ Konfirmasi & Kirim",
+                btn_confirm_crop: "✅ Konfirmasi",
                 btn_cancel_crop: "✕ Batal",
-                modal_visual_title: "👀 Daftar Pencocokan Fitur Gambar",
-                placeholder_visual_filter: "🔍 Ketik kata kunci untuk memfilter...",
-                modal_thickness_title: "📊 Rekap Total Ketebalan Lapisan",
-                th_photo: "Gambar Komponen",
-                th_name: "Nama Komponen",
-                th_date: "Tanggal Pengujian",
+                modal_visual_title: "👀 Daftar Gambar",
+                placeholder_visual_filter: "🔍 Ketik kata kunci...",
+                modal_thickness_title: "📊 Rekap Total Ketebalan",
+                th_photo: "Gambar",
+                th_name: "Nama",
+                th_date: "Tanggal",
                 th_front: "Depan (Min-Max)",
                 th_mid: "Tengah (Min-Max)",
                 th_rear: "Belakang (Min-Max)",
-                no_thickness_record: "Belum ada catatan ketebalan dalam sistem",
-                loading_ai: "Memproses AI, harap tunggu...",
-                loading_uploading: "Mengunggah gambar ke Google Drive...",
-                loading_db: "Menulis ke database Supabase...",
-                loading_ai_search: "Analisis & Pencocokan Respan AI...",
-                loading_ai_parse: "Analisis Label & Gambar oleh Respan AI..."
+                no_thickness_record: "Belum ada catatan ketebalan",
+                loading_ai: "Memproses AI...",
+                loading_uploading: "Mengunggah gambar...",
+                loading_db: "Menyimpan ke database...",
+                loading_ai_search: "Analisis Respan AI...",
+                loading_ai_parse: "Menganalisis gambar..."
             },
             jv: {
                 app_title: "Sistem Parameter Pelapisan Wutah Baifu",
@@ -1049,911 +1148,897 @@
                 tab_query: "📷 Mode Kamera / Pitakon Manual",
                 tab_register: "📝 Mode Ndaftar / Owahi",
                 query_title: "🔍 Pitakon Parameter Komponen",
-                ai_driver_tag: "Ditenagai Respan AI",
                 btn_ai_search: "📸 Analisis AI & Goleki Gambar (Kamera)",
                 btn_feature_search: "🖼️ Goleki Fitur Lokal (Kamera)",
                 lbl_select_db: "Utawa pilih komponen saka database:",
+                opt_cat_all: "-- Kabeh Kategori --",
                 opt_db_loading: "-- Nyambungake database... --",
-                opt_db_select: "-- Pilih Komponen Sing Wis Tendaftar --",
                 btn_edit_item: "✏️ Owahi Parameter Iki",
                 btn_delete_item: "🗑️ Hapus",
-                card_gun_powder: "🔫 Data Wutah Bedhil Otomatis",
+                card_gun_powder: "🔫 Data Serbuk Bedhil Otomatis",
                 card_reciprocator: "⚙️ Parameter Mesin Resiprokator",
-                card_electrical: "⚡ Tegangan & Arus Bedhil Otomatis",
-                lbl_speed: "Kecepatan Munggah/Mudhun",
-                lbl_up_turn: "Muter Kiwa Dhuwur",
-                lbl_down_turn: "Muter Kiwa Ngisor",
+                card_electrical: "⚡ Tegangan & Arus",
+                lbl_speed: "Kacepetan Munggah/Mudhun",
+                lbl_up_turn: "Walik Kiri Atas",
+                lbl_down_turn: "Walik Kiri Bawah",
                 lbl_distance: "Jarak Barang",
-                lbl_voltage_sys: "Tegangan Sistem (kV)",
-                lbl_current_sys: "Arus Sistem (μA)",
-                card_manual_a: "🖌️ Blok A: Rai Njaba",
-                card_manual_b: "🖌️ Blok B: Pojokan & Lekukan",
-                card_thickness_history: "📊 Riwayat Kandele Lapisan",
-                card_ng_history: "⚠️ Riwayat Ruksak (NG)",
-                card_remarks_history: "📝 Cathetan Dandani",
-                form_title_create: "📝 Pendaftaran Parameter Anyar",
+                lbl_voltage_sys: "Tegangan (kV)",
+                lbl_current_sys: "Arus (μA)",
+                card_manual_a: "🖌 Blok A: Njaba",
+                card_manual_b: "🖌️ Blok B: Sudut",
+                card_thickness_history: "📊 Sejarah Kandel",
+                card_ng_history: "⚠️ Sejarah Cacat (NG)",
+                card_remarks_history: "📝 Cathetan",
+                form_title_create: "📝 Ndaftar Parameter Anyar",
                 form_title_edit: "✏️ Owahi Data Parameter",
-                lbl_item_name: "Jeneng / No. Bagian (Format: No. Bagian/Jeneng)",
-                placeholder_item_name: "Tuladha: UC-280B/Dudukan Poros",
-                btn_ai_scan_name: "📸 Buka Kamera Makro & Analisis AI",
-                lbl_comp_photo: "Foto Komponen - Jupuk Foto/Cokot (Upload menyang Google Drive)",
-                lbl_recip_params: "⚙️ Parameter Mesin Resiprokator",
-                btn_fill_auto: "⚡ Isi Muter 'Otomatis'",
-                lbl_recip_speed: "Kecepatan Munggah/Mudhun",
-                lbl_recip_upturn: "Titik Muter Dhuwur",
-                lbl_recip_downturn: "Titik Muter Ngisor",
+                lbl_item_name: "Jeneng / No. Bagian",
+                placeholder_item_name: "Conto: UC-280B/Poros",
+                btn_ai_scan_name: "📸 Analisis AI",
+                lbl_comp_photo: "Foto Komponen - Potong",
+                lbl_recip_params: "⚙ Parameter Mesin",
+                btn_fill_auto: "⚡ Isi 'Otomatis'",
+                lbl_recip_speed: "Kacepetan",
+                lbl_recip_upturn: "Titik Walik Atas",
+                lbl_recip_downturn: "Titik Walik Bawah",
                 lbl_recip_dist: "Jarak Barang",
-                lbl_gun_elec: "⚡ Parameter Listrik Bedhil Otomatis",
+                lbl_gun_elec: "⚡ Parameter Listrik",
                 lbl_voltage: "Tegangan:",
                 lbl_current: "Arus:",
-                lbl_manual_fine: "🖌️ Parameter Detail Bedhil Manual",
-                title_block_a: "Blok (A) : Rai Njaba Jembar",
-                title_block_b: "Blok (B) : Pojokan & Lekukan Peteng",
-                lbl_powder: "Cacahe Wutah (±10)",
-                lbl_air: "Tekanan Hawa (±5, max 65)",
+                lbl_manual_fine: "🖌 Parameter Detail",
+                title_block_a: "Blok (A) : Area Njaba",
+                title_block_b: "Blok (B) : Sudut",
+                lbl_powder: "Serbuk (±10)",
+                lbl_air: "Udara (±5, max 65)",
                 lbl_nozzle: "Tipe Nozzel",
                 lbl_ring: "Cincin Elektrostatik",
-                lbl_spray_count: "Cacahe Semprotan Total",
-                lbl_spray_left: "Sisi Kiwa",
-                lbl_spray_top: "Sisi Dhuwur",
-                lbl_spray_bottom: "Sisi Ngisor",
-                lbl_spray_right: "Sisi Tengen",
-                lbl_spray_mid_1: "Tengah T1",
-                lbl_spray_mid_2: "Tengah T2",
-                lbl_spray_mid_3: "Tengah T3",
-                lbl_spray_mid_4: "Tengah T4",
+                lbl_spray_count: "Total Semprotan",
+                lbl_spray_left: "Kiri",
+                lbl_spray_top: "Atas",
+                lbl_spray_bottom: "Bawah",
+                lbl_spray_right: "Kanan",
+                lbl_spray_mid_1: "Tengah 1",
+                lbl_spray_mid_2: "Tengah 2",
+                lbl_spray_mid_3: "Tengah 3",
+                lbl_spray_mid_4: "Tengah 4",
                 opt_nozzle_fan: "Kipas",
-                opt_nozzle_fan_long: "Kipas Dawa",
-                opt_nozzle_round_long: "Bunder Dawa",
+                opt_nozzle_fan_long: "Kipas Dowo",
+                opt_nozzle_round_long: "Bunder Dowo",
                 opt_yes: "Ana",
                 opt_no: "Ora Ana",
-                lbl_add_thickness: "📊 Tambah Cathetan Kandel",
-                lbl_front_sec: "Bagian Ngarep (Min-Max)",
-                lbl_mid_sec: "Bagian Tengah (Min-Max)",
-                lbl_rear_sec: "Bagian Mburi (Min-Max)",
-                btn_add_thickness: "＋ Tambah Cathetan Kandel",
-                lbl_add_ng: "⚠ Tambah Cathetan Ruksak (NG)",
+                lbl_add_thickness: "📊 Tambah Kandel",
+                lbl_front_sec: "Ngarep (Min-Max)",
+                lbl_mid_sec: "Tengah (Min-Max)",
+                lbl_rear_sec: "Mburi (Min-Max)",
+                btn_add_thickness: "＋ Tambah Cathetan",
+                lbl_add_ng: "⚠ Tambah Cacat (NG)",
                 opt_ng_loc_a: "Sisi A (Njaba)",
-                opt_ng_loc_b: "Sisi B (Pojokan)",
+                opt_ng_loc_b: "Sisi B (Sudut)",
                 opt_ng_reason_1: "Kurang Kandel",
                 opt_ng_reason_2: "Kandel Banget",
-                opt_ng_reason_3: "Lekukan Ora Kena Wutah",
-                opt_ng_reason_4: "Wutah Leleh/Ngetes",
-                opt_ng_reason_5: "Wutah Rontok",
-                opt_ng_reason_6: "Wutah Mbledhos",
-                opt_ng_reason_7: "Kerutan",
+                opt_ng_reason_3: "Ora Ana Serbuk",
+                opt_ng_reason_4: "Serbuk Mleleh",
+                opt_ng_reason_5: "Serbuk Rontok",
+                opt_ng_reason_6: "Serbuk Mbledos",
+                opt_ng_reason_7: "Kerut",
                 btn_add_ng: "＋ Tambah NG",
-                lbl_add_remark: "📝 Kolom Cathetan Dandani",
-                placeholder_remark: "Lebokake cathetan utawa petunjuk khusus...",
+                lbl_add_remark: "📝 Cathetan",
+                placeholder_remark: "Lebokna cathetan...",
                 btn_add_remark: "＋ Tambah Cathetan",
-                btn_submit_save: "💾 Simpen & Unggah menyang Database",
-                btn_submit_update: "💾 Simpen Owahan & Anyari",
+                btn_submit_save: "💾 Simpan menyang Database",
+                btn_submit_update: "💾 Simpan Owahan",
                 btn_cancel_edit: "✖ Batal Owahi",
-                modal_api_title: "⚙️ Setelan API Sistem",
-                lbl_nvidia_key: "Kunci API Respan / Open (Kanggo AI)",
-                lbl_gas_url: "URL Google Apps Script (Upload Gambar)",
-                btn_save_settings: "💾 Simpen Setelan",
+                modal_api_title: "⚙️ Setelan API",
+                lbl_nvidia_key: "Kunci API",
+                lbl_gas_url: "URL GAS",
+                btn_save_settings: "💾 Simpan Setelan",
                 btn_close: "Tutup",
-                modal_lang_title: "🇮🇩 Katerangan Basa Indonesia",
-                btn_understand: "Paham / Mengerti",
-                modal_crop_title: "✂️ Nata Amba & Sudut Gambar",
-                btn_rotate_left: "↺ Muter Kiwa",
-                btn_rotate_right: "↻ Muter Tengen",
+                modal_lang_title: "🇮🇩 Keterangan Basa",
+                btn_understand: "Ngerti",
+                modal_crop_title: "✂️ Sesuaikan Gambar",
+                btn_rotate_left: "↺ Putar Kiri",
+                btn_rotate_right: "↻ Putar Kanan",
                 btn_reset: "Riset",
-                btn_confirm_crop: "✅ Konfirmasi & Kirim",
+                btn_confirm_crop: "✅ Konfirmasi",
                 btn_cancel_crop: "✕ Batal",
-                modal_visual_title: "👀 Daftar Nyocokake Fitur Gambar",
-                placeholder_visual_filter: "🔍 Ketik tembung kunci kanggo nyaring...",
-                modal_thickness_title: "📊 Rekap Total Kandele Lapisan",
-                th_photo: "Gambar Komponen",
-                th_name: "Jeneng Komponen",
-                th_date: "Tanggal Nyoba",
+                modal_visual_title: "👀 Daftar Gambar",
+                placeholder_visual_filter: "🔍 Ketik kata kunci...",
+                modal_thickness_title: "📊 Rekap Total Kandel",
+                th_photo: "Gambar",
+                th_name: "Jeneng",
+                th_date: "Tanggal",
                 th_front: "Ngarep (Min-Max)",
                 th_mid: "Tengah (Min-Max)",
                 th_rear: "Mburi (Min-Max)",
-                no_thickness_record: "Durung ana cathetan kandel ing sistem",
-                loading_ai: "Ngapres AI, nyuwun tengga...",
-                loading_uploading: "Nganggah gambar menyang Google Drive...",
-                loading_db: "Nulis menyang database Supabase...",
-                loading_ai_search: "Analisis & Nyocokake Respan AI...",
-                loading_ai_parse: "Analisis Label & Gambar dening Respan AI..."
+                no_thickness_record: "Durung ana cathetan",
+                loading_ai: "Proses AI...",
+                loading_uploading: "Ngunggah gambar...",
+                loading_db: "Nyimpen menyang database...",
+                loading_ai_search: "Analisis Respan AI...",
+                loading_ai_parse: "Menganalisa gambar..."
             }
         };
 
         let currentLang = 'tw';
-        function updateLanguage(lang) {
+        function applyI18n(lang) {
             currentLang = lang;
-            const dict = i18nDict[lang] || i18nDict['tw'];
-            
+            const dict = i18nDict[lang];
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (dict[key]) el.textContent = dict[key];
+                if (dict[key]) el.innerHTML = dict[key];
             });
-
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
                 const key = el.getAttribute('data-i18n-placeholder');
                 if (dict[key]) el.placeholder = dict[key];
             });
-
-            const submitBtn = document.getElementById('submitBtn');
-            if (submitBtn) submitBtn.textContent = editModeId ? dict['btn_submit_update'] : dict['btn_submit_save'];
-            
-            const formTitle = document.getElementById('formTitle');
-            if (formTitle) formTitle.textContent = editModeId ? dict['form_title_edit'] : dict['form_title_create'];
+            renderItemSelect(); // 重新渲染選單文字
         }
 
-        document.getElementById('langSelect').addEventListener('change', (e) => updateLanguage(e.target.value));
+        document.getElementById('langSelect').addEventListener('change', (e) => applyI18n(e.target.value));
         document.getElementById('btnLangInfo').addEventListener('click', () => document.getElementById('langInfoModal').classList.remove('hidden'));
         document.getElementById('btnCloseLangInfo').addEventListener('click', () => document.getElementById('langInfoModal').classList.add('hidden'));
 
-        // --- 3. 狀態變數 ---
-        let currentSelectedData = null;
-        let editModeId = null; 
-        let allItemsList = [];
-        let cropper = null;
-        let cropTargetMode = null; 
-        let processedRegisterImageBase64 = null; 
-        
-        let stateThickness = [];
-        let stateNG = [];
-        let stateRemarks = [];
+        // --- 6. 狀態管理與 UI 切換 ---
+        let dbItems = []; // 緩存所有資料庫物件
+        let isEditMode = false;
+        let currentEditId = null;
 
-        function showLoading(key = 'loading_ai') {
-            const dict = i18nDict[currentLang] || i18nDict['tw'];
-            document.getElementById('loadingText').innerText = dict[key] || dict['loading_ai'];
+        const tabQueryBtn = document.getElementById('tabQueryBtn');
+        const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+        const querySection = document.getElementById('querySection');
+        const registerSection = document.getElementById('registerSection');
+        
+        tabQueryBtn.addEventListener('click', () => switchTab('query'));
+        tabRegisterBtn.addEventListener('click', () => switchTab('register'));
+
+        function switchTab(tab) {
+            if (tab === 'query') {
+                tabQueryBtn.className = "flex-1 bg-gradient-to-r from-blue-700 to-blue-900 border border-blue-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-blue-900/20 transition-all hover:brightness-110 text-white";
+                tabRegisterBtn.className = "flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white";
+                querySection.classList.remove('hidden');
+                registerSection.classList.add('hidden');
+                if (!isEditMode) loadDatabaseItems();
+            } else {
+                tabRegisterBtn.className = "flex-1 bg-gradient-to-r from-blue-700 to-blue-900 border border-blue-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-blue-900/20 transition-all hover:brightness-110 text-white";
+                tabQueryBtn.className = "flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white";
+                registerSection.classList.remove('hidden');
+                querySection.classList.add('hidden');
+            }
+        }
+
+        function showLoading(msgKey) {
+            document.getElementById('loadingText').textContent = i18nDict[currentLang][msgKey] || "處理中...";
             document.getElementById('loadingOverlay').classList.remove('hidden');
             document.getElementById('loadingOverlay').classList.add('flex');
         }
+
         function hideLoading() {
             document.getElementById('loadingOverlay').classList.add('hidden');
             document.getElementById('loadingOverlay').classList.remove('flex');
         }
 
-        // --- 4. 圖片處理與 Google Drive 轉換 ---
-        async function compressImage(base64Str, quality = 0.8) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.src = base64Str;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    resolve(canvas.toDataURL('image/jpeg', quality));
-                };
-            });
-        }
-
-        function convertGoogleDriveUrl(url) {
-            if (!url) return '';
-            if (url.startsWith('data:image')) return url;
-            const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-            if (match) return `https://lh3.googleusercontent.com/d/${match[1]}`;
-            return url;
-        }
-
-        async function uploadToGoogleDrive(base64Data) {
-            const gasUrl = getSetting('GAS_URL', defaultGasUrl);
-            const cleanBase64 = base64Data.replace(/^data:image\/\w+;base64,/, '');
-            const filename = `baifu_${Date.now()}.jpg`;
-
-            try {
-                const res = await fetch(gasUrl, {
-                    method: 'POST',
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ fileName: filename, mimeType: "image/jpeg", base64: cleanBase64 })
-                });
-                
-                const result = await res.json();
-                if (result.success) {
-                    return convertGoogleDriveUrl(result.url);
-                } else {
-                    throw new Error(result.error || "GAS 上傳失敗");
-                }
-            } catch (err) {
-                console.error("Google Drive 上傳失敗:", err);
-                throw err;
-            }
-        }
-
-        // --- 5. Respan / NVIDIA AI 呼叫 ---
-        async function callAiModel(messages, maxTokens = 200) {
-            const apiKey = getSetting('NVIDIA_API_KEY', defaultNvidiaKey);
-            const selectedModel = getSetting('AI_MODEL', defaultAiModel);
-
-            const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    model: selectedModel === "Respan Span 01 Lite" ? "nvidia/nemotron-3-ultra-550b-a55b" : selectedModel,
-                    messages: messages,
-                    temperature: 0.1,
-                    max_tokens: maxTokens
-                })
-            });
-            if (!res.ok) throw new Error(`API 請求失敗 code: ${res.status}`);
-            return await res.json();
-        }
-
-        // --- 6. 核心 UI & 表單互動邏輯 ---
-        window.adjManual = function(id, delta, min, max, gunPrefix = null) {
+        // --- 7. 手動槍參數調整共用函數 ---
+        window.adjManual = function(id, amount, min, max, type = null) {
             let el = document.getElementById(id);
-            if (!el) return;
-            let val = parseInt(el.value) || 0;
-            val += delta;
+            if(!el) return;
+            let val = parseInt(el.value || 0) + amount;
             if (val < min) val = min;
             if (val > max) val = max;
             el.value = val;
-
-            if (gunPrefix) {
-                let currEl = document.getElementById(`${gunPrefix}_current`);
-                let voltEl = document.getElementById(`${gunPrefix}_voltage`);
-                if (currEl && voltEl) {
-                    if (parseInt(currEl.value) < 11) {
-                        currEl.classList.add('text-alert-red');
-                        voltEl.classList.add('text-alert-red');
-                    } else {
-                        currEl.classList.remove('text-alert-red');
-                        voltEl.classList.remove('text-alert-red');
-                    }
-                }
+            
+            // 電壓電流聯動
+            if (type === 'a' && id === 'a_voltage') {
+                let curr = Math.round((val / 110) * 20 + (Math.random()*2));
+                if (curr > 25) curr = 25;
+                document.getElementById('a_current').value = curr;
             }
-        };
+            if (type === 'b' && id === 'b_voltage') {
+                let curr = Math.round((val / 110) * 20 + (Math.random()*2));
+                if (curr > 25) curr = 25;
+                document.getElementById('b_current').value = curr;
+            }
+        }
+
+        // 換向自動填入
+        document.getElementById('btnFillAuto').addEventListener('click', () => {
+            ['up_turn_left', 'up_turn_right', 'down_turn_left', 'down_turn_right'].forEach(id => {
+                document.getElementById(id).value = '自動';
+            });
+            showToast("換向參數已一鍵填入「自動」", "info");
+        });
+
+        // --- 8. 子紀錄 (膜厚、NG、備註) 管理系統 ---
+        let thicknessRecords = [];
+        let ngRecords = [];
+        let remarkRecords = [];
 
         window.addThicknessRecord = function() {
             const date = document.getElementById('th_date').value;
-            if(!date) return alert("請選擇檢測日期 / Harap pilih tanggal");
-            stateThickness.push({
-                date: date,
-                f_min: document.getElementById('th_f_min').value || 0, f_max: document.getElementById('th_f_max').value || 0,
-                m_min: document.getElementById('th_m_min').value || 0, m_max: document.getElementById('th_m_max').value || 0,
-                r_min: document.getElementById('th_r_min').value || 0, r_max: document.getElementById('th_r_max').value || 0
-            });
+            const fMin = document.getElementById('th_f_min').value;
+            const fMax = document.getElementById('th_f_max').value;
+            const mMin = document.getElementById('th_m_min').value;
+            const mMax = document.getElementById('th_m_max').value;
+            const rMin = document.getElementById('th_r_min').value;
+            const rMax = document.getElementById('th_r_max').value;
+
+            if (!date || !fMin || !fMax || !mMin || !mMax || !rMin || !rMax) {
+                showToast("請完整填寫膜厚檢測所有欄位（日期與前中後段Min/Max）", "error");
+                return;
+            }
+
+            thicknessRecords.push({ id: Date.now(), date, front: `${fMin}-${fMax}`, mid: `${mMin}-${mMax}`, rear: `${rMin}-${rMax}` });
+            
+            // 清空輸入
+            document.getElementById('th_date').value = '';
+            ['th_f_min', 'th_f_max', 'th_m_min', 'th_m_max', 'th_r_min', 'th_r_max'].forEach(id => document.getElementById(id).value = '');
+            
             renderThicknessList();
-        };
-        window.removeThicknessRecord = index => { stateThickness.splice(index, 1); renderThicknessList(); };
+            showToast("✅ 膜厚紀錄已暫存");
+        }
+
+        window.removeThickness = function(id) {
+            thicknessRecords = thicknessRecords.filter(r => r.id !== id);
+            renderThicknessList();
+        }
+
         function renderThicknessList() {
-            document.getElementById('thicknessList').innerHTML = stateThickness.map((r, i) => `
-                <div class="flex justify-between items-center bg-slate-800 p-2 sm:p-2.5 rounded-lg text-xs border border-slate-700">
-                    <span class="text-pink-400 font-bold">${r.date}</span>
-                    <span class="text-slate-300">前:${r.f_min}~${r.f_max} | 中:${r.m_min}~${r.m_max} | 後:${r.r_min}~${r.r_max}</span>
-                    <button type="button" onclick="removeThicknessRecord(${i})" class="text-red-500 hover:text-red-400 font-bold px-2 text-base">✕</button>
-                </div>`).join('');
+            const list = document.getElementById('thicknessList');
+            list.innerHTML = '';
+            thicknessRecords.forEach(r => {
+                list.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-900 p-2 rounded-lg border border-slate-700 text-xs sm:text-sm">
+                        <div class="text-pink-300 font-mono">${r.date} | 前:${r.front} 中:${r.mid} 後:${r.rear}</div>
+                        <button type="button" onclick="removeThickness(${r.id})" class="text-red-400 hover:text-red-300 font-bold px-2 py-1 rounded bg-slate-800">刪除</button>
+                    </div>`;
+            });
         }
 
         window.addNgRecord = function() {
             const date = document.getElementById('ng_date').value;
-            if(!date) return alert("請選擇日期 / Harap pilih tanggal");
-            stateNG.push({ date: date, location: document.getElementById('ng_location').value, reason: document.getElementById('ng_reason').value });
+            const loc = document.getElementById('ng_location').value;
+            const reason = document.getElementById('ng_reason').value;
+            if (!date) {
+                showToast("請選擇 NG 發生日期", "error");
+                return;
+            }
+            ngRecords.push({ id: Date.now(), date, loc, reason });
+            document.getElementById('ng_date').value = '';
             renderNgList();
-        };
-        window.removeNgRecord = index => { stateNG.splice(index, 1); renderNgList(); };
+            showToast("⚠ NG 紀錄已暫存");
+        }
+
+        window.removeNg = function(id) {
+            ngRecords = ngRecords.filter(r => r.id !== id);
+            renderNgList();
+        }
+
         function renderNgList() {
-            document.getElementById('ngList').innerHTML = stateNG.map((r, i) => `
-                <div class="flex justify-between items-center bg-slate-800 p-2 sm:p-2.5 rounded-lg text-xs sm:text-sm border border-slate-700">
-                    <span class="text-orange-400 font-bold">${r.date}</span>
-                    <span class="text-slate-300 mx-2">${r.location} - <b class="text-red-400">${r.reason}</b></span>
-                    <button type="button" onclick="removeNgRecord(${i})" class="bg-emerald-600/80 hover:bg-emerald-500 px-2 py-0.5 rounded text-xs text-white shadow font-bold">已修正</button>
-                </div>`).join('');
+            const list = document.getElementById('ngList');
+            list.innerHTML = '';
+            ngRecords.forEach(r => {
+                list.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-900 p-2 rounded-lg border border-slate-700 text-xs sm:text-sm">
+                        <div class="text-orange-300">${r.date} - [${r.loc}] ${r.reason}</div>
+                        <button type="button" onclick="removeNg(${r.id})" class="text-red-400 hover:text-red-300 font-bold px-2 py-1 rounded bg-slate-800">刪除</button>
+                    </div>`;
+            });
         }
 
         window.addRemark = function() {
-            const val = document.getElementById('new_remark').value.trim();
-            if(!val) return;
-            stateRemarks.push(val);
+            const txt = document.getElementById('new_remark').value.trim();
+            if (!txt) return;
+            remarkRecords.push({ id: Date.now(), text: txt });
             document.getElementById('new_remark').value = '';
             renderRemarksList();
-        };
-        window.removeRemark = index => { stateRemarks.splice(index, 1); renderRemarksList(); };
-        function renderRemarksList() {
-            document.getElementById('remarksList').innerHTML = stateRemarks.map((r, i) => `
-                <div class="flex justify-between items-center bg-slate-800 p-2 sm:p-2.5 rounded-lg border border-slate-700">
-                    <span class="text-slate-200 text-xs sm:text-sm">📌 ${r}</span>
-                    <button type="button" onclick="removeRemark(${i})" class="text-red-500 hover:text-red-400 font-bold px-2 text-base">✕</button>
-                </div>`).join('');
         }
 
-        // 快速將往復機換向點填入「自動」
-        document.getElementById('btnFillAuto').addEventListener('click', () => {
-            document.getElementById('up_turn_left').value = "自動";
-            document.getElementById('up_turn_right').value = "自動";
-            document.getElementById('down_turn_left').value = "自動";
-            document.getElementById('down_turn_right').value = "自動";
+        window.removeRemark = function(id) {
+            remarkRecords = remarkRecords.filter(r => r.id !== id);
+            renderRemarksList();
+        }
+
+        function renderRemarksList() {
+            const list = document.getElementById('remarksList');
+            list.innerHTML = '';
+            remarkRecords.forEach(r => {
+                list.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-900 p-2 rounded-lg border border-slate-700 text-xs sm:text-sm">
+                        <span class="text-slate-300">📌 ${r.text}</span>
+                        <button type="button" onclick="removeRemark(${r.id})" class="text-red-400 hover:text-red-300 font-bold px-2 py-1 rounded bg-slate-800 shrink-0">刪除</button>
+                    </div>`;
+            });
+        }
+
+        // --- 9. 圖片裁切處理 (Cropper.js) ---
+        let cropper = null;
+        let croppedBase64 = null;
+        const regImageInput = document.getElementById('reg_image');
+        const cropModal = document.getElementById('cropModal');
+        const cropImage = document.getElementById('cropImage');
+        const regPreviewBox = document.getElementById('regPreviewBox');
+        const regPreviewImg = document.getElementById('regPreviewImg');
+
+        regImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    cropImage.src = event.target.result;
+                    cropModal.classList.remove('hidden');
+                    if (cropper) cropper.destroy();
+                    cropper = new Cropper(cropImage, {
+                        aspectRatio: NaN,
+                        viewMode: 1,
+                        background: false,
+                        autoCropArea: 0.9,
+                        responsive: true
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
         });
 
-        // --- 7. 手動槍精細渲染器 ---
-        function renderManualBlockDisplay(blockData) {
-            if (!blockData) return '<div class="text-slate-500 italic p-2">無資料</div>';
+        document.getElementById('btnRotateLeft').addEventListener('click', () => { if(cropper) cropper.rotate(-90); });
+        document.getElementById('btnRotateRight').addEventListener('click', () => { if(cropper) cropper.rotate(90); });
+        document.getElementById('btnResetCrop').addEventListener('click', () => { if(cropper) cropper.reset(); });
+
+        document.getElementById('btnCancelCrop').addEventListener('click', () => {
+            cropModal.classList.add('hidden');
+            regImageInput.value = '';
+            if (!croppedBase64 && !isEditMode) {
+                regPreviewBox.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('btnConfirmCrop').addEventListener('click', () => {
+            if (cropper) {
+                const canvas = cropper.getCroppedCanvas({ maxWidth: 1024, maxHeight: 1024 });
+                croppedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+                regPreviewImg.src = croppedBase64;
+                regPreviewBox.classList.remove('hidden');
+                cropModal.classList.add('hidden');
+            }
+        });
+
+        // --- 10. 表單提交：整合建檔與更新 (含 GAS 圖片上傳) ---
+        document.getElementById('paramForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            let data = blockData;
-            if (typeof blockData === 'string') {
-                try { data = JSON.parse(blockData); } catch(e) { data = {}; }
+            const category = document.getElementById('reg_category').value;
+            const itemName = document.getElementById('item_name').value.trim();
+            if (!category) {
+                showToast("請選擇膜厚類別", "error");
+                return;
+            }
+            if (!itemName) {
+                showToast("請輸入構件品名/料號", "error");
+                return;
             }
 
-            return `
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
-                    <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700 flex justify-between items-center"><span class="text-slate-400">粉量:</span><b class="text-emerald-400 font-mono text-base">${data.powder ?? 0}</b></div>
-                    <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700 flex justify-between items-center"><span class="text-slate-400">風量:</span><b class="text-emerald-400 font-mono text-base">${data.air ?? 0}</b></div>
-                    <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700 flex justify-between items-center"><span class="text-slate-400">電壓:</span><b class="text-red-400 font-mono text-base">${data.voltage ?? 70} kV</b></div>
-                    <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700 flex justify-between items-center"><span class="text-slate-400">電流:</span><b class="text-red-400 font-mono text-base">${data.current ?? 15} μA</b></div>
-                    <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700 flex justify-between items-center"><span class="text-slate-400">噴嘴:</span><b class="text-cyan-300 font-bold">${data.nozzle ?? '扇型'}</b></div>
-                    <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700 flex justify-between items-center"><span class="text-slate-400">靜電環:</span><b class="text-cyan-300 font-bold">${data.ring ?? '有'}</b></div>
-                </div>
+            // 若為新增且未選擇圖片
+            if (!isEditMode && !croppedBase64) {
+                showToast("新增模式下請務必上傳並裁切構件圖片", "error");
+                return;
+            }
 
-                <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-700/80 space-y-2.5">
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                        <span class="text-amber-300 font-bold flex items-center gap-1">🎯 總噴塗次數</span>
-                        <span class="text-amber-400 font-black text-lg px-2.5 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/30 font-mono">${data.spray_count ?? 1} 次</span>
-                    </div>
+            showLoading("loading_uploading");
 
-                    <div class="space-y-1.5">
-                        <div class="text-[11px] font-bold text-indigo-300">📍 方位噴塗</div>
-                        <div class="grid grid-cols-4 gap-1.5 text-center text-xs">
-                            <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800"><span class="text-slate-400 block text-[10px]">左側</span><b class="text-emerald-400 font-mono">${data.spray_left ?? 0} 次</b></div>
-                            <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800"><span class="text-slate-400 block text-[10px]">上方</span><b class="text-emerald-400 font-mono">${data.spray_top ?? 0} 次</b></div>
-                            <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800"><span class="text-slate-400 block text-[10px]">下方</span><b class="text-emerald-400 font-mono">${data.spray_bottom ?? 0} 次</b></div>
-                            <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800"><span class="text-slate-400 block text-[10px]">右側</span><b class="text-emerald-400 font-mono">${data.spray_right ?? 0} 次</b></div>
-                        </div>
-                    </div>
+            let finalImageUrl = isEditMode ? dbItems.find(i => i.id === currentEditId)?.image_url : "";
+            
+            // 如果有新裁切的圖片，上傳到 Google Drive
+            if (croppedBase64) {
+                try {
+                    const gasUrl = getSetting('GAS_URL', defaultGasUrl);
+                    const fileData = croppedBase64.split(',')[1];
+                    const obj = { filename: `${itemName}_${Date.now()}.jpg`, file: fileData };
+                    
+                    const response = await fetch(gasUrl, {
+                        method: 'POST',
+                        body: JSON.stringify(obj)
+                    });
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        finalImageUrl = result.link;
+                    } else {
+                        throw new Error("圖片上傳失敗");
+                    }
+                } catch (error) {
+                    console.error(error);
+                    hideLoading();
+                    showToast("圖片上傳至 Google Drive 失敗，請檢查 API 設定", "error");
+                    return;
+                }
+            }
 
-                    <div class="space-y-1.5 pt-1">
-                        <div class="text-[11px] font-bold text-amber-300">🎯 中間分段噴塗</div>
-                        <div class="grid grid-cols-4 gap-1.5 text-center text-xs">
-                            <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800"><span class="text-slate-400 block text-[10px]">一段</span><b class="text-amber-400 font-mono">${data.spray_mid_1 ?? 0} 次</b></div>
-                            <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800"><span class="text-slate-400 block text-[10px]">二段</span><b class="text-amber-400 font-mono">${data.spray_mid_2 ?? 0} 次</b></div>
-                            <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800"><span class="text-slate-400 block text-[10px]">三段</span><b class="text-amber-400 font-mono">${data.spray_mid_3 ?? 0} 次</b></div>
-                            <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800"><span class="text-slate-400 block text-[10px]">四段</span><b class="text-amber-400 font-mono">${data.spray_mid_4 ?? 0} 次</b></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+            showLoading("loading_db");
+            
+            // 收集所有表單數據
+            const payload = {
+                category: category,
+                item_name: itemName,
+                image_url: finalImageUrl,
+                gun_data: {
+                    g1: document.getElementById('gun_1').value || '0',
+                    g2: document.getElementById('gun_2').value || '0',
+                    g3: document.getElementById('gun_3').value || '0',
+                    g4: document.getElementById('gun_4').value || '0',
+                    g5: document.getElementById('gun_5').value || '0',
+                    g6: document.getElementById('gun_6').value || '0',
+                    g7: document.getElementById('gun_7').value || '0',
+                    g8: document.getElementById('gun_8').value || '0'
+                },
+                reciprocator_data: {
+                    speed_l: document.getElementById('speed_left').value || '0',
+                    speed_r: document.getElementById('speed_right').value || '0',
+                    up_l: document.getElementById('up_turn_left').value || '自動',
+                    up_r: document.getElementById('up_turn_right').value || '自動',
+                    down_l: document.getElementById('down_turn_left').value || '自動',
+                    down_r: document.getElementById('down_turn_right').value || '自動',
+                    dist_l: document.getElementById('dist_left').value || '0',
+                    dist_r: document.getElementById('dist_right').value || '0'
+                },
+                electrical_data: {
+                    voltage: document.getElementById('voltage').value || '70',
+                    current: document.getElementById('current').value || '15'
+                },
+                manual_a_data: {
+                    powder: document.getElementById('a_powder').value || '0',
+                    air: document.getElementById('a_air').value || '0',
+                    voltage: document.getElementById('a_voltage').value || '70',
+                    current: document.getElementById('a_current').value || '15',
+                    nozzle: document.getElementById('a_nozzle').value || '扇型',
+                    ring: document.getElementById('a_ring').value || '有',
+                    spray_count: document.getElementById('a_spray_count').value || '1',
+                    spray_left: document.getElementById('a_spray_left').value || '0',
+                    spray_top: document.getElementById('a_spray_top').value || '0',
+                    spray_bottom: document.getElementById('a_spray_bottom').value || '0',
+                    spray_right: document.getElementById('a_spray_right').value || '0',
+                    spray_mid_1: document.getElementById('a_spray_mid_1').value || '0',
+                    spray_mid_2: document.getElementById('a_spray_mid_2').value || '0',
+                    spray_mid_3: document.getElementById('a_spray_mid_3').value || '0',
+                    spray_mid_4: document.getElementById('a_spray_mid_4').value || '0'
+                },
+                manual_b_data: {
+                    powder: document.getElementById('b_powder').value || '0',
+                    air: document.getElementById('b_air').value || '0',
+                    voltage: document.getElementById('b_voltage').value || '70',
+                    current: document.getElementById('b_current').value || '15',
+                    nozzle: document.getElementById('b_nozzle').value || '扇型',
+                    ring: document.getElementById('b_ring').value || '有',
+                    spray_count: document.getElementById('b_spray_count').value || '1',
+                    spray_left: document.getElementById('b_spray_left').value || '0',
+                    spray_top: document.getElementById('b_spray_top').value || '0',
+                    spray_bottom: document.getElementById('b_spray_bottom').value || '0',
+                    spray_right: document.getElementById('b_spray_right').value || '0',
+                    spray_mid_1: document.getElementById('b_spray_mid_1').value || '0',
+                    spray_mid_2: document.getElementById('b_spray_mid_2').value || '0',
+                    spray_mid_3: document.getElementById('b_spray_mid_3').value || '0',
+                    spray_mid_4: document.getElementById('b_spray_mid_4').value || '0'
+                },
+                thickness_records: thicknessRecords,
+                ng_records: ngRecords,
+                remarks: remarkRecords
+            };
 
-        // --- 8. 資料庫載入與渲染 ---
-        async function loadItemsToSelect() {
-            const selectEl = document.getElementById('itemSelect');
-            const dict = i18nDict[currentLang] || i18nDict['tw'];
             try {
-                const { data, error } = await supabase.from('coating_params').select('*').order('created_at', { ascending: false });
+                if (isEditMode) {
+                    const { error } = await supabase.from('parameters').update(payload).eq('id', currentEditId);
+                    if (error) throw error;
+                    showToast("🎉 資料更新成功！", "success");
+                    exitEditMode();
+                } else {
+                    const { error } = await supabase.from('parameters').insert([payload]);
+                    if (error) throw error;
+                    showToast("🎉 新資料建檔成功！", "success");
+                    resetForm();
+                }
+                loadDatabaseItems(); // 重新拉取資料更新下拉選單
+            } catch (error) {
+                console.error(error);
+                showToast("資料庫寫入失敗", "error");
+            } finally {
+                hideLoading();
+            }
+        });
+
+        function resetForm() {
+            document.getElementById('paramForm').reset();
+            thicknessRecords = [];
+            ngRecords = [];
+            remarkRecords = [];
+            renderThicknessList();
+            renderNgList();
+            renderRemarksList();
+            croppedBase64 = null;
+            document.getElementById('regPreviewBox').classList.add('hidden');
+            document.getElementById('regPreviewImg').src = '';
+            document.getElementById('reg_category').value = '';
+        }
+
+        // --- 11. 資料庫連線與查詢選單過濾 ---
+        async function loadDatabaseItems() {
+            const selectEl = document.getElementById('itemSelect');
+            selectEl.innerHTML = `<option value="">-- 資料讀取中... --</option>`;
+            
+            try {
+                // 從 supabase 獲取所有資料
+                const { data, error } = await supabase.from('parameters').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
-                allItemsList = data || [];
                 
-                selectEl.innerHTML = `<option value="">${dict['opt_db_select']}</option>`;
-                allItemsList.forEach(item => {
-                    const opt = document.createElement('option');
-                    opt.value = item.id;
-                    opt.textContent = item.item_name;
-                    selectEl.appendChild(opt);
-                });
-            } catch (err) { console.error("Database Connection Error:", err); }
-        }
-        loadItemsToSelect();
-
-        function switchTab(tab) {
-            if (tab === 'query') {
-                document.getElementById('querySection').classList.remove('hidden');
-                document.getElementById('registerSection').classList.add('hidden');
-                document.getElementById('tabQueryBtn').className = "flex-1 bg-gradient-to-r from-blue-700 to-blue-900 border border-blue-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-blue-900/20 text-white transition-all";
-                document.getElementById('tabRegisterBtn').className = "flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white";
-            } else {
-                document.getElementById('registerSection').classList.remove('hidden');
-                document.getElementById('querySection').classList.add('hidden');
-                document.getElementById('tabRegisterBtn').className = "flex-1 bg-gradient-to-r from-emerald-700 to-emerald-900 border border-emerald-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-emerald-900/20 text-white transition-all";
-                document.getElementById('tabQueryBtn').className = "flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white";
+                dbItems = data || [];
+                renderItemSelect();
+            } catch (error) {
+                console.error("載入資料庫失敗:", error);
+                selectEl.innerHTML = `<option value="">-- 資料庫連線失敗 --</option>`;
+                showToast("無法連接資料庫，請檢查網路或設定", "error");
             }
         }
-        document.getElementById('tabQueryBtn').addEventListener('click', () => switchTab('query'));
-        document.getElementById('tabRegisterBtn').addEventListener('click', () => { switchTab('register'); resetFormToCreateMode(); });
-        document.getElementById('cancelEditBtn').addEventListener('click', () => { resetFormToCreateMode(); switchTab('query'); });
 
-        function displayQueryResult(item) {
-            currentSelectedData = item;
-            document.getElementById('actionButtons').classList.remove('hidden');
-            document.getElementById('resultBoard').style.display = 'block';
-
-            // 圖片
-            const imgContainer = document.getElementById('imageContainer');
-            const imgEl = document.getElementById('q_matched_image');
-            const imgLink = document.getElementById('q_matched_image_link');
-            if (item.image_url) {
-                const formattedUrl = convertGoogleDriveUrl(item.image_url);
-                imgEl.src = formattedUrl;
-                imgLink.href = formattedUrl;
-                imgContainer.classList.remove('hidden');
-            } else {
-                imgContainer.classList.add('hidden');
+        // 依據類別過濾並渲染下拉選單
+        function renderItemSelect() {
+            const selectEl = document.getElementById('itemSelect');
+            const categoryFilter = document.getElementById('queryCategorySelect').value;
+            
+            selectEl.innerHTML = `<option value="">-- 請選擇已建檔之構件 --</option>`;
+            
+            let filteredItems = dbItems;
+            if (categoryFilter) {
+                filteredItems = dbItems.filter(item => item.category === categoryFilter);
             }
-
-            // 槍粉量 1~8
-            for (let i = 1; i <= 8; i++) {
-                document.getElementById(`q_gun_${i}`).textContent = item[`gun_${i}`] || '-';
-            }
-
-            // 往復機
-            document.getElementById('q_speed_left').textContent = item.speed_left || '-';
-            document.getElementById('q_speed_right').textContent = item.speed_right || '-';
-            document.getElementById('q_up_turn_left').textContent = item.up_turn_left || '-';
-            document.getElementById('q_up_turn_right').textContent = item.up_turn_right || '-';
-            document.getElementById('q_down_turn_left').textContent = item.down_turn_left || '-';
-            document.getElementById('q_down_turn_right').textContent = item.down_turn_right || '-';
-            document.getElementById('q_dist_left').textContent = item.dist_left || '-';
-            document.getElementById('q_dist_right').textContent = item.dist_right || '-';
-
-            // 電壓電流
-            document.getElementById('q_voltage').textContent = item.voltage || '-';
-            document.getElementById('q_current').textContent = item.current || '-';
-
-            // 手動槍 A/B 區塊精細顯示
-            document.getElementById('q_manual_a_display').innerHTML = renderManualBlockDisplay(item.manual_a);
-            document.getElementById('q_manual_b_display').innerHTML = renderManualBlockDisplay(item.manual_b);
-
-            // 歷史膜厚
-            let thicknessArr = [];
-            if (typeof item.thickness_records === 'string') {
-                try { thicknessArr = JSON.parse(item.thickness_records); } catch(e) {}
-            } else if (Array.isArray(item.thickness_records)) {
-                thicknessArr = item.thickness_records;
-            }
-            document.getElementById('q_thickness_display').innerHTML = thicknessArr.length > 0
-                ? thicknessArr.map(t => `<div class="bg-slate-800/80 p-2 rounded border border-slate-700 flex justify-between"><span>📅 ${t.date}</span><b class="text-pink-400">前:${t.f_min}~${t.f_max} | 中:${t.m_min}~${t.m_max} | 後:${t.r_min}~${t.r_max}</b></div>`).join('')
-                : '<div class="text-slate-500 italic">尚無檢測紀錄</div>';
-
-            // 歷史 NG
-            let ngArr = [];
-            if (typeof item.ng_records === 'string') {
-                try { ngArr = JSON.parse(item.ng_records); } catch(e) {}
-            } else if (Array.isArray(item.ng_records)) {
-                ngArr = item.ng_records;
-            }
-            document.getElementById('q_ng_display').innerHTML = ngArr.length > 0
-                ? ngArr.map(n => `<div class="bg-slate-800/80 p-2 rounded border border-slate-700 flex justify-between"><span>📅 ${n.date} (${n.location})</span><b class="text-red-400">${n.reason}</b></div>`).join('')
-                : '<div class="text-slate-500 italic">無 NG 異常紀錄</div>';
-
-            // 修正備註
-            let remarksArr = [];
-            if (typeof item.remarks === 'string') {
-                try { remarksArr = JSON.parse(item.remarks); } catch(e) {}
-            } else if (Array.isArray(item.remarks)) {
-                remarksArr = item.remarks;
-            }
-            document.getElementById('q_remarks_display').innerHTML = remarksArr.length > 0
-                ? remarksArr.map(r => `<div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700 text-slate-200">📌 ${r}</div>`).join('')
-                : '<div class="text-slate-500 italic col-span-3">無備註</div>';
+            
+            filteredItems.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.id;
+                // 顯示：類別 - 品名
+                const catStr = item.category ? `${item.category} ` : '';
+                opt.textContent = `${catStr}${item.item_name}`;
+                selectEl.appendChild(opt);
+            });
         }
 
-        document.getElementById('itemSelect').addEventListener('change', (e) => {
+        document.getElementById('queryCategorySelect').addEventListener('change', renderItemSelect);
+
+        // --- 12. 選擇資料庫項目並渲染結果 ---
+        document.getElementById('itemSelect').addEventListener('change', function(e) {
             const id = e.target.value;
             if (!id) {
                 document.getElementById('resultBoard').style.display = 'none';
                 document.getElementById('actionButtons').classList.add('hidden');
                 return;
             }
-            const found = allItemsList.find(i => String(i.id) === String(id));
-            if (found) displayQueryResult(found);
+            
+            const item = dbItems.find(i => i.id == id);
+            if (item) {
+                renderQueryResult(item);
+            }
         });
 
-        // --- 9. 編輯模式與重置 ---
-        function resetFormToCreateMode() {
-            editModeId = null;
-            processedRegisterImageBase64 = null;
-            stateThickness = [];
-            stateNG = [];
-            stateRemarks = [];
+        function renderQueryResult(data) {
+            document.getElementById('resultBoard').style.display = 'block';
+            document.getElementById('actionButtons').classList.remove('hidden');
             
-            document.getElementById('paramForm').reset();
-            document.getElementById('regPreviewBox').classList.add('hidden');
-            document.getElementById('cancelEditBtn').classList.add('hidden');
+            // 設定當前選中欲操作的 ID
+            window.currentSelectedData = data;
+
+            // 圖片處理 (使用直鏈轉換修復顯示)
+            const imgContainer = document.getElementById('imageContainer');
+            const imgEl = document.getElementById('q_matched_image');
+            const imgLink = document.getElementById('q_matched_image_link');
             
-            // 重置區塊 A/B 精細欄位預設值
-            ['a', 'b'].forEach(p => {
-                document.getElementById(`${p}_powder`).value = "0";
-                document.getElementById(`${p}_air`).value = "0";
-                document.getElementById(`${p}_voltage`).value = "70";
-                document.getElementById(`${p}_current`).value = "15";
-                document.getElementById(`${p}_nozzle`).value = "扇型";
-                document.getElementById(`${p}_ring`).value = "有";
-                document.getElementById(`${p}_spray_count`).value = "1";
-                document.getElementById(`${p}_spray_left`).value = "0";
-                document.getElementById(`${p}_spray_top`).value = "0";
-                document.getElementById(`${p}_spray_bottom`).value = "0";
-                document.getElementById(`${p}_spray_right`).value = "0";
-                document.getElementById(`${p}_spray_mid_1`).value = "0";
-                document.getElementById(`${p}_spray_mid_2`).value = "0";
-                document.getElementById(`${p}_spray_mid_3`).value = "0";
-                document.getElementById(`${p}_spray_mid_4`).value = "0";
-            });
-
-            renderThicknessList();
-            renderNgList();
-            renderRemarksList();
-            updateLanguage(currentLang);
-        }
-
-        function populateFormForEdit(item) {
-            editModeId = item.id;
-            switchTab('register');
-
-            document.getElementById('item_name').value = item.item_name || '';
-            for (let i = 1; i <= 8; i++) document.getElementById(`gun_${i}`).value = item[`gun_${i}`] || '';
-            
-            document.getElementById('speed_left').value = item.speed_left || '600';
-            document.getElementById('speed_right').value = item.speed_right || '600';
-            document.getElementById('up_turn_left').value = item.up_turn_left || '自動';
-            document.getElementById('up_turn_right').value = item.up_turn_right || '自動';
-            document.getElementById('down_turn_left').value = item.down_turn_left || '自動';
-            document.getElementById('down_turn_right').value = item.down_turn_right || '自動';
-            document.getElementById('dist_left').value = item.dist_left || '380';
-            document.getElementById('dist_right').value = item.dist_right || '420';
-            document.getElementById('voltage').value = item.voltage || '70';
-            document.getElementById('current').value = item.current || '15';
-
-            // populate manual A & B
-            const populateBlock = (prefix, blockData) => {
-                let d = blockData;
-                if (typeof blockData === 'string') { try { d = JSON.parse(blockData); } catch(e){ d={}; } }
-                d = d || {};
-                document.getElementById(`${prefix}_powder`).value = d.powder ?? 0;
-                document.getElementById(`${prefix}_air`).value = d.air ?? 0;
-                document.getElementById(`${prefix}_voltage`).value = d.voltage ?? 70;
-                document.getElementById(`${prefix}_current`).value = d.current ?? 15;
-                document.getElementById(`${prefix}_nozzle`).value = d.nozzle || '扇型';
-                document.getElementById(`${prefix}_ring`).value = d.ring || '有';
-                document.getElementById(`${prefix}_spray_count`).value = d.spray_count ?? 1;
-                document.getElementById(`${prefix}_spray_left`).value = d.spray_left ?? 0;
-                document.getElementById(`${prefix}_spray_top`).value = d.spray_top ?? 0;
-                document.getElementById(`${prefix}_spray_bottom`).value = d.spray_bottom ?? 0;
-                document.getElementById(`${prefix}_spray_right`).value = d.spray_right ?? 0;
-                document.getElementById(`${prefix}_spray_mid_1`).value = d.spray_mid_1 ?? 0;
-                document.getElementById(`${prefix}_spray_mid_2`).value = d.spray_mid_2 ?? 0;
-                document.getElementById(`${prefix}_spray_mid_3`).value = d.spray_mid_3 ?? 0;
-                document.getElementById(`${prefix}_spray_mid_4`).value = d.spray_mid_4 ?? 0;
-            };
-
-            populateBlock('a', item.manual_a);
-            populateBlock('b', item.manual_b);
-
-            // 歷史陣列
-            if (typeof item.thickness_records === 'string') { try { stateThickness = JSON.parse(item.thickness_records); } catch(e){ stateThickness=[]; } }
-            else stateThickness = item.thickness_records || [];
-
-            if (typeof item.ng_records === 'string') { try { stateNG = JSON.parse(item.ng_records); } catch(e){ stateNG=[]; } }
-            else stateNG = item.ng_records || [];
-
-            if (typeof item.remarks === 'string') { try { stateRemarks = JSON.parse(item.remarks); } catch(e){ stateRemarks=[]; } }
-            else stateRemarks = item.remarks || [];
-
-            renderThicknessList();
-            renderNgList();
-            renderRemarksList();
-
-            if (item.image_url) {
-                const previewImg = document.getElementById('regPreviewImg');
-                previewImg.src = convertGoogleDriveUrl(item.image_url);
-                document.getElementById('regPreviewBox').classList.remove('hidden');
+            if (data.image_url) {
+                imgContainer.classList.remove('hidden');
+                // 使用 getDirectImageUrl 保證 Google Drive 圖片可顯示
+                const directUrl = getDirectImageUrl(data.image_url);
+                imgEl.src = directUrl;
+                imgLink.href = data.image_url; // 原圖連結維持原樣讓使用者另開
+            } else {
+                imgContainer.classList.add('hidden');
+                imgEl.src = '';
             }
 
-            document.getElementById('cancelEditBtn').classList.remove('hidden');
-            updateLanguage(currentLang);
+            // 自動槍粉量
+            for(let i=1; i<=8; i++) {
+                document.getElementById(`q_gun_${i}`).textContent = data.gun_data[`g${i}`] || '0';
+            }
+
+            // 往復機
+            document.getElementById('q_speed_left').textContent = data.reciprocator_data.speed_l || '0';
+            document.getElementById('q_speed_right').textContent = data.reciprocator_data.speed_r || '0';
+            document.getElementById('q_up_turn_left').textContent = data.reciprocator_data.up_l || '自動';
+            document.getElementById('q_up_turn_right').textContent = data.reciprocator_data.up_r || '自動';
+            document.getElementById('q_down_turn_left').textContent = data.reciprocator_data.down_l || '自動';
+            document.getElementById('q_down_turn_right').textContent = data.reciprocator_data.down_r || '自動';
+            document.getElementById('q_dist_left').textContent = data.reciprocator_data.dist_l || '0';
+            document.getElementById('q_dist_right').textContent = data.reciprocator_data.dist_r || '0';
+
+            // 電壓電流
+            document.getElementById('q_voltage').textContent = data.electrical_data.voltage || '70';
+            document.getElementById('q_current').textContent = data.electrical_data.current || '15';
+
+            // 渲染手動槍區塊 A/B html
+            const buildManualHtml = (d, colorClass) => {
+                return `
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <div class="bg-slate-950/50 p-2 rounded flex justify-between border border-slate-700"><span class="text-slate-400">粉量</span><span class="font-bold text-${colorClass}-400">${d.powder || 0}</span></div>
+                        <div class="bg-slate-950/50 p-2 rounded flex justify-between border border-slate-700"><span class="text-slate-400">風量</span><span class="font-bold text-${colorClass}-400">${d.air || 0}</span></div>
+                        <div class="bg-slate-950/50 p-2 rounded flex justify-between border border-slate-700"><span class="text-slate-400">電壓</span><span class="font-bold text-${colorClass}-400">${d.voltage || 70}</span></div>
+                        <div class="bg-slate-950/50 p-2 rounded flex justify-between border border-slate-700"><span class="text-slate-400">電流</span><span class="font-bold text-${colorClass}-400">${d.current || 15}</span></div>
+                    </div>
+                    <div class="flex justify-between items-center bg-slate-950/50 p-2 rounded border border-slate-700 mb-3">
+                        <span class="text-slate-400">噴嘴 / 靜電環</span>
+                        <span class="font-bold text-white">${d.nozzle || '扇型'} / ${d.ring || '有'}</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-slate-950/50 p-2 rounded border border-amber-500/30 mb-3 shadow-[0_0_10px_rgba(245,158,11,0.1)]">
+                        <span class="text-amber-400 font-bold">總噴塗次數</span>
+                        <span class="font-black text-xl text-amber-300">${d.spray_count || 1}</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1 text-center bg-slate-950 p-1 rounded border border-slate-700 mb-2">
+                        <div class="flex flex-col"><span class="text-[10px] text-slate-500">左</span><span class="text-emerald-400 font-mono font-bold">${d.spray_left || 0}</span></div>
+                        <div class="flex flex-col border-l border-slate-700"><span class="text-[10px] text-slate-500">上</span><span class="text-emerald-400 font-mono font-bold">${d.spray_top || 0}</span></div>
+                        <div class="flex flex-col border-l border-slate-700"><span class="text-[10px] text-slate-500">下</span><span class="text-emerald-400 font-mono font-bold">${d.spray_bottom || 0}</span></div>
+                        <div class="flex flex-col border-l border-slate-700"><span class="text-[10px] text-slate-500">右</span><span class="text-emerald-400 font-mono font-bold">${d.spray_right || 0}</span></div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1 text-center bg-slate-950 p-1 rounded border border-slate-700">
+                        <div class="flex flex-col"><span class="text-[10px] text-slate-500">段1</span><span class="text-amber-400 font-mono font-bold">${d.spray_mid_1 || 0}</span></div>
+                        <div class="flex flex-col border-l border-slate-700"><span class="text-[10px] text-slate-500">段2</span><span class="text-amber-400 font-mono font-bold">${d.spray_mid_2 || 0}</span></div>
+                        <div class="flex flex-col border-l border-slate-700"><span class="text-[10px] text-slate-500">段3</span><span class="text-amber-400 font-mono font-bold">${d.spray_mid_3 || 0}</span></div>
+                        <div class="flex flex-col border-l border-slate-700"><span class="text-[10px] text-slate-500">段4</span><span class="text-amber-400 font-mono font-bold">${d.spray_mid_4 || 0}</span></div>
+                    </div>
+                `;
+            };
+
+            document.getElementById('q_manual_a_display').innerHTML = buildManualHtml(data.manual_a_data, 'indigo');
+            document.getElementById('q_manual_b_display').innerHTML = buildManualHtml(data.manual_b_data, 'teal');
+
+            // 渲染膜厚紀錄
+            const thDisp = document.getElementById('q_thickness_display');
+            thDisp.innerHTML = '';
+            if (data.thickness_records && data.thickness_records.length > 0) {
+                data.thickness_records.forEach(r => {
+                    thDisp.innerHTML += `<div class="bg-slate-900 p-2 rounded-lg border border-slate-700 mb-1 flex justify-between font-mono">
+                        <span class="text-pink-300">${r.date}</span>
+                        <span class="text-slate-400">前:${r.front} | 中:${r.mid} | 後:${r.rear}</span>
+                    </div>`;
+                });
+            } else {
+                thDisp.innerHTML = `<div class="text-slate-500 italic text-center py-2">無紀錄</div>`;
+            }
+
+            // 渲染 NG 紀錄
+            const ngDisp = document.getElementById('q_ng_display');
+            ngDisp.innerHTML = '';
+            if (data.ng_records && data.ng_records.length > 0) {
+                data.ng_records.forEach(r => {
+                    ngDisp.innerHTML += `<div class="bg-slate-900 p-2 rounded-lg border border-slate-700 mb-1 text-orange-300">
+                        ${r.date} - [${r.loc}] ${r.reason}
+                    </div>`;
+                });
+            } else {
+                ngDisp.innerHTML = `<div class="text-slate-500 italic text-center py-2">無紀錄</div>`;
+            }
+
+            // 渲染備註
+            const rmDisp = document.getElementById('q_remarks_display');
+            rmDisp.innerHTML = '';
+            if (data.remarks && data.remarks.length > 0) {
+                data.remarks.forEach(r => {
+                    rmDisp.innerHTML += `<div class="bg-slate-900 p-2 rounded-lg border border-slate-700 text-slate-300 flex items-start gap-2 shadow-inner">
+                        <span class="text-blue-400">📌</span> <span>${r.text}</span>
+                    </div>`;
+                });
+            } else {
+                rmDisp.innerHTML = `<div class="col-span-3 text-slate-500 italic text-center py-2">無備註</div>`;
+            }
         }
 
+        // --- 13. 編輯與刪除機制 ---
         document.getElementById('btnEditItem').addEventListener('click', () => {
-            if (currentSelectedData) populateFormForEdit(currentSelectedData);
+            if (!window.currentSelectedData) return;
+            enterEditMode(window.currentSelectedData);
         });
 
         document.getElementById('btnDeleteItem').addEventListener('click', async () => {
-            if (!currentSelectedData) return;
-            if (!confirm(`確定要刪除「${currentSelectedData.item_name}」的所有參數資料嗎？`)) return;
+            if (!window.currentSelectedData) return;
+            if (!confirm(`確定要刪除構件「${window.currentSelectedData.item_name}」的參數紀錄嗎？此動作無法復原。`)) return;
 
-            showLoading('loading_db');
+            showLoading("loading_db");
             try {
-                const { error } = await supabase.from('coating_params').delete().eq('id', currentSelectedData.id);
+                const { error } = await supabase.from('parameters').delete().eq('id', window.currentSelectedData.id);
                 if (error) throw error;
-                alert('刪除成功！');
+                showToast("🗑️ 紀錄已成功刪除", "success");
                 document.getElementById('resultBoard').style.display = 'none';
                 document.getElementById('actionButtons').classList.add('hidden');
-                await loadItemsToSelect();
-            } catch (err) {
-                alert('刪除失敗: ' + err.message);
+                loadDatabaseItems(); // 重新整理
+            } catch (error) {
+                console.error(error);
+                showToast("刪除失敗", "error");
             } finally {
                 hideLoading();
             }
         });
 
-        // --- 10. 表單提交儲存 (含 Google Drive 上傳與 Supabase 更新) ---
-        document.getElementById('paramForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoading('loading_uploading');
+        function enterEditMode(data) {
+            isEditMode = true;
+            currentEditId = data.id;
+            switchTab('register');
 
-            try {
-                let finalImageUrl = currentSelectedData?.image_url || '';
+            document.getElementById('formTitle').innerHTML = `✏️ 參數資料編輯 <span class="text-sm font-normal text-slate-400 ml-2">(正在編輯: ${data.item_name})</span>`;
+            document.getElementById('submitBtn').innerHTML = i18nDict[currentLang].btn_submit_update || "💾 儲存修改並更新";
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
 
-                if (processedRegisterImageBase64) {
-                    finalImageUrl = await uploadToGoogleDrive(processedRegisterImageBase64);
-                }
+            // 填入類別與基本資料
+            document.getElementById('reg_category').value = data.category || '';
+            document.getElementById('item_name').value = data.item_name;
 
-                showLoading('loading_db');
-
-                const getBlockPayload = (prefix) => ({
-                    powder: parseInt(document.getElementById(`${prefix}_powder`).value) || 0,
-                    air: parseInt(document.getElementById(`${prefix}_air`).value) || 0,
-                    voltage: parseInt(document.getElementById(`${prefix}_voltage`).value) || 0,
-                    current: parseInt(document.getElementById(`${prefix}_current`).value) || 0,
-                    nozzle: document.getElementById(`${prefix}_nozzle`).value,
-                    ring: document.getElementById(`${prefix}_ring`).value,
-                    spray_count: parseInt(document.getElementById(`${prefix}_spray_count`).value) || 1,
-                    spray_left: parseInt(document.getElementById(`${prefix}_spray_left`).value) || 0,
-                    spray_top: parseInt(document.getElementById(`${prefix}_spray_top`).value) || 0,
-                    spray_bottom: parseInt(document.getElementById(`${prefix}_spray_bottom`).value) || 0,
-                    spray_right: parseInt(document.getElementById(`${prefix}_spray_right`).value) || 0,
-                    spray_mid_1: parseInt(document.getElementById(`${prefix}_spray_mid_1`).value) || 0,
-                    spray_mid_2: parseInt(document.getElementById(`${prefix}_spray_mid_2`).value) || 0,
-                    spray_mid_3: parseInt(document.getElementById(`${prefix}_spray_mid_3`).value) || 0,
-                    spray_mid_4: parseInt(document.getElementById(`${prefix}_spray_mid_4`).value) || 0,
-                });
-
-                const payload = {
-                    item_name: document.getElementById('item_name').value.trim(),
-                    image_url: finalImageUrl,
-                    gun_1: document.getElementById('gun_1').value,
-                    gun_2: document.getElementById('gun_2').value,
-                    gun_3: document.getElementById('gun_3').value,
-                    gun_4: document.getElementById('gun_4').value,
-                    gun_5: document.getElementById('gun_5').value,
-                    gun_6: document.getElementById('gun_6').value,
-                    gun_7: document.getElementById('gun_7').value,
-                    gun_8: document.getElementById('gun_8').value,
-                    speed_left: document.getElementById('speed_left').value,
-                    speed_right: document.getElementById('speed_right').value,
-                    up_turn_left: document.getElementById('up_turn_left').value,
-                    up_turn_right: document.getElementById('up_turn_right').value,
-                    down_turn_left: document.getElementById('down_turn_left').value,
-                    down_turn_right: document.getElementById('down_turn_right').value,
-                    dist_left: document.getElementById('dist_left').value,
-                    dist_right: document.getElementById('dist_right').value,
-                    voltage: document.getElementById('voltage').value,
-                    current: document.getElementById('current').value,
-                    manual_a: getBlockPayload('a'),
-                    manual_b: getBlockPayload('b'),
-                    thickness_records: stateThickness,
-                    ng_records: stateNG,
-                    remarks: stateRemarks
-                };
-
-                if (editModeId) {
-                    const { error } = await supabase.from('coating_params').update(payload).eq('id', editModeId);
-                    if (error) throw error;
-                    alert('資料修改成功！');
-                } else {
-                    const { error } = await supabase.from('coating_params').insert([payload]);
-                    if (error) throw error;
-                    alert('新參數建檔成功！');
-                }
-
-                resetFormToCreateMode();
-                await loadItemsToSelect();
-                switchTab('query');
-            } catch (err) {
-                alert('儲存失敗: ' + err.message);
-            } finally {
-                hideLoading();
-            }
-        });
-
-        // --- 11. 微距裁切與拍照 Modal (Cropper.js) ---
-        function startCropper(imageSrc, targetMode) {
-            cropTargetMode = targetMode;
-            const cropImage = document.getElementById('cropImage');
-            cropImage.src = imageSrc;
-            document.getElementById('cropModal').classList.remove('hidden');
-
-            if (cropper) cropper.destroy();
-            cropper = new Cropper(cropImage, {
-                aspectRatio: NaN,
-                viewMode: 1,
-                autoCropArea: 0.9,
-                background: false
-            });
-        }
-
-        document.getElementById('btnRotateLeft').addEventListener('click', () => cropper && cropper.rotate(-90));
-        document.getElementById('btnRotateRight').addEventListener('click', () => cropper && cropper.rotate(90));
-        document.getElementById('btnResetCrop').addEventListener('click', () => cropper && cropper.reset());
-        document.getElementById('btnCancelCrop').addEventListener('click', () => document.getElementById('cropModal').classList.add('hidden'));
-
-        document.getElementById('btnConfirmCrop').addEventListener('click', async () => {
-            if (!cropper) return;
-            const canvas = cropper.getCroppedCanvas({ maxWidth: 1024, maxHeight: 1024 });
-            const base64 = canvas.toDataURL('image/jpeg', 0.85);
-            document.getElementById('cropModal').classList.add('hidden');
-
-            if (cropTargetMode === 'register') {
-                processedRegisterImageBase64 = base64;
-                const previewImg = document.getElementById('regPreviewImg');
-                previewImg.src = base64;
+            // 圖片預覽 (使用直鏈處理確保看得到)
+            if (data.image_url) {
                 document.getElementById('regPreviewBox').classList.remove('hidden');
-            } else if (cropTargetMode === 'scan_name') {
-                showLoading('loading_ai_parse');
-                try {
-                    const messages = [
-                        { role: "system", content: "你是一位精準的工業構件文字識別助手。請分析輸入圖片中的料號與品名，僅回答標準格式「料號/品名」，不要回答任何額外解釋。" },
-                        { role: "user", content: [
-                            { type: "text", text: "請解析圖中的工件料號與品名：" },
-                            { type: "image_url", image_url: { url: base64 } }
-                        ]}
-                    ];
-                    const res = await callAiModel(messages, 50);
-                    const parsedText = res.choices[0].message.content.trim();
-                    document.getElementById('item_name').value = parsedText;
-                } catch (err) {
-                    alert("AI 識別失敗，請手動輸入: " + err.message);
-                } finally {
-                    hideLoading();
-                }
+                document.getElementById('regPreviewImg').src = getDirectImageUrl(data.image_url);
+            } else {
+                document.getElementById('regPreviewBox').classList.add('hidden');
+                document.getElementById('regPreviewImg').src = '';
             }
-        });
+            croppedBase64 = null; // 重置新裁切的圖
 
-        document.getElementById('reg_image').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (evt) => startCropper(evt.target.result, 'register');
-            reader.readAsDataURL(file);
-        });
-
-        document.getElementById('btnScanItemName').addEventListener('click', () => document.getElementById('scanNameInput').click());
-        document.getElementById('scanNameInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (evt) => startCropper(evt.target.result, 'scan_name');
-            reader.readAsDataURL(file);
-        });
-
-        // --- 12. AI 智慧搜尋與本地特徵比對 ---
-        document.getElementById('cameraInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            showLoading('loading_ai_search');
-
-            try {
-                const reader = new FileReader();
-                reader.onload = async (evt) => {
-                    const base64 = await compressImage(evt.target.result, 0.7);
-                    const dbNamesList = allItemsList.map(i => i.item_name).join(', ');
-
-                    const messages = [
-                        { role: "system", content: `你是一位粉體塗裝專家，請根據傳入的照片，從以下已知資料庫品名清單中找出最吻合的一個：[${dbNamesList}]。只輸出完全一致的品名名稱，若完全無法對應請輸出「無相符構件」。` },
-                        { role: "user", content: [
-                            { type: "text", text: "請分析此工件屬於資料庫中的哪一個品名：" },
-                            { type: "image_url", image_url: { url: base64 } }
-                        ]}
-                    ];
-
-                    const res = await callAiModel(messages, 60);
-                    const matchedName = res.choices[0].message.content.trim();
-                    const matchedItem = allItemsList.find(i => matchedName.includes(i.item_name) || i.item_name.includes(matchedName));
-
-                    if (matchedItem) {
-                        document.getElementById('itemSelect').value = matchedItem.id;
-                        displayQueryResult(matchedItem);
-                    } else {
-                        alert(`Respan AI 分析結果：「${matchedName}」，未找到精準匹配項，請改用本地特徵點比對。`);
-                    }
-                    hideLoading();
-                };
-                reader.readAsDataURL(file);
-            } catch (err) {
-                alert("AI 分析搜尋失敗: " + err.message);
-                hideLoading();
+            // 自動槍
+            for (let i=1; i<=8; i++) {
+                document.getElementById(`gun_${i}`).value = data.gun_data[`g${i}`] || '';
             }
-        });
 
-        // 本地特徵比對網格
-        document.getElementById('tesseractInput').addEventListener('change', () => {
-            renderVisualGrid();
-            document.getElementById('visualSearchModal').classList.remove('hidden');
-        });
-        document.getElementById('btnCloseVisualSearch').addEventListener('click', () => document.getElementById('visualSearchModal').classList.add('hidden'));
+            // 往復機
+            document.getElementById('speed_left').value = data.reciprocator_data.speed_l;
+            document.getElementById('speed_right').value = data.reciprocator_data.speed_r;
+            document.getElementById('up_turn_left').value = data.reciprocator_data.up_l;
+            document.getElementById('up_turn_right').value = data.reciprocator_data.up_r;
+            document.getElementById('down_turn_left').value = data.reciprocator_data.down_l;
+            document.getElementById('down_turn_right').value = data.reciprocator_data.down_r;
+            document.getElementById('dist_left').value = data.reciprocator_data.dist_l;
+            document.getElementById('dist_right').value = data.reciprocator_data.dist_r;
 
-        function renderVisualGrid(filterText = '') {
-            const grid = document.getElementById('visualSearchGrid');
-            grid.innerHTML = '';
+            // 電氣
+            document.getElementById('voltage').value = data.electrical_data.voltage;
+            document.getElementById('current').value = data.electrical_data.current;
+
+            // 手動槍資料填入函數
+            const fillManual = (d, prefix) => {
+                if(!d) return;
+                document.getElementById(`${prefix}_powder`).value = d.powder || '0';
+                document.getElementById(`${prefix}_air`).value = d.air || '0';
+                document.getElementById(`${prefix}_voltage`).value = d.voltage || '70';
+                document.getElementById(`${prefix}_current`).value = d.current || '15';
+                document.getElementById(`${prefix}_nozzle`).value = d.nozzle || '扇型';
+                document.getElementById(`${prefix}_ring`).value = d.ring || '有';
+                document.getElementById(`${prefix}_spray_count`).value = d.spray_count || '1';
+                document.getElementById(`${prefix}_spray_left`).value = d.spray_left || '0';
+                document.getElementById(`${prefix}_spray_top`).value = d.spray_top || '0';
+                document.getElementById(`${prefix}_spray_bottom`).value = d.spray_bottom || '0';
+                document.getElementById(`${prefix}_spray_right`).value = d.spray_right || '0';
+                document.getElementById(`${prefix}_spray_mid_1`).value = d.spray_mid_1 || '0';
+                document.getElementById(`${prefix}_spray_mid_2`).value = d.spray_mid_2 || '0';
+                document.getElementById(`${prefix}_spray_mid_3`).value = d.spray_mid_3 || '0';
+                document.getElementById(`${prefix}_spray_mid_4`).value = d.spray_mid_4 || '0';
+            };
+
+            fillManual(data.manual_a_data, 'a');
+            fillManual(data.manual_b_data, 'b');
+
+            // 紀錄填入
+            thicknessRecords = data.thickness_records || [];
+            ngRecords = data.ng_records || [];
+            remarkRecords = data.remarks || [];
             
-            const filtered = allItemsList.filter(i => i.item_name.toLowerCase().includes(filterText.toLowerCase()));
-            
-            filtered.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "bg-slate-800 p-2 sm:p-3 rounded-xl border border-slate-700 hover:border-blue-500 cursor-pointer transition flex flex-col items-center justify-between gap-2 shadow hover:scale-105";
-                
-                const formattedImgUrl = convertGoogleDriveUrl(item.image_url);
-                const imgHtml = formattedImgUrl 
-                    ? `<img src="${formattedImgUrl}" class="h-24 sm:h-28 w-full object-contain rounded bg-black/40" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'h-24 sm:h-28 w-full flex items-center justify-center bg-slate-900 text-slate-500 text-xs rounded\'>📷 無圖片</div>';">`
-                    : `<div class="h-24 sm:h-28 w-full flex items-center justify-center bg-slate-900 text-slate-500 text-xs rounded">📷 無圖片</div>`;
+            renderThicknessList();
+            renderNgList();
+            renderRemarksList();
 
-                card.innerHTML = `
-                    ${imgHtml}
-                    <div class="text-xs font-bold text-slate-200 text-center line-clamp-2 w-full">${item.item_name}</div>
-                `;
-
-                card.addEventListener('click', () => {
-                    document.getElementById('itemSelect').value = item.id;
-                    displayQueryResult(item);
-                    document.getElementById('visualSearchModal').classList.add('hidden');
-                });
-
-                grid.appendChild(card);
-            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        document.getElementById('visualSearchFilter').addEventListener('input', (e) => renderVisualGrid(e.target.value));
+        document.getElementById('cancelEditBtn').addEventListener('click', exitEditMode);
 
-        // --- 13. 膜厚紀錄總覽 Modal 完美修復（完美解決圖片顯示不出來與格式問題） ---
+        function exitEditMode() {
+            isEditMode = false;
+            currentEditId = null;
+            document.getElementById('formTitle').innerHTML = i18nDict[currentLang].form_title_create || "📝 參數資料建檔";
+            document.getElementById('submitBtn').innerHTML = i18nDict[currentLang].btn_submit_save || "💾 儲存並上傳至資料庫";
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+            resetForm();
+            switchTab('query');
+        }
+
+        // --- 14. 膜厚總紀錄表 Modal (修復圖片顯示、加入分類過濾) ---
+        const thicknessTableModal = document.getElementById('thicknessTableModal');
+        const thicknessTableBody = document.getElementById('thicknessTableBody');
+        const thicknessModalCategoryFilter = document.getElementById('thicknessModalCategoryFilter');
+
         document.getElementById('btnOpenThicknessModal').addEventListener('click', () => {
-            renderThicknessSummaryTable();
-            document.getElementById('thicknessTableModal').classList.remove('hidden');
+            thicknessModalCategoryFilter.value = ""; // 打開時重置過濾
+            renderThicknessTable();
+            thicknessTableModal.classList.remove('hidden');
         });
+
         document.getElementById('btnCloseThicknessModal').addEventListener('click', () => {
-            document.getElementById('thicknessTableModal').classList.add('hidden');
+            thicknessTableModal.classList.add('hidden');
         });
 
-        async function renderThicknessSummaryTable() {
-            const tbody = document.getElementById('thicknessTableBody');
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-400 font-bold">讀取膜厚總資料中...</td></tr>';
-            
+        thicknessModalCategoryFilter.addEventListener('change', renderThicknessTable);
+
+        async function renderThicknessTable() {
+            thicknessTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-slate-400">資料載入中...</td></tr>`;
             try {
-                const { data, error } = await supabase.from('coating_params').select('*').order('created_at', { ascending: false });
+                // 取得所有具備膜厚紀錄的資料
+                const { data, error } = await supabase.from('parameters').select('id, category, item_name, image_url, thickness_records').order('created_at', { ascending: false });
                 if (error) throw error;
+                
+                const filterCat = thicknessModalCategoryFilter.value;
+                let rowsHtml = '';
+                
+                if (data && data.length > 0) {
+                    data.forEach(item => {
+                        // 若有分類過濾條件，不符合則跳過
+                        if (filterCat && item.category !== filterCat) return;
 
-                let hasRecord = false;
-                let html = '';
-
-                data.forEach(item => {
-                    let records = [];
-                    if (typeof item.thickness_records === 'string') {
-                        try { records = JSON.parse(item.thickness_records); } catch(e) {}
-                    } else if (Array.isArray(item.thickness_records)) {
-                        records = item.thickness_records;
-                    }
-
-                    // 照片轉換處理：完美轉換 Google Drive 連結與備用替代圖
-                    const rawImg = item.image_url || '';
-                    const imgUrl = convertGoogleDriveUrl(rawImg);
-                    const imgHtml = imgUrl 
-                        ? `<img src="${imgUrl}" class="w-12 h-12 object-contain rounded border border-slate-700 bg-black/50 mx-auto" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-12 h-12 flex items-center justify-center bg-slate-900 text-slate-500 text-[10px] rounded border border-slate-700 mx-auto\'>📷 無圖</div>';">`
-                        : `<div class="w-12 h-12 flex items-center justify-center bg-slate-900 text-slate-500 text-[10px] rounded border border-slate-700 mx-auto">📷 無圖</div>`;
-
-                    if (records && records.length > 0) {
-                        hasRecord = true;
-                        records.forEach((rec, idx) => {
-                            html += `
-                                <tr class="border-b border-slate-800 hover:bg-slate-800/40 transition">
-                                    ${idx === 0 ? `<td class="px-3 py-3 text-center align-middle" rowspan="${records.length}">${imgHtml}</td>` : ''}
-                                    ${idx === 0 ? `<td class="px-3 py-3 font-bold text-slate-200 align-middle" rowspan="${records.length}">${item.item_name}</td>` : ''}
-                                    <td class="px-3 py-3 text-pink-400 font-bold">${rec.date || '-'}</td>
-                                    <td class="px-3 py-3 font-mono">${rec.f_min ?? 0} ~ ${rec.f_max ?? 0}</td>
-                                    <td class="px-3 py-3 font-mono">${rec.m_min ?? 0} ~ ${rec.m_max ?? 0}</td>
-                                    <td class="px-3 py-3 font-mono">${rec.r_min ?? 0} ~ ${rec.r_max ?? 0}</td>
-                                </tr>
-                            `;
-                        });
-                    }
-                });
-
-                if (!hasRecord) {
-                    const dict = i18nDict[currentLang] || i18nDict['tw'];
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-500 font-bold">${dict.no_thickness_record || '目前系統中無任何膜厚紀錄'}</td></tr>`;
+                        if (item.thickness_records && item.thickness_records.length > 0) {
+                            // 這裡套用直鏈修復函數
+                            const finalImgSrc = getDirectImageUrl(item.image_url) || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="100%" height="100%" fill="%23333"/><text x="50%" y="50%" fill="white" font-size="10" text-anchor="middle" dy=".3em">無圖片</text></svg>';
+                            
+                            // 反轉陣列，最新的膜厚在上面
+                            const sortedRecords = [...item.thickness_records].reverse();
+                            
+                            sortedRecords.forEach((rec, idx) => {
+                                // 只有第一筆顯示圖片與品名，跨行合併
+                                if (idx === 0) {
+                                    const rowspan = sortedRecords.length;
+                                    rowsHtml += `
+                                        <tr class="hover:bg-slate-800/50 transition border-b border-slate-700/50">
+                                            <td rowspan="${rowspan}" class="px-3 py-2 border-b border-slate-700 align-top text-center w-24">
+                                                <div class="h-16 w-16 mx-auto bg-black rounded-lg border border-slate-600 overflow-hidden shadow">
+                                                    <img src="${finalImgSrc}" class="w-full h-full object-cover" onerror="this.src=''; this.onerror=null;">
+                                                </div>
+                                            </td>
+                                            <td rowspan="${rowspan}" class="px-3 py-2 border-b border-slate-700 align-top">
+                                                <span class="bg-slate-800 text-amber-400 px-2 py-1 rounded text-xs font-bold border border-slate-600">${item.category || '未分類'}</span>
+                                            </td>
+                                            <td rowspan="${rowspan}" class="px-3 py-2 border-b border-slate-700 font-bold text-white align-top">
+                                                ${item.item_name}
+                                            </td>
+                                            <td class="px-3 py-2 text-pink-400 font-mono">${rec.date}</td>
+                                            <td class="px-3 py-2 text-slate-300 font-mono">${rec.front}</td>
+                                            <td class="px-3 py-2 text-slate-300 font-mono">${rec.mid}</td>
+                                            <td class="px-3 py-2 text-slate-300 font-mono">${rec.rear}</td>
+                                        </tr>`;
+                                } else {
+                                    rowsHtml += `
+                                        <tr class="hover:bg-slate-800/50 transition border-b border-slate-700/50">
+                                            <td class="px-3 py-2 text-pink-400 font-mono">${rec.date}</td>
+                                            <td class="px-3 py-2 text-slate-300 font-mono">${rec.front}</td>
+                                            <td class="px-3 py-2 text-slate-300 font-mono">${rec.mid}</td>
+                                            <td class="px-3 py-2 text-slate-300 font-mono">${rec.rear}</td>
+                                        </tr>`;
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                if (rowsHtml === '') {
+                    thicknessTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-500 italic font-bold">沒有符合條件的膜厚紀錄</td></tr>`;
                 } else {
-                    tbody.innerHTML = html;
+                    thicknessTableBody.innerHTML = rowsHtml;
                 }
             } catch (err) {
-                console.error("載入膜厚總表失敗:", err);
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-red-400 font-bold">載入資料失敗，請檢查 Supabase 資料庫連線</td></tr>';
+                console.error(err);
+                thicknessTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-red-400">讀取失敗</td></tr>`;
             }
         }
+
+        // --- 15. 初始化 ---
+        window.addEventListener('DOMContentLoaded', () => {
+            // 初始化套用語言
+            applyI18n('tw');
+            // 由於預設開啟查詢模式，自動載入資料庫列表
+            loadDatabaseItems();
+        });
+
     </script>
 </body>
 </html>

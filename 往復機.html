@@ -4,35 +4,122 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>百富粉體塗裝自動槍參數系統 / Sistem Parameter Pelapisan Serbuk Baifu</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Cropper.js -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-    <!-- SweetAlert2 for elegant notifications -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Tesseract.js (用於本地特徵/文字辨識) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    
     <style>
-        body { background-color: #0f172a; }
-        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        /* ==========================================
+           Core Styles & Resets
+           ========================================== */
+        body { background-color: #0f172a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Glassmorphism Panel */
+        .glass-panel { 
+            background: rgba(30, 41, 59, 0.7); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        /* Custom Scrollbar for better UI */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
+        /* Animations */
         @keyframes flashGolden {
             0%, 100% { color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
             50% { color: #FFF; text-shadow: none; }
         }
         .flash-gold { animation: flashGolden 1.2s infinite; font-weight: 900; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.8); }
+        }
+        .glow-effect { animation: pulse-glow 2s infinite; }
+
         .text-alert-red { color: #ef4444 !important; font-weight: bold; }
         
+        /* Loading Overlay */
         #loadingOverlay { backdrop-filter: blur(5px); transition: opacity 0.3s ease; }
-        .loader { border: 4px solid rgba(255, 255, 255, 0.1); border-left-color: #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        .loader { 
+            border: 4px solid rgba(255, 255, 255, 0.1); 
+            border-left-color: #3b82f6; 
+            border-radius: 50%; 
+            width: 50px; 
+            height: 50px; 
+            animation: spin 1s linear infinite; 
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Toast Notifications */
+        #toastContainer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            min-width: 250px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            animation: slideInRight 0.3s ease-out forwards, fadeOut 0.3s ease-in forwards 2.7s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toast-success { background: linear-gradient(to right, #059669, #10b981); border: 1px solid #34d399; }
+        .toast-error { background: linear-gradient(to right, #dc2626, #ef4444); border: 1px solid #f87171; }
+        .toast-warning { background: linear-gradient(to right, #d97706, #f59e0b); border: 1px solid #fbbf24; }
+        .toast-info { background: linear-gradient(to right, #2563eb, #3b82f6); border: 1px solid #60a5fa; }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
         
-        .fade-in { animation: fadeIn 0.4s ease-in-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Image fallback styles */
+        .img-error-fallback {
+            background-color: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ef4444;
+            font-size: 0.875rem;
+            text-align: center;
+            padding: 1rem;
+            border: 1px dashed #ef4444;
+        }
     </style>
 </head>
 <body class="text-white font-sans min-h-screen pb-12 relative selection:bg-blue-500 selection:text-white">
+
+    <!-- Toast 容器 -->
+    <div id="toastContainer"></div>
 
     <!-- 全局讀取動畫 -->
     <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/80 z-[100] hidden flex-col items-center justify-center p-4 text-center">
@@ -71,8 +158,9 @@
                         <option value="id">🇮🇩 印尼語 (Bahasa Indonesia)</option>
                         <option value="jv">🇮🇩 爪哇語 (Basa Jawa)</option>
                     </optgroup>
+                    <option value="en">🇺🇸 English</option>
                 </select>
-                <button id="btnLangInfo" class="text-slate-400 hover:text-blue-400 transition p-2 bg-slate-800 rounded-lg border border-slate-600 shrink-0" title="印尼語言說明">ℹ</button>
+                <button id="btnLangInfo" class="text-slate-400 hover:text-blue-400 transition p-2 bg-slate-800 rounded-lg border border-slate-600 shrink-0" title="語言說明">ℹ</button>
             </div>
         </div>
 
@@ -82,8 +170,10 @@
             <button id="tabRegisterBtn" class="flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white" data-i18n="tab_register">📝 參數建檔 / 編輯模式</button>
         </div>
 
-        <!-- 查詢模式區塊 -->
-        <div id="querySection" class="block fade-in">
+        <!-- ==========================================
+             查詢模式區塊 (Query Section)
+             ========================================== -->
+        <div id="querySection" class="block animate-fade-in">
             <div class="glass-panel p-4 sm:p-6 rounded-2xl mb-8 shadow-2xl">
                 <h2 class="text-lg sm:text-xl mb-4 sm:mb-6 font-bold text-amber-400 flex flex-wrap items-center gap-2 border-b border-slate-700 pb-3">
                     <span data-i18n="query_title">🔍 構件參數查詢</span>
@@ -104,23 +194,21 @@
                     </button>
                 </div>
 
+                <!-- 資料庫手動篩選區 (已新增膜厚類別過濾) -->
                 <div class="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-700">
-                    <label class="block text-slate-400 mb-2 font-bold text-xs sm:text-sm" data-i18n="lbl_select_db">或從資料庫直接選擇構件：</label>
-                    
-                    <!-- 新增：膜厚類別篩選器 -->
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <select id="queryCategorySelect" class="w-full sm:w-1/3 bg-slate-900 p-3 sm:p-4 rounded-xl border border-slate-600 text-amber-300 font-bold text-xs sm:text-base focus:ring-2 focus:ring-blue-500 transition shadow-inner">
-                            <option value="ALL">-- 顯示所有類別 --</option>
-                            <option value="[膜厚60~90]">[膜厚60~90]</option>
-                            <option value="[模厚80~100]">[模厚80~100]</option>
-                            <option value="黃色[膜厚90~100以上]">黃色[膜厚90~100以上]</option>
-                            <option value="小構件不開自動槍">小構件不開自動槍</option>
-                        </select>
-                        
-                        <select id="itemSelect" class="w-full sm:w-2/3 bg-slate-900 p-3 sm:p-4 rounded-xl border border-slate-600 text-white font-bold text-xs sm:text-base focus:ring-2 focus:ring-blue-500 transition shadow-inner">
-                            <option value="" data-i18n="opt_db_loading">-- 資料庫連線中... --</option>
-                        </select>
-                    </div>
+                    <label class="block text-slate-400 mb-2 font-bold text-xs sm:text-sm" data-i18n="lbl_select_db_category">從資料庫查詢 - 1. 選擇膜厚類別：</label>
+                    <select id="queryCategorySelect" class="w-full bg-slate-900 p-3 sm:p-4 rounded-xl border border-slate-600 text-emerald-400 font-bold text-xs sm:text-base focus:ring-2 focus:ring-emerald-500 transition shadow-inner mb-4">
+                        <option value="all">-- 顯示所有類別 --</option>
+                        <option value="[膜厚60~90]">[膜厚60~90]</option>
+                        <option value="[模厚80~100]">[模厚80~100]</option>
+                        <option value="黃色[膜厚90~100以上]">黃色[膜厚90~100以上]</option>
+                        <option value="小構件不開自動槍">小構件不開自動槍</option>
+                    </select>
+
+                    <label class="block text-slate-400 mb-2 font-bold text-xs sm:text-sm" data-i18n="lbl_select_db_item">從資料庫查詢 - 2. 選擇已建檔構件：</label>
+                    <select id="itemSelect" class="w-full bg-slate-900 p-3 sm:p-4 rounded-xl border border-slate-600 text-white font-bold text-xs sm:text-base focus:ring-2 focus:ring-blue-500 transition shadow-inner">
+                        <option value="" data-i18n="opt_db_loading">-- 資料庫連線中... --</option>
+                    </select>
                 </div>
 
                 <div id="actionButtons" class="mt-6 flex gap-3 sm:gap-4 hidden">
@@ -129,21 +217,21 @@
                 </div>
             </div>
 
-            <!-- 查詢結果面版 -->
-            <div id="resultBoard" style="display:none;" class="space-y-6 fade-in">
+            <!-- 查詢結果面版 (Result Board) -->
+            <div id="resultBoard" style="display:none;" class="space-y-6 animate-fade-in">
                 <!-- 上半部：自動槍與往復機 -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                     <!-- 左：圖片與槍粉量 -->
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-blue-500 flex flex-col">
-                        <h3 class="font-bold mb-3 sm:mb-4 text-blue-300 flex items-center gap-2 text-sm sm:text-base"><span class="text-lg sm:text-xl">🔫</span> <span data-i18n="card_gun_powder">自動槍粉量數據</span></h3>
+                        <h3 class="font-bold mb-3 sm:mb-4 text-blue-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_gun_powder"><span class="text-lg sm:text-xl">🔫</span> 自動槍粉量數據</h3>
                         
                         <!-- 類別顯示標籤 -->
-                        <div id="q_category_badge" class="mb-3 text-center bg-amber-500/20 text-amber-300 border border-amber-500/50 rounded-lg py-1 px-2 font-bold text-sm hidden"></div>
-                        
+                        <div id="q_category_badge" class="mb-3 text-center text-xs font-bold px-3 py-1 bg-emerald-900/50 text-emerald-300 border border-emerald-500/30 rounded-full hidden"></div>
+
                         <div id="imageContainer" class="mb-4 bg-black/50 p-2 rounded-xl text-center border border-slate-700 hidden shadow-inner relative group">
-                            <img id="q_matched_image" src="" class="mx-auto rounded-lg h-36 sm:h-48 w-full object-contain">
+                            <img id="q_matched_image" src="" class="mx-auto rounded-lg h-36 sm:h-48 w-full object-contain" alt="構件圖片">
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                                <a id="q_matched_image_link" href="#" target="_blank" class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">查看原圖</a>
+                                <a id="q_matched_image_link" href="#" target="_blank" class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">查看原圖</a>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm font-mono mt-auto">
@@ -164,7 +252,7 @@
 
                     <!-- 中：往復機 -->
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-amber-500 flex flex-col justify-between">
-                        <h3 class="font-bold mb-3 sm:mb-4 text-amber-300 flex items-center gap-2 text-sm sm:text-base"><span class="text-lg sm:text-xl">⚙️</span> <span data-i18n="card_reciprocator">往復機運行參數</span></h3>
+                        <h3 class="font-bold mb-3 sm:mb-4 text-amber-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_reciprocator"><span class="text-lg sm:text-xl">⚙️</span> 往復機運行參數</h3>
                         <div class="space-y-3 text-xs sm:text-sm mt-auto">
                             <div class="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700 shadow-inner">
                                 <span class="w-1/3 text-left text-amber-400 font-mono">左1: <b id="q_speed_left" class="text-base sm:text-xl"></b></span>
@@ -191,7 +279,7 @@
 
                     <!-- 右：電壓/電流 -->
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-red-500">
-                        <h3 class="font-bold mb-3 sm:mb-4 text-red-400 flex items-center gap-2 text-sm sm:text-base"><span class="text-lg sm:text-xl">⚡</span> <span data-i18n="card_electrical">自動槍電壓與電流</span></h3>
+                        <h3 class="font-bold mb-3 sm:mb-4 text-red-400 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_electrical"><span class="text-lg sm:text-xl">⚡</span> 自動槍電壓與電流</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-3">
                             <div class="bg-gradient-to-b from-slate-800 to-slate-900 p-4 sm:p-6 rounded-xl flex flex-col items-center justify-center border border-slate-700 shadow-inner">
                                 <div class="text-slate-400 text-xs sm:text-sm mb-1 font-bold tracking-widest" data-i18n="lbl_voltage_sys">系統電壓 (kV)</div>
@@ -208,11 +296,11 @@
                 <!-- 手動槍參數 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-indigo-500">
-                        <h3 class="font-bold mb-3 sm:mb-4 text-indigo-300 flex items-center gap-2 text-sm sm:text-base"><span class="text-lg sm:text-xl">🖌️</span> <span data-i18n="card_manual_a">區塊 A: 整體外觀面</span></h3>
+                        <h3 class="font-bold mb-3 sm:mb-4 text-indigo-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_manual_a"><span class="text-lg sm:text-xl">🖌️</span> 區塊 A: 整體外觀面</h3>
                         <div class="space-y-2 text-xs sm:text-sm bg-slate-900/50 p-3 sm:p-4 rounded-xl border border-slate-700 shadow-inner" id="q_manual_a_display"></div>
                     </div>
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-teal-500">
-                        <h3 class="font-bold mb-3 sm:mb-4 text-teal-300 flex items-center gap-2 text-sm sm:text-base"><span class="text-lg sm:text-xl">🖌️</span> <span data-i18n="card_manual_b">區塊 B: 邊角與溝槽</span></h3>
+                        <h3 class="font-bold mb-3 sm:mb-4 text-teal-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_manual_b"><span class="text-lg sm:text-xl">🖌️</span> 區塊 B: 邊角與溝槽</h3>
                         <div class="space-y-2 text-xs sm:text-sm bg-slate-900/50 p-3 sm:p-4 rounded-xl border border-slate-700 shadow-inner" id="q_manual_b_display"></div>
                     </div>
                 </div>
@@ -236,45 +324,43 @@
             </div>
         </div>
 
-        <!-- 建檔/編輯模式區塊 -->
-        <div id="registerSection" class="hidden fade-in">
+        <!-- ==========================================
+             建檔/編輯模式區塊 (Register/Edit Section)
+             ========================================== -->
+        <div id="registerSection" class="hidden animate-fade-in">
             <div class="glass-panel p-4 sm:p-8 rounded-2xl shadow-2xl relative">
                 <h2 id="formTitle" class="text-xl sm:text-2xl mb-6 font-bold text-emerald-400 flex items-center gap-2 border-b border-slate-700 pb-4" data-i18n="form_title_create">
                     📝 參數資料建檔
                 </h2>
                 
                 <form id="paramForm" class="space-y-6 sm:space-y-8 text-xs sm:text-sm">
-                    <!-- 基本資料 -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                        <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700 flex flex-col gap-4">
-                            
-                            <!-- 新增：膜厚類別選擇 -->
-                            <div>
-                                <label class="block text-slate-300 mb-2 font-bold text-amber-300">所屬膜厚類別 (必選)</label>
-                                <select id="reg_category" required class="w-full bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none transition text-xs sm:text-sm">
-                                    <option value="" disabled selected>-- 請選擇膜厚類別 --</option>
-                                    <option value="[膜厚60~90]">[膜厚60~90]</option>
-                                    <option value="[模厚80~100]">[模厚80~100]</option>
-                                    <option value="黃色[膜厚90~100以上]">黃色[膜厚90~100以上]</option>
-                                    <option value="小構件不開自動槍">小構件不開自動槍</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_item_name">品名 / 料號 (格式: 料號/品名)</label>
-                                <div class="flex flex-col sm:flex-row gap-2">
-                                    <input type="text" id="item_name" placeholder="例如：UC-280B/轉軸座" data-i18n-placeholder="placeholder_item_name" required class="flex-1 bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none transition text-xs sm:text-sm">
-                                    <input type="file" id="scanNameInput" accept="image/*" capture="environment" class="hidden">
-                                    <button type="button" id="btnScanItemName" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg font-bold shadow-lg flex items-center justify-center gap-1.5 transition text-xs sm:text-sm shrink-0">
-                                        <span data-i18n="btn_ai_scan_name">📸 AI 解析品名</span>
-                                    </button>
-                                </div>
+                    <!-- 基本資料 (新增膜厚類別下拉選單) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                        <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700 col-span-1 md:col-span-1">
+                            <label class="block text-slate-300 mb-2 font-bold text-emerald-400" data-i18n="lbl_category_select">膜厚類別 (必填)</label>
+                            <select id="reg_category" required class="w-full bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-emerald-600/50 text-white font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition text-xs sm:text-sm shadow-inner">
+                                <option value="" disabled selected>-- 請選擇膜厚類別 --</option>
+                                <option value="[膜厚60~90]">[膜厚60~90]</option>
+                                <option value="[模厚80~100]">[模厚80~100]</option>
+                                <option value="黃色[膜厚90~100以上]">黃色[膜厚90~100以上]</option>
+                                <option value="小構件不開自動槍">小構件不開自動槍</option>
+                            </select>
+                        </div>
+                        
+                        <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700 col-span-1 md:col-span-1">
+                            <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_item_name">品名 / 料號 (格式: 料號/品名)</label>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <input type="text" id="item_name" placeholder="例如：UC-280B/轉軸座" data-i18n-placeholder="placeholder_item_name" required class="flex-1 bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none transition text-xs sm:text-sm">
+                                <input type="file" id="scanNameInput" accept="image/*" capture="environment" class="hidden">
+                                <button type="button" id="btnScanItemName" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg font-bold shadow-lg flex items-center justify-center gap-1.5 transition text-xs sm:text-sm shrink-0" title="AI辨識品名">
+                                    📸 AI
+                                </button>
                             </div>
                         </div>
                         
-                        <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700">
-                            <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_comp_photo">構件照片-開啟相機拍照可調整裁切範圍 (將直傳 Google Drive)</label>
-                            <input type="file" id="reg_image" accept="image/*" capture="environment" class="w-full bg-slate-900 p-2 rounded-lg border border-slate-600 text-slate-300 cursor-pointer file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 transition text-xs">
+                        <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700 col-span-1 md:col-span-1">
+                            <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_comp_photo">構件照片 (相機拍照/相簿)</label>
+                            <input type="file" id="reg_image" accept="image/*" class="w-full bg-slate-900 p-2 rounded-lg border border-slate-600 text-slate-300 cursor-pointer file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 transition text-xs">
                             <div id="regPreviewBox" class="hidden mt-3 bg-black/50 p-2 rounded-lg text-center border border-slate-700">
                                 <img id="regPreviewImg" class="h-28 sm:h-32 mx-auto rounded object-contain">
                             </div>
@@ -285,14 +371,14 @@
                     <div class="pt-4 sm:pt-6 border-t border-slate-700">
                         <h3 class="text-blue-400 mb-3 sm:mb-4 font-bold text-base sm:text-lg flex items-center gap-2" data-i18n="card_gun_powder">🔫 自動槍粉量數據</h3>
                         <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2 sm:gap-3">
-                            <input type="text" id="gun_1" placeholder="槍1" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
-                            <input type="text" id="gun_2" placeholder="槍2" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
-                            <input type="text" id="gun_3" placeholder="槍3" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
-                            <input type="text" id="gun_4" placeholder="槍4" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
-                            <input type="text" id="gun_5" placeholder="槍5" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
-                            <input type="text" id="gun_6" placeholder="槍6" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
-                            <input type="text" id="gun_7" placeholder="槍7" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
-                            <input type="text" id="gun_8" placeholder="槍8" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
+                            <input type="number" id="gun_1" placeholder="槍1" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
+                            <input type="number" id="gun_2" placeholder="槍2" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
+                            <input type="number" id="gun_3" placeholder="槍3" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
+                            <input type="number" id="gun_4" placeholder="槍4" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
+                            <input type="number" id="gun_5" placeholder="槍5" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
+                            <input type="number" id="gun_6" placeholder="槍6" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
+                            <input type="number" id="gun_7" placeholder="槍7" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
+                            <input type="number" id="gun_8" placeholder="槍8" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
                         </div>
                     </div>
 
@@ -332,11 +418,11 @@
                         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
                             <div class="flex-1 flex items-center gap-2 bg-slate-800/50 p-2.5 sm:p-3 rounded-lg border border-slate-700">
                                 <span class="text-slate-300 font-bold w-16 text-right text-xs sm:text-sm" data-i18n="lbl_voltage">電壓:</span>
-                                <input type="text" id="voltage" value="70" class="w-full bg-slate-900 p-2 rounded-lg text-red-400 font-bold text-lg sm:text-xl border border-slate-600 text-center">
+                                <input type="number" id="voltage" value="70" class="w-full bg-slate-900 p-2 rounded-lg text-red-400 font-bold text-lg sm:text-xl border border-slate-600 text-center">
                             </div>
                             <div class="flex-1 flex items-center gap-2 bg-slate-800/50 p-2.5 sm:p-3 rounded-lg border border-slate-700">
                                 <span class="text-slate-300 font-bold w-16 text-right text-xs sm:text-sm" data-i18n="lbl_current">電流:</span>
-                                <input type="text" id="current" value="15" class="w-full bg-slate-900 p-2 rounded-lg text-red-400 font-bold text-lg sm:text-xl border border-slate-600 text-center">
+                                <input type="number" id="current" value="15" class="w-full bg-slate-900 p-2 rounded-lg text-red-400 font-bold text-lg sm:text-xl border border-slate-600 text-center">
                             </div>
                         </div>
                     </div>
@@ -353,7 +439,7 @@
                                         <span class="text-slate-300" data-i18n="lbl_powder">粉量 (±10)</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('a_powder', -10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
-                                            <input type="text" id="a_powder" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
+                                            <input type="number" id="a_powder" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
                                             <button type="button" onclick="adjManual('a_powder', 10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
@@ -361,7 +447,7 @@
                                         <span class="text-slate-300" data-i18n="lbl_air">風量 (±5, max 65)</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('a_air', -5, 0, 65)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
-                                            <input type="text" id="a_air" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
+                                            <input type="number" id="a_air" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
                                             <button type="button" onclick="adjManual('a_air', 5, 0, 65)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
@@ -369,7 +455,7 @@
                                         <span class="text-slate-300" data-i18n="lbl_voltage">電壓 (±10)</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('a_voltage', -10, 0, 110)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
-                                            <input type="text" id="a_voltage" value="70" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono font-bold">
+                                            <input type="number" id="a_voltage" value="70" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono font-bold">
                                             <button type="button" onclick="adjManual('a_voltage', 10, 0, 110)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
@@ -377,7 +463,7 @@
                                         <span class="text-slate-300" data-i18n="lbl_current">電流 (±1)</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('a_current', -1, 0, 110)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
-                                            <input type="text" id="a_current" value="15" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono font-bold">
+                                            <input type="number" id="a_current" value="15" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono font-bold">
                                             <button type="button" onclick="adjManual('a_current', 1, 0, 110)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
@@ -400,7 +486,7 @@
                                         <span class="text-slate-300 font-bold text-amber-300" data-i18n="lbl_spray_count">總噴塗次數</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('a_spray_count', -1, 1, 20)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
-                                            <input type="text" id="a_spray_count" value="1" class="w-14 sm:w-16 bg-black text-center flash-gold border border-amber-500/50 rounded py-1 font-mono text-base sm:text-lg">
+                                            <input type="number" id="a_spray_count" value="1" class="w-14 sm:w-16 bg-black text-center flash-gold border border-amber-500/50 rounded py-1 font-mono text-base sm:text-lg">
                                             <button type="button" onclick="adjManual('a_spray_count', 1, 1, 20)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
@@ -415,7 +501,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_left">左側</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('a_spray_left', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="a_spray_left" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="a_spray_left" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('a_spray_left', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -423,7 +509,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_top">上方</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('a_spray_top', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="a_spray_top" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="a_spray_top" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('a_spray_top', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -431,7 +517,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_bottom">下方</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('a_spray_bottom', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="a_spray_bottom" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="a_spray_bottom" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('a_spray_bottom', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -439,7 +525,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_right">右側</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('a_spray_right', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="a_spray_right" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="a_spray_right" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('a_spray_right', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -453,7 +539,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_1">一段</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('a_spray_mid_1', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="a_spray_mid_1" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="a_spray_mid_1" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('a_spray_mid_1', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -461,7 +547,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_2">二段</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('a_spray_mid_2', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="a_spray_mid_2" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="a_spray_mid_2" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('a_spray_mid_2', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -469,7 +555,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_3">三段</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('a_spray_mid_3', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="a_spray_mid_3" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="a_spray_mid_3" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('a_spray_mid_3', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -477,7 +563,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_4">四段</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('a_spray_mid_4', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="a_spray_mid_4" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="a_spray_mid_4" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('a_spray_mid_4', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -494,7 +580,7 @@
                                         <span class="text-slate-300" data-i18n="lbl_powder">粉量 (±10)</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('b_powder', -10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
-                                            <input type="text" id="b_powder" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
+                                            <input type="number" id="b_powder" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
                                             <button type="button" onclick="adjManual('b_powder', 10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
@@ -502,7 +588,7 @@
                                         <span class="text-slate-300" data-i18n="lbl_air">風量 (±5, max 65)</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('b_air', -5, 0, 65)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
-                                            <input type="text" id="b_air" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
+                                            <input type="number" id="b_air" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
                                             <button type="button" onclick="adjManual('b_air', 5, 0, 65)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
@@ -510,7 +596,7 @@
                                         <span class="text-slate-300" data-i18n="lbl_voltage">電壓 (±10)</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('b_voltage', -10, 0, 110)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
-                                            <input type="text" id="b_voltage" value="70" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono font-bold">
+                                            <input type="number" id="b_voltage" value="70" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono font-bold">
                                             <button type="button" onclick="adjManual('b_voltage', 10, 0, 110)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
@@ -518,7 +604,7 @@
                                         <span class="text-slate-300" data-i18n="lbl_current">電流 (±1)</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('b_current', -1, 0, 110)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
-                                            <input type="text" id="b_current" value="15" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono font-bold">
+                                            <input type="number" id="b_current" value="15" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono font-bold">
                                             <button type="button" onclick="adjManual('b_current', 1, 0, 110)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
@@ -541,7 +627,7 @@
                                         <span class="text-slate-300 font-bold text-amber-300" data-i18n="lbl_spray_count">總噴塗次數</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('b_spray_count', -1, 1, 20)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
-                                            <input type="text" id="b_spray_count" value="1" class="w-14 sm:w-16 bg-black text-center flash-gold border border-amber-500/50 rounded py-1 font-mono text-base sm:text-lg">
+                                            <input type="number" id="b_spray_count" value="1" class="w-14 sm:w-16 bg-black text-center flash-gold border border-amber-500/50 rounded py-1 font-mono text-base sm:text-lg">
                                             <button type="button" onclick="adjManual('b_spray_count', 1, 1, 20)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
@@ -556,7 +642,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_left">左側</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('b_spray_left', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="b_spray_left" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="b_spray_left" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('b_spray_left', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -564,7 +650,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_top">上方</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('b_spray_top', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="b_spray_top" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="b_spray_top" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('b_spray_top', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -572,7 +658,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_bottom">下方</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('b_spray_bottom', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="b_spray_bottom" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="b_spray_bottom" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('b_spray_bottom', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -580,7 +666,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_right">右側</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('b_spray_right', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="b_spray_right" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="b_spray_right" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('b_spray_right', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -594,7 +680,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_1">一段</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('b_spray_mid_1', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="b_spray_mid_1" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="b_spray_mid_1" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('b_spray_mid_1', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -602,7 +688,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_2">二段</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('b_spray_mid_2', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="b_spray_mid_2" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="b_spray_mid_2" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('b_spray_mid_2', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -610,7 +696,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_3">三段</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('b_spray_mid_3', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="b_spray_mid_3" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="b_spray_mid_3" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('b_spray_mid_3', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -618,7 +704,7 @@
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_4">四段</span>
                                                 <div class="flex items-center gap-1">
                                                     <button type="button" onclick="adjManual('b_spray_mid_4', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
-                                                    <input type="text" id="b_spray_mid_4" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
+                                                    <input type="number" id="b_spray_mid_4" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
                                                     <button type="button" onclick="adjManual('b_spray_mid_4', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
@@ -629,7 +715,7 @@
                         </div>
                     </div>
 
-                    <!-- 歷史紀錄追加區 -->
+                    <!-- 歷史紀錄追加區 (膜厚、NG、備註) -->
                     <div class="pt-6 sm:pt-8 border-t border-slate-700 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
                         <!-- 膜厚 -->
                         <div>
@@ -637,11 +723,29 @@
                             <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700 mb-4 flex flex-col gap-2.5">
                                 <input type="date" id="th_date" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white text-xs sm:text-sm">
                                 <div class="grid grid-cols-3 gap-2 text-xs">
-                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_front_sec">前段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_f_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_f_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
-                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_mid_sec">中段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_m_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_m_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
-                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_rear_sec">後段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_r_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_r_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
+                                    <div class="flex flex-col gap-1">
+                                        <span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_front_sec">前段 (Min-Max)</span>
+                                        <div class="flex gap-1">
+                                            <input type="number" id="th_f_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center" placeholder="Min">
+                                            <input type="number" id="th_f_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center" placeholder="Max">
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_mid_sec">中段 (Min-Max)</span>
+                                        <div class="flex gap-1">
+                                            <input type="number" id="th_m_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center" placeholder="Min">
+                                            <input type="number" id="th_m_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center" placeholder="Max">
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_rear_sec">後段 (Min-Max)</span>
+                                        <div class="flex gap-1">
+                                            <input type="number" id="th_r_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center" placeholder="Min">
+                                            <input type="number" id="th_r_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center" placeholder="Max">
+                                        </div>
+                                    </div>
                                 </div>
-                                <button type="button" id="btnAddThickness" class="bg-pink-600 hover:bg-pink-500 text-white w-full py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm" data-i18n="btn_add_thickness">＋ 加入膜厚紀錄</button>
+                                <button type="button" onclick="addThicknessRecord()" class="bg-pink-600 hover:bg-pink-500 text-white w-full py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm" data-i18n="btn_add_thickness">＋ 加入膜厚紀錄</button>
                             </div>
                             <div id="thicknessList" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2"></div>
                         </div>
@@ -668,7 +772,7 @@
                                             <option value="爆粉" data-i18n="opt_ng_reason_6">爆粉</option>
                                             <option value="皺痕" data-i18n="opt_ng_reason_7">皺痕</option>
                                         </select>
-                                        <button type="button" id="btnAddNg" class="bg-orange-600 hover:bg-orange-500 text-white px-3 py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm shrink-0" data-i18n="btn_add_ng">＋ 加入 NG</button>
+                                        <button type="button" onclick="addNgRecord()" class="bg-orange-600 hover:bg-orange-500 text-white px-3 py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm shrink-0" data-i18n="btn_add_ng">＋ 加入 NG</button>
                                     </div>
                                 </div>
                                 <div id="ngList" class="space-y-2 max-h-32 overflow-y-auto custom-scrollbar pr-2"></div>
@@ -678,7 +782,7 @@
                                 <h3 class="text-slate-300 font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2" data-i18n="lbl_add_remark">📝 修正備註欄位</h3>
                                 <div class="flex gap-2 mb-4">
                                     <input type="text" id="new_remark" placeholder="輸入備註或特殊叮嚀..." data-i18n-placeholder="placeholder_remark" class="flex-1 bg-slate-900 p-2.5 rounded-lg text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
-                                    <button type="button" id="btnAddRemark" class="bg-slate-600 hover:bg-slate-500 px-3 py-2 rounded-lg font-bold text-white shadow transition text-xs sm:text-sm shrink-0" data-i18n="btn_add_remark">＋ 新增</button>
+                                    <button type="button" onclick="addRemark()" class="bg-slate-600 hover:bg-slate-500 px-3 py-2 rounded-lg font-bold text-white shadow transition text-xs sm:text-sm shrink-0" data-i18n="btn_add_remark">＋ 新增</button>
                                 </div>
                                 <div id="remarksList" class="grid grid-cols-1 gap-2"></div>
                             </div>
@@ -695,7 +799,10 @@
         </div>
     </div>
 
-    <!-- Modals 區塊 -->
+    <!-- ==========================================
+         Modals (各種浮動視窗區塊)
+         ========================================== -->
+         
     <!-- API 系統設定 Modal -->
     <div id="settingsModal" class="fixed inset-0 bg-slate-900/95 flex items-center justify-center hidden z-50 p-4 backdrop-blur-sm">
         <div class="bg-slate-800 border border-slate-600 p-6 sm:p-8 rounded-2xl max-w-lg w-full shadow-2xl relative">
@@ -715,11 +822,7 @@
                 </div>
                 <div>
                     <label class="block text-slate-300 font-bold mb-2 text-xs sm:text-sm" data-i18n="lbl_nvidia_key">Open / NVIDIA API Key (AI 辨識用)</label>
-                    <input type="password" id="inputNvidiaKey" class="w-full bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-green-400 font-mono text-xs sm:text-sm focus:border-blue-500 outline-none" placeholder="nvapi-...">
-                </div>
-                <div>
-                    <label class="block text-slate-300 font-bold mb-2 text-xs sm:text-sm" data-i18n="lbl_gas_url">Google Apps Script URL (圖片上傳用)</label>
-                    <input type="text" id="inputGasUrl" class="w-full bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-blue-400 font-mono text-xs sm:text-sm focus:border-blue-500 outline-none" placeholder="https://script.google.com/macros/s/...">
+                    <input type="password" id="inputNvidiaKey" class="w-full bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-green-400 font-mono text-xs sm:text-sm focus:border-blue-500 outline-none" placeholder="sk-...">
                 </div>
             </div>
             
@@ -730,14 +833,15 @@
         </div>
     </div>
 
-    <!-- 印尼語說明 Modal -->
+    <!-- 語言說明 Modal -->
     <div id="langInfoModal" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-50 p-4">
         <div class="bg-slate-800 border border-blue-600 p-6 rounded-xl max-w-md w-full shadow-2xl text-white">
-            <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-4" data-i18n="modal_lang_title">🇮🇩 印尼語言分類說明</h3>
+            <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-4" data-i18n="modal_lang_title">語言分類說明</h3>
             <p class="text-xs sm:text-sm text-slate-300 mb-6 leading-relaxed">
-                系統支援之印尼語言可分為：<br><br>
-                1. <b>國家語言</b>：印尼語 (Bahasa Indonesia)<br>
-                2. <b>地方母語</b>：爪哇語 (Basa Jawa)<br>
+                系統支援之語言可分為：<br><br>
+                1. <b>繁體中文</b>：主要操作語系<br>
+                2. <b>印尼語系</b>：包含 Bahasa Indonesia 與爪哇語<br>
+                3. <b>English</b>：國際通用<br>
             </p>
             <button id="btnCloseLangInfo" class="w-full bg-blue-600 hover:bg-blue-500 py-2.5 rounded-lg font-bold transition text-xs sm:text-sm" data-i18n="btn_understand">了解 / Mengerti</button>
         </div>
@@ -776,27 +880,27 @@
 
     <!-- 膜厚檢測歷史總表 Modal (完美修正圖片顯示與跨網域除錯機制) -->
     <div id="thicknessTableModal" class="fixed inset-0 bg-slate-900/95 flex items-center justify-center hidden z-50 p-3 sm:p-4 backdrop-blur-sm">
-        <div class="bg-slate-800 border border-pink-500/50 p-4 sm:p-8 rounded-2xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl">
+        <div class="bg-slate-800 border border-pink-500/50 p-4 sm:p-8 rounded-2xl max-w-6xl w-full max-h-[90vh] flex flex-col shadow-2xl">
             <div class="flex justify-between items-center mb-4 sm:mb-6">
                 <h3 class="text-xl sm:text-2xl font-black text-pink-400" data-i18n="modal_thickness_title">📊 工件膜厚總紀錄</h3>
                 <button id="btnCloseThicknessModal" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-white font-bold transition text-xs sm:text-sm" data-i18n="btn_close">✕ 關閉</button>
             </div>
-            <!-- 類別篩選 -->
-            <div class="mb-4">
-                <select id="thicknessCategoryFilter" class="bg-slate-900 p-2 rounded-lg border border-slate-600 text-pink-300 font-bold text-xs sm:text-sm focus:border-blue-500 outline-none">
-                    <option value="ALL">-- 顯示所有類別 --</option>
+            <!-- 膜厚表格過濾器 -->
+            <div class="flex flex-col sm:flex-row gap-2 mb-4">
+                <select id="thicknessCategoryFilter" class="bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm">
+                    <option value="all">-- 所有膜厚類別 --</option>
                     <option value="[膜厚60~90]">[膜厚60~90]</option>
                     <option value="[模厚80~100]">[模厚80~100]</option>
                     <option value="黃色[膜厚90~100以上]">黃色[膜厚90~100以上]</option>
                     <option value="小構件不開自動槍">小構件不開自動槍</option>
                 </select>
             </div>
-            <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar border border-slate-700 rounded-xl bg-slate-900/50">
+            <div class="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar border border-slate-700 rounded-xl bg-slate-900/50 relative">
                 <table class="w-full text-xs sm:text-sm text-left text-slate-300 whitespace-nowrap">
-                    <thead class="text-xs text-slate-400 uppercase bg-slate-900 sticky top-0 shadow-md">
+                    <thead class="text-xs text-slate-400 uppercase bg-slate-900 sticky top-0 shadow-md z-10">
                         <tr>
                             <th class="px-3 py-3 sm:px-4 sm:py-4 border-b border-slate-700 text-center" data-i18n="th_photo">構件圖片</th>
-                            <th class="px-3 py-3 sm:px-4 sm:py-4 border-b border-slate-700 text-center">類別</th>
+                            <th class="px-3 py-3 sm:px-4 sm:py-4 border-b border-slate-700">類別</th>
                             <th class="px-3 py-3 sm:px-4 sm:py-4 border-b border-slate-700" data-i18n="th_name">構件品名</th>
                             <th class="px-3 py-3 sm:px-4 sm:py-4 border-b border-slate-700 text-pink-400" data-i18n="th_date">檢測日期</th>
                             <th class="px-3 py-3 sm:px-4 sm:py-4 border-b border-slate-700" data-i18n="th_front">前段 (Min-Max)</th>
@@ -810,24 +914,27 @@
         </div>
     </div>
 
-    <!-- JavaScript 邏輯引擎 -->
+    <!-- ==========================================
+         JavaScript 邏輯引擎 (純前端無伺服器架構)
+         ========================================== -->
     <script type="module">
-        // 匯入 Supabase
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
         
-        // --- 1. Supabase & 系統 API 設定 (已修正您的 URL 與 KEY) ---
-        const supabaseUrl = 'https://hyvcfxwoewvbpfzvfdnn.supabase.co';
-        const supabaseKey = 'sb_publishable_TR5C2Zc7eOj9uUosUUsX4g_KbBOwey2';
+        /**
+         * ==========================================
+         * 1. 系統組態與 Supabase 初始化
+         * ==========================================
+         */
+        const supabaseUrl = 'https://wxdrtnqizpbjfugdaglb.supabase.co';
+        const supabaseKey = 'sb_publishable_qUCcWVbzo-99rP85r_RhQg_EGewmxB4';
         const supabase = createClient(supabaseUrl, supabaseKey);
 
-        const defaultNvidiaKey = "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";
-        const defaultGasUrl = "https://script.google.com/macros/s/AKfycbwLoLqBnLm3-rwYBFJUd88j5ug-IW4SVdmg1AMr-1lZGzMYQ2iASoShRsi6CJZGxddp/exec";
+        const defaultNvidiaKey = "nvapi-default-placeholder";
         const defaultAiModel = "Respan Span 01 Lite";
         
         function getSetting(key, defaultVal) { return localStorage.getItem(key) || defaultVal; }
         
         document.getElementById('inputNvidiaKey').value = getSetting('NVIDIA_API_KEY', defaultNvidiaKey);
-        document.getElementById('inputGasUrl').value = getSetting('GAS_URL', defaultGasUrl);
         document.getElementById('selectAiModel').value = getSetting('AI_MODEL', defaultAiModel);
 
         function updateAiBadgeText() {
@@ -837,46 +944,59 @@
         }
         updateAiBadgeText();
 
-        document.getElementById('btnShowSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.remove('hidden'));
-        document.getElementById('btnCloseSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('hidden'));
-        document.getElementById('btnSaveSettings').addEventListener('click', () => {
-            localStorage.setItem('NVIDIA_API_KEY', document.getElementById('inputNvidiaKey').value);
-            localStorage.setItem('GAS_URL', document.getElementById('inputGasUrl').value);
-            localStorage.setItem('AI_MODEL', document.getElementById('selectAiModel').value);
-            updateAiBadgeText();
-            Swal.fire({ title: '已儲存', text: '系統 API 與模型設定已成功儲存！', icon: 'success', background: '#1e293b', color: '#fff' });
-            document.getElementById('settingsModal').classList.add('hidden');
-        });
+        /**
+         * ==========================================
+         * 2. Toast 提示系統 (企業級防呆回饋)
+         * ==========================================
+         */
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            let icon = 'ℹ️';
+            if(type === 'success') icon = '✅';
+            if(type === 'error') icon = '❌';
+            if(type === 'warning') icon = '⚠️';
 
-        // 圖片處理引擎：修正 Google Drive 圖片讀取不到的問題
-        window.parseImageUrl = function(url) {
-            if (!url) return 'https://via.placeholder.com/150/1e293b/ffffff?text=No+Image';
-            if (url.includes('drive.google.com/file/d/')) {
-                const match = url.match(/\/d\/(.+?)\//);
-                if (match && match[1]) {
-                    return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-                }
-            }
-            if (url.includes('open?id=')) {
-                return url.replace('open?id=', 'uc?export=view&id=');
-            }
-            return url;
+            toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                if(toast.parentElement) toast.parentElement.removeChild(toast);
+            }, 3000);
         };
 
-        // --- 2. 語系字典 Engine (i18n) - TW / ID / JV ---
+        // Loading Overlay 控制
+        window.showLoading = function(textKey = 'loading_ai') {
+            document.getElementById('loadingText').innerText = window.t ? window.t(textKey) : "處理中...";
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            document.getElementById('loadingOverlay').classList.add('flex');
+        };
+        window.hideLoading = function() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            document.getElementById('loadingOverlay').classList.remove('flex');
+        };
+
+        /**
+         * ==========================================
+         * 3. 語系字典 Engine (i18n)
+         * ==========================================
+         */
         const i18nDict = {
             tw: {
                 app_title: "百富粉體塗裝參數系統",
                 sub_title: "Pure Frontend AI Architecture (Respan Span 01 Lite Enabled)",
                 btn_thickness_summary: "📊 膜厚紀錄總覽",
                 btn_api_settings: "⚙️ 系統 API 設定",
-                tab_query: "📷 相機 / 手動查詢模式",
+                tab_query: "📷 查詢模式",
                 tab_register: "📝 參數建檔 / 編輯模式",
                 query_title: "🔍 構件參數查詢",
                 ai_driver_tag: "NVIDIA / Respan AI 驅動",
-                btn_ai_search: "📸 AI 智慧分析影像尋找 (開啟相機)",
-                btn_feature_search: "🖼 本地特徵比對尋找 (開啟相機)",
-                lbl_select_db: "或從資料庫直接選擇構件：",
+                btn_ai_search: "📸 AI 智慧分析影像尋找",
+                btn_feature_search: "🖼 本地特徵比對尋找",
+                lbl_select_db_category: "從資料庫查詢 - 1. 選擇膜厚類別：",
+                lbl_select_db_item: "從資料庫查詢 - 2. 選擇已建檔構件：",
                 opt_db_loading: "-- 資料庫連線中... --",
                 opt_db_select: "-- 請選擇已建檔之構件 --",
                 btn_edit_item: "✏️ 編輯此構件參數",
@@ -897,10 +1017,10 @@
                 card_remarks_history: "📝 修正備註",
                 form_title_create: "📝 參數資料建檔",
                 form_title_edit: "✏️ 參數資料編輯",
-                lbl_item_name: "品名 / 料號 (格式: 料號/品名)",
+                lbl_category_select: "膜厚類別 (必選)",
+                lbl_item_name: "品名 / 料號",
                 placeholder_item_name: "例如：UC-280B/轉軸座",
-                btn_ai_scan_name: "📸 AI 解析品名",
-                lbl_comp_photo: "構件照片-開啟相機拍照可調整裁切範圍 (將直傳 Google Drive)",
+                lbl_comp_photo: "構件照片 (相機拍照/相簿)",
                 lbl_recip_params: "⚙️ 往復機運行參數",
                 btn_fill_auto: "⚡ 換向填入「自動」",
                 lbl_recip_speed: "上下速度",
@@ -954,843 +1074,654 @@
                 btn_submit_update: "💾 儲存修改並更新",
                 btn_cancel_edit: "✖ 取消編輯",
                 modal_api_title: "⚙️ 系統 API 設定",
-                lbl_nvidia_key: "Open / NVIDIA API Key (AI 辨識用)",
-                lbl_gas_url: "Google Apps Script URL (圖片上傳用)",
+                lbl_nvidia_key: "Open / NVIDIA API Key",
                 btn_save_settings: "💾 儲存設定",
                 btn_close: "關閉",
-                modal_lang_title: "🇮🇩 印尼語言分類說明",
+                modal_lang_title: "語言分類說明",
                 btn_understand: "了解 / Mengerti",
-                modal_crop_title: "✂️ 調整圖片範圍與角度",
+                modal_crop_title: "✂️ 調整圖片範圍",
                 btn_rotate_left: "↺ 左旋轉",
                 btn_rotate_right: "↻ 右旋轉",
                 btn_reset: "重置",
                 btn_confirm_crop: "✅ 確認並送出",
                 btn_cancel_crop: "✕ 取消",
                 modal_visual_title: "👀 影像特徵比對清單",
-                placeholder_visual_filter: "🔍 輸入關鍵字過濾名稱...",
+                placeholder_visual_filter: "🔍 輸入關鍵字過濾...",
                 modal_thickness_title: "📊 工件膜厚總紀錄",
                 th_photo: "構件圖片",
                 th_name: "構件品名",
                 th_date: "檢測日期",
-                th_front: "前段 (Min-Max)",
-                th_mid: "中段 (Min-Max)",
-                th_rear: "後段 (Min-Max)",
-                no_thickness_record: "目前系統中無任何膜厚紀錄",
-                loading_ai: "系統處理中，請稍候...",
-                loading_uploading: "上傳圖片至雲端中...",
-                loading_db: "寫入 Supabase 資料庫...",
-                loading_ai_search: "Respan AI 智慧分析比對中...",
-                loading_ai_parse: "Respan AI 標籤與圖面解析中...",
-                del_confirm: "確定要刪除此構件嗎？",
-                del_ok: "已刪除",
-                success_save: "資料儲存成功！"
+                th_front: "前段",
+                th_mid: "中段",
+                th_rear: "後段",
+                no_thickness_record: "無紀錄",
+                loading_ai: "AI 處理中...",
+                loading_uploading: "圖片上傳中...",
+                loading_db: "寫入資料庫中...",
+                toast_save_success: "資料儲存成功！",
+                toast_del_success: "資料已刪除！",
+                toast_err_upload: "圖片上傳失敗"
             },
             id: {
-                app_title: "Sistem Parameter Pelapisan Serbuk Baifu",
-                sub_title: "Arsitektur AI Frontend Murni (Respan Span 01 Lite Enabled)",
+                app_title: "Sistem Parameter Pelapisan Serbuk",
+                sub_title: "Arsitektur AI Frontend",
                 btn_thickness_summary: "📊 Ringkasan Ketebalan",
                 btn_api_settings: "⚙️ Pengaturan API",
                 tab_query: "📷 Mode Pencarian",
-                tab_register: "📝 Mode Pendaftaran / Edit",
-                query_title: "🔍 Pencarian Parameter Komponen",
-                ai_driver_tag: "Ditenagai AI",
-                btn_ai_search: "📸 Cari dg Analisis AI (Kamera)",
-                btn_feature_search: "🖼 Pencarian Fitur Lokal (Kamera)",
-                lbl_select_db: "Atau pilih dari database:",
-                opt_db_loading: "-- Menghubungkan database... --",
-                opt_db_select: "-- Pilih Komponen Terdaftar --",
-                btn_edit_item: "✏️ Edit Parameter Ini",
+                tab_register: "📝 Mode Edit",
+                query_title: "🔍 Pencarian Komponen",
+                lbl_select_db_category: "Pilih Kategori Ketebalan:",
+                lbl_select_db_item: "Pilih Komponen:",
+                opt_db_loading: "-- Memuat... --",
+                opt_db_select: "-- Pilih Komponen --",
+                btn_edit_item: "✏️ Edit Parameter",
                 btn_delete_item: "🗑️ Hapus",
-                card_gun_powder: "🔫 Data Serbuk Pistol Otomatis",
+                card_gun_powder: "🔫 Data Serbuk Pistol",
                 card_reciprocator: "⚙️ Parameter Resiprokator",
                 card_electrical: "⚡ Tegangan & Arus",
-                lbl_speed: "Kecepatan Naik/Turun",
-                lbl_up_turn: "Pembalikan Atas",
-                lbl_down_turn: "Pembalikan Bawah",
-                lbl_distance: "Jarak Benda",
+                lbl_speed: "Kecepatan",
+                lbl_up_turn: "Balik Atas",
+                lbl_down_turn: "Balik Bawah",
+                lbl_distance: "Jarak",
                 lbl_voltage_sys: "Tegangan (kV)",
                 lbl_current_sys: "Arus (μA)",
-                card_manual_a: "🖌 Blok A: Permukaan Luar",
-                card_manual_b: "🖌️ Blok B: Sudut & Alur",
+                card_manual_a: "🖌 Blok A: Luar",
+                card_manual_b: "🖌️ Blok B: Sudut",
                 card_thickness_history: "📊 Riwayat Ketebalan",
                 card_ng_history: "⚠️ Riwayat NG",
-                card_remarks_history: "📝 Catatan Perbaikan",
-                form_title_create: "📝 Pendaftaran Baru",
+                card_remarks_history: "📝 Catatan",
+                form_title_create: "📝 Buat Parameter Baru",
                 form_title_edit: "✏️ Edit Parameter",
-                lbl_item_name: "Nama / No. Bagian",
-                placeholder_item_name: "Contoh: UC-280B",
-                btn_ai_scan_name: "📸 Analisis AI Nama",
+                lbl_category_select: "Kategori Ketebalan (Wajib)",
+                lbl_item_name: "Nama Item",
                 lbl_comp_photo: "Foto Komponen",
                 lbl_recip_params: "⚙ Parameter Resiprokator",
                 btn_fill_auto: "⚡ Isi 'Otomatis'",
-                lbl_recip_speed: "Kecepatan",
-                lbl_recip_upturn: "Titik Atas",
-                lbl_recip_downturn: "Titik Bawah",
-                lbl_recip_dist: "Jarak",
-                lbl_gun_elec: "⚡ Parameter Listrik",
+                lbl_gun_elec: "⚡ Listrik Pistol",
                 lbl_voltage: "Tegangan:",
                 lbl_current: "Arus:",
-                lbl_manual_fine: "🖌 Parameter Detail Pistol Manual",
-                title_block_a: "Blok (A)",
-                title_block_b: "Blok (B)",
-                lbl_powder: "Jumlah Serbuk",
-                lbl_air: "Tekanan Udara",
-                lbl_nozzle: "Tipe Nozzel",
-                lbl_ring: "Cincin Elektrostatik",
+                lbl_manual_fine: "🖌 Parameter Manual",
+                lbl_powder: "Serbuk (±10)",
+                lbl_air: "Udara (±5)",
+                lbl_nozzle: "Nozzel",
+                lbl_ring: "Cincin",
                 lbl_spray_count: "Total Semprot",
                 lbl_spray_left: "Kiri",
                 lbl_spray_top: "Atas",
                 lbl_spray_bottom: "Bawah",
                 lbl_spray_right: "Kanan",
-                lbl_spray_mid_1: "Tengah T1",
-                lbl_spray_mid_2: "Tengah T2",
-                lbl_spray_mid_3: "Tengah T3",
-                lbl_spray_mid_4: "Tengah T4",
-                opt_nozzle_fan: "Kipas",
-                opt_nozzle_fan_long: "Kipas Panjang",
-                opt_nozzle_round_long: "Bulat Panjang",
-                opt_yes: "Ada",
-                opt_no: "Tidak Ada",
-                lbl_add_thickness: "📊 Tambah Ketebalan",
-                lbl_front_sec: "Depan (Min-Max)",
-                lbl_mid_sec: "Tengah (Min-Max)",
-                lbl_rear_sec: "Belakang (Min-Max)",
                 btn_add_thickness: "＋ Tambah Ketebalan",
-                lbl_add_ng: "⚠ Tambah NG",
-                opt_ng_loc_a: "Sisi A",
-                opt_ng_loc_b: "Sisi B",
-                opt_ng_reason_1: "Ketebalan Kurang",
-                opt_ng_reason_2: "Terlalu Tebal",
-                opt_ng_reason_3: "Alur Tidak Berbedak",
-                opt_ng_reason_4: "Tumpukan Serbuk",
-                opt_ng_reason_5: "Luntur",
-                opt_ng_reason_6: "Meledak",
-                opt_ng_reason_7: "Kerutan",
                 btn_add_ng: "＋ Tambah NG",
-                lbl_add_remark: "📝 Tambah Catatan",
-                placeholder_remark: "Masukkan catatan...",
                 btn_add_remark: "＋ Tambah",
                 btn_submit_save: "💾 Simpan ke Database",
-                btn_submit_update: "💾 Perbarui Data",
-                btn_cancel_edit: "✖ Batal Edit",
-                modal_api_title: "⚙️ Pengaturan API",
-                lbl_nvidia_key: "NVIDIA API Key",
-                lbl_gas_url: "URL Google Apps Script",
-                btn_save_settings: "💾 Simpan",
-                btn_close: "Tutup",
-                modal_lang_title: "🇮🇩 Klasifikasi Bahasa Indonesia",
-                btn_understand: "Mengerti",
-                modal_crop_title: "✂️ Potong & Putar",
-                btn_rotate_left: "↺ Kiri",
-                btn_rotate_right: "↻ Kanan",
-                btn_reset: "Reset",
-                btn_confirm_crop: "✅ Konfirmasi",
-                btn_cancel_crop: "✕ Batal",
-                modal_visual_title: "👀 Daftar Komponen",
-                placeholder_visual_filter: "🔍 Ketik nama...",
-                modal_thickness_title: "📊 Riwayat Ketebalan Total",
-                th_photo: "Foto",
-                th_name: "Nama Komponen",
-                th_date: "Tanggal",
-                th_front: "Depan (Min-Max)",
-                th_mid: "Tengah (Min-Max)",
-                th_rear: "Belakang (Min-Max)",
-                no_thickness_record: "Tidak ada catatan.",
+                btn_submit_update: "💾 Update Database",
+                btn_cancel_edit: "✖ Batal",
                 loading_ai: "Memproses AI...",
-                loading_uploading: "Mengunggah gambar...",
-                loading_db: "Menyimpan ke DB...",
-                loading_ai_search: "Mencari dengan AI...",
-                loading_ai_parse: "AI menganalisis label...",
-                del_confirm: "Hapus komponen ini?",
-                del_ok: "Dihapus",
-                success_save: "Berhasil Disimpan!"
+                loading_db: "Menyimpan ke Database...",
+                toast_save_success: "Berhasil Disimpan!",
+                toast_del_success: "Berhasil Dihapus!"
             },
-            jv: {
-                app_title: "Sistem Parameter Lapisan Bubuk Baifu",
-                sub_title: "Arsitektur AI Frontend Murni",
-                btn_thickness_summary: "📊 Ringkesan Kekandelan",
-                btn_api_settings: "⚙️ Pengaturan API",
-                tab_query: "📷 Mode Panelusuran",
-                tab_register: "📝 Mode Ndhaptar / Sunting",
-                query_title: "🔍 Panelusuran Komponen",
-                ai_driver_tag: "Didukung AI",
-                btn_ai_search: "📸 Golek nganggo AI",
-                btn_feature_search: "🖼 Golek Fitur Lokal",
-                lbl_select_db: "Utawa pilih saka basis data:",
-                opt_db_loading: "-- Nyambung basis data... --",
-                opt_db_select: "-- Pilih Komponen --",
-                btn_edit_item: "✏️ Sunting Parameter",
-                btn_delete_item: "🗑️ Busak",
-                card_gun_powder: "🔫 Data Bubuk Bedhil",
-                card_reciprocator: "⚙️ Parameter Resiprokator",
-                card_electrical: "⚡ Tegangan & Arus",
-                lbl_speed: "Kacepetan",
-                lbl_up_turn: "Pembalikan Nduwur",
-                lbl_down_turn: "Pembalikan Ngisor",
-                lbl_distance: "Jarak",
-                lbl_voltage_sys: "Tegangan (kV)",
-                lbl_current_sys: "Arus (μA)",
-                card_manual_a: "🖌 Blok A: Njaba",
-                card_manual_b: "🖌️ Blok B: Sudut & Alur",
-                card_thickness_history: "📊 Riwayat Kekandelan",
-                card_ng_history: "⚠️ Riwayat Cacat (NG)",
-                card_remarks_history: "📝 Cathetan",
-                form_title_create: "📝 Ndhaptar Anyar",
-                form_title_edit: "✏️ Sunting Parameter",
-                lbl_item_name: "Jeneng Komponen",
-                placeholder_item_name: "Conto: UC-280B",
-                btn_ai_scan_name: "📸 Analisis Jeneng",
-                lbl_comp_photo: "Foto Komponen",
-                lbl_recip_params: "⚙ Parameter Resiprokator",
-                btn_fill_auto: "⚡ Isi 'Otomatis'",
-                lbl_recip_speed: "Kacepetan",
-                lbl_recip_upturn: "Titik Nduwur",
-                lbl_recip_downturn: "Titik Ngisor",
-                lbl_recip_dist: "Jarak",
-                lbl_gun_elec: "⚡ Parameter Listrik",
-                lbl_voltage: "Tegangan:",
-                lbl_current: "Arus:",
-                lbl_manual_fine: "🖌 Parameter Bedhil Manual",
-                title_block_a: "Blok (A)",
-                title_block_b: "Blok (B)",
-                lbl_powder: "Jumlah Bubuk",
-                lbl_air: "Tekanan Udara",
-                lbl_nozzle: "Tipe Nozzel",
-                lbl_ring: "Cincin Statis",
-                lbl_spray_count: "Total Semprot",
-                lbl_spray_left: "Kiwa",
-                lbl_spray_top: "Nduwur",
-                lbl_spray_bottom: "Ngisor",
-                lbl_spray_right: "Tengen",
-                lbl_spray_mid_1: "Tengah T1",
-                lbl_spray_mid_2: "Tengah T2",
-                lbl_spray_mid_3: "Tengah T3",
-                lbl_spray_mid_4: "Tengah T4",
-                opt_nozzle_fan: "Kipas",
-                opt_nozzle_fan_long: "Kipas Dowo",
-                opt_nozzle_round_long: "Bunder Dowo",
-                opt_yes: "Ono",
-                opt_no: "Ora Ono",
-                lbl_add_thickness: "📊 Tambah Kekandelan",
-                lbl_front_sec: "Ngarep (Min-Max)",
-                lbl_mid_sec: "Tengah (Min-Max)",
-                lbl_rear_sec: "Mburi (Min-Max)",
-                btn_add_thickness: "＋ Tambah Kekandelan",
-                lbl_add_ng: "⚠ Tambah Cacat",
-                opt_ng_loc_a: "Sisi A",
-                opt_ng_loc_b: "Sisi B",
-                opt_ng_reason_1: "Kurang Kandel",
-                opt_ng_reason_2: "Kekandelan",
-                opt_ng_reason_3: "Ora Kena Bubuk",
-                opt_ng_reason_4: "Bubuk Numpuk",
-                opt_ng_reason_5: "Merosot",
-                opt_ng_reason_6: "Mbledhos",
-                opt_ng_reason_7: "Keriut",
-                btn_add_ng: "＋ Tambah Cacat",
-                lbl_add_remark: "📝 Tambah Cathetan",
-                placeholder_remark: "Tulis cathetan...",
-                btn_add_remark: "＋ Tambah",
-                btn_submit_save: "💾 Simpen Data",
-                btn_submit_update: "💾 Nganyari Data",
-                btn_cancel_edit: "✖ Batal Sunting",
-                modal_api_title: "⚙️ Pengaturan API",
-                lbl_nvidia_key: "NVIDIA API Key",
-                lbl_gas_url: "URL GAS",
-                btn_save_settings: "💾 Simpen",
-                btn_close: "Tutup",
-                modal_lang_title: "🇮🇩 Info Basa",
-                btn_understand: "Ngerti",
-                modal_crop_title: "✂️ Potong Gambar",
-                btn_rotate_left: "↺ Kiwa",
-                btn_rotate_right: "↻ Tengen",
-                btn_reset: "Reset",
-                btn_confirm_crop: "✅ Konfirmasi",
-                btn_cancel_crop: "✕ Batal",
-                modal_visual_title: "👀 Dhaptar Komponen",
-                placeholder_visual_filter: "🔍 Golek jeneng...",
-                modal_thickness_title: "📊 Riwayat Kekandelan",
-                th_photo: "Foto",
-                th_name: "Jeneng",
-                th_date: "Tanggal",
-                th_front: "Ngarep (Min-Max)",
-                th_mid: "Tengah (Min-Max)",
-                th_rear: "Mburi (Min-Max)",
-                no_thickness_record: "Ora ana data.",
-                loading_ai: "Proses AI...",
-                loading_uploading: "Ngunggah...",
-                loading_db: "Nyimpen menyang DB...",
-                loading_ai_search: "Golek nganggo AI...",
-                loading_ai_parse: "AI maca label...",
-                del_confirm: "Mbusak komponen iki?",
-                del_ok: "Dibusak",
-                success_save: "Kasembadan Disimpen!"
+            en: {
+                app_title: "Powder Coating Parameter System",
+                sub_title: "Pure Frontend AI Architecture",
+                btn_thickness_summary: "📊 Thickness Summary",
+                btn_api_settings: "⚙️ API Settings",
+                tab_query: "📷 Query Mode",
+                tab_register: "📝 Register Mode",
+                query_title: "🔍 Component Query",
+                lbl_select_db_category: "Select Thickness Category:",
+                lbl_select_db_item: "Select Component:",
+                opt_db_loading: "-- Loading Database... --",
+                opt_db_select: "-- Select Component --",
+                btn_edit_item: "✏️ Edit Component",
+                btn_delete_item: "🗑️ Delete",
+                btn_submit_save: "💾 Save to Database",
+                btn_submit_update: "💾 Update Component",
+                btn_cancel_edit: "✖ Cancel Edit",
+                loading_ai: "Processing...",
+                toast_save_success: "Saved successfully!",
+                toast_del_success: "Deleted successfully!"
             }
         };
 
         let currentLang = 'tw';
+        
+        window.t = function(key) {
+            return i18nDict[currentLang]?.[key] || i18nDict['tw'][key] || key;
+        };
 
-        function t(key) { return i18nDict[currentLang][key] || key; }
-
-        function applyLanguage() {
-            document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
+        function updateI18n() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    // some specific input handling if needed
+                } else {
+                    el.innerHTML = window.t(key);
+                }
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                el.placeholder = window.t(el.getAttribute('data-i18n-placeholder'));
+            });
         }
 
         document.getElementById('langSelect').addEventListener('change', (e) => {
             currentLang = e.target.value;
-            applyLanguage();
-            renderThicknessTable(itemsData); // Re-render for language updates
+            if(currentLang === 'jv') currentLang = 'id'; // fallback to ID for Javanese currently
+            updateI18n();
         });
-        document.getElementById('btnLangInfo').addEventListener('click', () => { document.getElementById('langInfoModal').classList.remove('hidden'); });
-        document.getElementById('btnCloseLangInfo').addEventListener('click', () => { document.getElementById('langInfoModal').classList.add('hidden'); });
 
-        // --- 全局狀態變數 ---
-        let itemsData = [];
-        let currentMode = 'query'; // 'query' or 'register'
-        let editId = null; 
+        // 語言說明 Modal 控制
+        document.getElementById('btnLangInfo').addEventListener('click', () => document.getElementById('langInfoModal').classList.remove('hidden'));
+        document.getElementById('btnCloseLangInfo').addEventListener('click', () => document.getElementById('langInfoModal').classList.add('hidden'));
+
+        /**
+         * ==========================================
+         * 4. 核心全域變數與資料結構
+         * ==========================================
+         */
+        let isEditMode = false;
+        let currentEditId = null;
+        let originalImageUrl = null;
         
-        let localThickness = [];
-        let localNg = [];
-        let localRemarks = [];
-        let cropper = null;
-        let pendingImageData = null;
+        // 暫存陣列
+        let thicknessRecords = [];
+        let ngRecords = [];
+        let remarks = [];
+        let globalItemsData = []; // 快取資料庫數據
 
-        const tableName = 'coating_parameters'; // 假設的 Supabase 資料表名稱
-
-        // --- 數字增減工具 (綁定到全域供 HTML onClick 呼叫) ---
-        window.adjManual = function(id, delta, min, max, blockType) {
-            const input = document.getElementById(id);
-            let val = parseInt(input.value, 10);
-            if (isNaN(val)) val = min;
-            val += delta;
-            if (val < min) val = min;
-            if (val > max) val = max;
-            input.value = val;
-            
-            input.classList.remove('flash-gold');
-            void input.offsetWidth;
-            input.classList.add('flash-gold');
-            setTimeout(() => input.classList.remove('flash-gold'), 1200);
+        // 參數調整函數 (綁定到全域以便 onClick 呼叫)
+        window.adjManual = function(id, val, min, max, area) {
+            const el = document.getElementById(id);
+            let cv = parseInt(el.value || 0);
+            cv += val;
+            if(cv < min) cv = min;
+            if(cv > max) cv = max;
+            el.value = cv;
         };
 
-        // --- 顯示 Loading ---
-        function showLoading(msgKey) {
-            document.getElementById('loadingText').textContent = t(msgKey);
-            document.getElementById('loadingOverlay').style.display = 'flex';
-        }
-        function hideLoading() {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }
-
-        // --- 切換 Tabs ---
-        const tabQueryBtn = document.getElementById('tabQueryBtn');
-        const tabRegisterBtn = document.getElementById('tabRegisterBtn');
-        const querySection = document.getElementById('querySection');
-        const registerSection = document.getElementById('registerSection');
-        
-        function switchTab(mode) {
-            currentMode = mode;
-            if (mode === 'query') {
-                tabQueryBtn.classList.replace('bg-slate-800', 'bg-gradient-to-r');
-                tabQueryBtn.classList.add('from-blue-700', 'to-blue-900', 'text-white', 'shadow-lg');
-                tabQueryBtn.classList.remove('text-slate-300');
-                
-                tabRegisterBtn.classList.replace('bg-gradient-to-r', 'bg-slate-800');
-                tabRegisterBtn.classList.remove('from-blue-700', 'to-blue-900', 'text-white', 'shadow-lg');
-                tabRegisterBtn.classList.add('text-slate-300');
-                
-                querySection.style.display = 'block';
-                registerSection.style.display = 'none';
-                
-                document.getElementById('actionButtons').classList.add('hidden');
-                document.getElementById('resultBoard').style.display = 'none';
-                document.getElementById('itemSelect').value = "";
-                document.getElementById('queryCategorySelect').value = "ALL";
-                filterItemsByCategory(); // Reset filter
-            } else {
-                tabRegisterBtn.classList.replace('bg-slate-800', 'bg-gradient-to-r');
-                tabRegisterBtn.classList.add('from-blue-700', 'to-blue-900', 'text-white', 'shadow-lg');
-                tabRegisterBtn.classList.remove('text-slate-300');
-                
-                tabQueryBtn.classList.replace('bg-gradient-to-r', 'bg-slate-800');
-                tabQueryBtn.classList.remove('from-blue-700', 'to-blue-900', 'text-white', 'shadow-lg');
-                tabQueryBtn.classList.add('text-slate-300');
-                
-                querySection.style.display = 'none';
-                registerSection.style.display = 'block';
-            }
-        }
-        tabQueryBtn.addEventListener('click', () => switchTab('query'));
-        tabRegisterBtn.addEventListener('click', () => { resetForm(); switchTab('register'); });
-
-        // --- 資料庫拉取邏輯 ---
-        async function fetchItems() {
+        /**
+         * ==========================================
+         * 5. Supabase 圖片上傳與修正核心 (完美修復)
+         * ==========================================
+         */
+        async function uploadImageToSupabase(file) {
+            if(!file) return null;
+            
+            showLoading('loading_uploading');
             try {
-                const { data, error } = await supabase.from(tableName).select('*').order('created_at', { ascending: false });
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+                const filePath = `components/${fileName}`;
+                
+                // 1. 上傳至 Supabase Storage (Bucket 名稱假設為 images)
+                const { data, error } = await supabase.storage
+                    .from('images')
+                    .upload(filePath, file, { cacheControl: '3600', upsert: false });
+                
                 if (error) {
-                    if (error.code === 'PGRST116') {
-                        // Table doesn't exist, ignore or alert setup
-                        console.warn('Table not created yet.');
-                        itemsData = [];
-                    } else {
-                        throw error;
-                    }
-                } else {
-                    itemsData = data || [];
+                    // 如果 bucket 不存在或權限不對，拋出錯誤
+                    console.error("Supabase Storage Upload Error:", error);
+                    throw error;
                 }
-                populateCategorySelects();
-                filterItemsByCategory();
-                renderThicknessTable(itemsData);
-            } catch (err) {
-                console.error("Fetch error:", err);
-                Swal.fire('Error', '無法連接到 Supabase 資料庫，請檢查 API 金鑰。', 'error');
-            }
-        }
-
-        // --- 動態填充與篩選選單 ---
-        function populateCategorySelects() {
-            // 建檔的選單在 HTML 中已固定，這裡處理查詢下拉清單的連動
-            // (HTML 已有寫死4類選項)
-        }
-
-        function filterItemsByCategory() {
-            const cat = document.getElementById('queryCategorySelect').value;
-            const select = document.getElementById('itemSelect');
-            select.innerHTML = `<option value="">${t('opt_db_select')}</option>`;
-            
-            const filtered = cat === 'ALL' ? itemsData : itemsData.filter(item => item.category === cat);
-            
-            filtered.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item.id;
-                opt.textContent = `${item.category ? item.category + ' - ' : ''}${item.item_name}`;
-                select.appendChild(opt);
-            });
-        }
-
-        document.getElementById('queryCategorySelect').addEventListener('change', filterItemsByCategory);
-
-        // 當選擇構件時，顯示資料
-        document.getElementById('itemSelect').addEventListener('change', (e) => {
-            const id = e.target.value;
-            if (!id) {
-                document.getElementById('resultBoard').style.display = 'none';
-                document.getElementById('actionButtons').classList.add('hidden');
-                return;
-            }
-            const item = itemsData.find(i => i.id == id);
-            if (item) displayItem(item);
-        });
-
-        // --- 顯示資料至面板 ---
-        function displayItem(item) {
-            document.getElementById('resultBoard').style.display = 'block';
-            document.getElementById('actionButtons').classList.remove('hidden');
-            
-            // 類別標籤顯示
-            const catBadge = document.getElementById('q_category_badge');
-            if (item.category) {
-                catBadge.textContent = item.category;
-                catBadge.classList.remove('hidden');
-            } else {
-                catBadge.classList.add('hidden');
-            }
-
-            // 圖片
-            const imgContainer = document.getElementById('imageContainer');
-            const imgEl = document.getElementById('q_matched_image');
-            const imgLink = document.getElementById('q_matched_image_link');
-            if (item.image_url) {
-                const safeUrl = window.parseImageUrl(item.image_url);
-                imgEl.src = safeUrl;
-                imgEl.onerror = function() { this.src='https://via.placeholder.com/150/1e293b/ffffff?text=Image+Load+Error'; };
-                imgLink.href = safeUrl;
-                imgContainer.classList.remove('hidden');
-            } else {
-                imgContainer.classList.add('hidden');
-            }
-
-            // 自動槍粉量 (假設存為 JSON 陣列)
-            let gunParams = item.gun_params || Array(8).fill('');
-            if (typeof gunParams === 'string') gunParams = JSON.parse(gunParams);
-            for(let i=1; i<=8; i++) {
-                document.getElementById(`q_gun_${i}`).textContent = gunParams[i-1] || '-';
-            }
-
-            // 往復機 (JSON)
-            let rp = item.recip_params || {};
-            if (typeof rp === 'string') rp = JSON.parse(rp);
-            document.getElementById('q_speed_left').textContent = rp.speed_left || '-';
-            document.getElementById('q_speed_right').textContent = rp.speed_right || '-';
-            document.getElementById('q_up_turn_left').textContent = rp.up_turn_left || '-';
-            document.getElementById('q_up_turn_right').textContent = rp.up_turn_right || '-';
-            document.getElementById('q_down_turn_left').textContent = rp.down_turn_left || '-';
-            document.getElementById('q_down_turn_right').textContent = rp.down_turn_right || '-';
-            document.getElementById('q_dist_left').textContent = rp.dist_left || '-';
-            document.getElementById('q_dist_right').textContent = rp.dist_right || '-';
-
-            // 電氣
-            let ep = item.elec_params || {};
-            if (typeof ep === 'string') ep = JSON.parse(ep);
-            document.getElementById('q_voltage').textContent = ep.voltage || '-';
-            document.getElementById('q_current').textContent = ep.current || '-';
-
-            // 手動槍 A/B (用 HTML 格式化)
-            const formatManual = (m) => {
-                if(!m) return '<div class="text-slate-500">無資料</div>';
-                if(typeof m === 'string') m = JSON.parse(m);
-                return `
-                    <div class="flex justify-between border-b border-slate-700/50 pb-1"><span>粉量: <b class="text-white">${m.powder||0}</b></span><span>風量: <b class="text-white">${m.air||0}</b></span></div>
-                    <div class="flex justify-between border-b border-slate-700/50 pb-1"><span>電壓: <b class="text-white">${m.voltage||0}</b></span><span>電流: <b class="text-white">${m.current||0}</b></span></div>
-                    <div class="flex justify-between border-b border-slate-700/50 pb-1"><span>噴嘴: <b class="text-white">${m.nozzle||'-'}</b></span><span>靜電環: <b class="text-white">${m.ring||'-'}</b></span></div>
-                    <div class="flex justify-between border-b border-slate-700/50 pb-1 text-amber-300 font-bold"><span>總噴塗次數:</span><span class="text-lg">${m.spray_count||1}</span></div>
-                    <div class="grid grid-cols-2 gap-1 mt-2 bg-slate-900/50 p-1.5 rounded">
-                        <div class="col-span-2 text-indigo-300 font-bold text-[10px]">方位次數</div>
-                        <div>左:${m.spray_left||0}</div><div>上:${m.spray_top||0}</div>
-                        <div>下:${m.spray_bottom||0}</div><div>右:${m.spray_right||0}</div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-1 mt-1 bg-slate-900/50 p-1.5 rounded">
-                        <div class="col-span-2 text-amber-300 font-bold text-[10px]">中間分段次數</div>
-                        <div>一段:${m.spray_mid_1||0}</div><div>二段:${m.spray_mid_2||0}</div>
-                        <div>三段:${m.spray_mid_3||0}</div><div>四段:${m.spray_mid_4||0}</div>
-                    </div>
-                `;
-            };
-            document.getElementById('q_manual_a_display').innerHTML = formatManual(item.manual_a);
-            document.getElementById('q_manual_b_display').innerHTML = formatManual(item.manual_b);
-
-            // 歷史紀錄
-            let thRec = item.thickness_records || [];
-            if(typeof thRec === 'string') thRec = JSON.parse(thRec);
-            const thDiv = document.getElementById('q_thickness_display');
-            thDiv.innerHTML = '';
-            if(thRec.length === 0) thDiv.innerHTML = `<div class="text-slate-500">${t('no_thickness_record')}</div>`;
-            thRec.forEach(r => {
-                thDiv.innerHTML += `<div class="bg-slate-800/80 p-2 rounded flex justify-between border border-slate-700">
-                    <span class="text-pink-300 font-mono">${r.date}</span>
-                    <span>前[${r.f_min}-${r.f_max}] 中[${r.m_min}-${r.m_max}] 後[${r.r_min}-${r.r_max}]</span>
-                </div>`;
-            });
-
-            let ngRec = item.ng_records || [];
-            if(typeof ngRec === 'string') ngRec = JSON.parse(ngRec);
-            const ngDiv = document.getElementById('q_ng_display');
-            ngDiv.innerHTML = '';
-            ngRec.forEach(r => {
-                ngDiv.innerHTML += `<div class="bg-slate-800/80 p-2 rounded flex flex-col border border-slate-700">
-                    <div class="flex justify-between text-orange-300 font-bold"><span>${r.date}</span><span>${r.location}</span></div>
-                    <div class="text-slate-300">${r.reason}</div>
-                </div>`;
-            });
-
-            let rmRec = item.remarks || [];
-            if(typeof rmRec === 'string') rmRec = JSON.parse(rmRec);
-            const rmDiv = document.getElementById('q_remarks_display');
-            rmDiv.innerHTML = '';
-            rmRec.forEach((r, idx) => {
-                rmDiv.innerHTML += `<div class="bg-slate-800/80 p-2 rounded border border-slate-700 text-slate-300 flex items-start gap-2">
-                    <span class="text-blue-400 font-bold">#${idx+1}</span> <span>${r}</span>
-                </div>`;
-            });
-        }
-
-        // --- 進入編輯模式 ---
-        document.getElementById('btnEditItem').addEventListener('click', () => {
-            const id = document.getElementById('itemSelect').value;
-            const item = itemsData.find(i => i.id == id);
-            if (!item) return;
-
-            resetForm();
-            editId = item.id;
-            
-            document.getElementById('formTitle').innerHTML = `✏️ 參數資料編輯 <span class="text-sm bg-blue-600 px-2 py-0.5 rounded text-white ml-2">${item.item_name}</span>`;
-            document.getElementById('submitBtn').innerHTML = `💾 ${t('btn_submit_update')}`;
-            document.getElementById('cancelEditBtn').classList.remove('hidden');
-
-            document.getElementById('item_name').value = item.item_name;
-            if(item.category) document.getElementById('reg_category').value = item.category;
-
-            if (item.image_url) {
-                document.getElementById('regPreviewImg').src = window.parseImageUrl(item.image_url);
-                document.getElementById('regPreviewBox').classList.remove('hidden');
-                pendingImageData = item.image_url; // Keep old URL if no new upload
-            }
-
-            let gp = item.gun_params || Array(8).fill('');
-            if(typeof gp === 'string') gp = JSON.parse(gp);
-            for(let i=1; i<=8; i++) document.getElementById(`gun_${i}`).value = gp[i-1] || '';
-
-            let rp = item.recip_params || {};
-            if(typeof rp === 'string') rp = JSON.parse(rp);
-            ['speed_left','speed_right','up_turn_left','up_turn_right','down_turn_left','down_turn_right','dist_left','dist_right'].forEach(k => {
-                if(rp[k]) document.getElementById(k).value = rp[k];
-            });
-
-            let ep = item.elec_params || {};
-            if(typeof ep === 'string') ep = JSON.parse(ep);
-            if(ep.voltage) document.getElementById('voltage').value = ep.voltage;
-            if(ep.current) document.getElementById('current').value = ep.current;
-
-            const populateManual = (m, prefix) => {
-                if(!m) return;
-                if(typeof m === 'string') m = JSON.parse(m);
-                const keys = ['powder','air','voltage','current','nozzle','ring','spray_count',
-                              'spray_left','spray_top','spray_bottom','spray_right',
-                              'spray_mid_1','spray_mid_2','spray_mid_3','spray_mid_4'];
-                keys.forEach(k => {
-                    const el = document.getElementById(`${prefix}_${k}`);
-                    if(el && m[k] !== undefined) el.value = m[k];
-                });
-            };
-            populateManual(item.manual_a, 'a');
-            populateManual(item.manual_b, 'b');
-
-            let th = item.thickness_records; if(typeof th === 'string') th = JSON.parse(th);
-            localThickness = th || [];
-            renderThicknessList();
-
-            let ng = item.ng_records; if(typeof ng === 'string') ng = JSON.parse(ng);
-            localNg = ng || [];
-            renderNgList();
-
-            let rm = item.remarks; if(typeof rm === 'string') rm = JSON.parse(rm);
-            localRemarks = rm || [];
-            renderRemarksList();
-
-            switchTab('register');
-        });
-
-        document.getElementById('cancelEditBtn').addEventListener('click', () => {
-            resetForm();
-            switchTab('query');
-        });
-
-        // 刪除構件
-        document.getElementById('btnDeleteItem').addEventListener('click', async () => {
-            const id = document.getElementById('itemSelect').value;
-            if (!id) return;
-            
-            const res = await Swal.fire({
-                title: t('del_confirm'),
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                background: '#1e293b', color: '#fff'
-            });
-
-            if (res.isConfirmed) {
-                showLoading('loading_db');
-                const { error } = await supabase.from(tableName).delete().eq('id', id);
+                
+                // 2. 獲取絕對的公開 URL (解決讀取不到的問題)
+                const { data: publicUrlData } = supabase.storage
+                    .from('images')
+                    .getPublicUrl(filePath);
+                
                 hideLoading();
-                if (error) {
-                    Swal.fire('Error', error.message, 'error');
-                } else {
-                    Swal.fire(t('del_ok'), '', 'success');
-                    await fetchItems();
-                    document.getElementById('itemSelect').value = '';
-                    document.getElementById('resultBoard').style.display = 'none';
-                    document.getElementById('actionButtons').classList.add('hidden');
-                }
+                return publicUrlData.publicUrl;
+            } catch (err) {
+                hideLoading();
+                showToast(window.t('toast_err_upload') + ": " + err.message, 'error');
+                console.error(err);
+                
+                // Fallback: 轉成 Base64 字串存入 (如果 Storage 失敗，至少能保存)
+                return await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(file);
+                });
             }
-        });
-
-        // --- 紀錄與備註新增邏輯 ---
-        document.getElementById('btnAddThickness').addEventListener('click', () => {
-            const date = document.getElementById('th_date').value;
-            if(!date) return alert('請選擇日期');
-            const rec = {
-                date,
-                f_min: document.getElementById('th_f_min').value || 0,
-                f_max: document.getElementById('th_f_max').value || 0,
-                m_min: document.getElementById('th_m_min').value || 0,
-                m_max: document.getElementById('th_m_max').value || 0,
-                r_min: document.getElementById('th_r_min').value || 0,
-                r_max: document.getElementById('th_r_max').value || 0
-            };
-            localThickness.push(rec);
-            renderThicknessList();
-        });
-
-        function renderThicknessList() {
-            const div = document.getElementById('thicknessList');
-            div.innerHTML = '';
-            localThickness.forEach((r, idx) => {
-                div.innerHTML += `<div class="bg-slate-900 p-2 rounded flex justify-between items-center text-xs border border-slate-700">
-                    <span class="text-pink-300">${r.date} | 前[${r.f_min}-${r.f_max}] 中[${r.m_min}-${r.m_max}] 後[${r.r_min}-${r.r_max}]</span>
-                    <button type="button" onclick="localThickness.splice(${idx},1); renderThicknessList()" class="text-red-500 hover:text-red-400 font-bold">X</button>
-                </div>`;
-            });
-        }
-        window.renderThicknessList = renderThicknessList;
-
-        document.getElementById('btnAddNg').addEventListener('click', () => {
-            const date = document.getElementById('ng_date').value;
-            if(!date) return alert('請選擇日期');
-            localNg.push({
-                date,
-                location: document.getElementById('ng_location').value,
-                reason: document.getElementById('ng_reason').value
-            });
-            renderNgList();
-        });
-
-        function renderNgList() {
-            const div = document.getElementById('ngList');
-            div.innerHTML = '';
-            localNg.forEach((r, idx) => {
-                div.innerHTML += `<div class="bg-slate-900 p-2 rounded flex justify-between items-center text-xs border border-slate-700">
-                    <span class="text-orange-300">${r.date} | ${r.location} - ${r.reason}</span>
-                    <button type="button" onclick="localNg.splice(${idx},1); renderNgList()" class="text-red-500 hover:text-red-400 font-bold">X</button>
-                </div>`;
-            });
-        }
-        window.renderNgList = renderNgList;
-
-        document.getElementById('btnAddRemark').addEventListener('click', () => {
-            const val = document.getElementById('new_remark').value.trim();
-            if(!val) return;
-            localRemarks.push(val);
-            document.getElementById('new_remark').value = '';
-            renderRemarksList();
-        });
-
-        function renderRemarksList() {
-            const div = document.getElementById('remarksList');
-            div.innerHTML = '';
-            localRemarks.forEach((r, idx) => {
-                div.innerHTML += `<div class="bg-slate-900 p-2 rounded flex justify-between items-center text-xs border border-slate-700">
-                    <span class="text-slate-300">${r}</span>
-                    <button type="button" onclick="localRemarks.splice(${idx},1); renderRemarksList()" class="text-red-500 hover:text-red-400 font-bold">X</button>
-                </div>`;
-            });
-        }
-        window.renderRemarksList = renderRemarksList;
-
-        // 換向自動填寫
-        document.getElementById('btnFillAuto').addEventListener('click', () => {
-            ['up_turn_left','up_turn_right','down_turn_left','down_turn_right'].forEach(id => {
-                document.getElementById(id).value = '自動';
-            });
-        });
-
-        // 重置表單
-        function resetForm() {
-            editId = null;
-            document.getElementById('paramForm').reset();
-            document.getElementById('formTitle').innerHTML = `📝 ${t('form_title_create')}`;
-            document.getElementById('submitBtn').innerHTML = `💾 ${t('btn_submit_save')}`;
-            document.getElementById('cancelEditBtn').classList.add('hidden');
-            document.getElementById('regPreviewBox').classList.add('hidden');
-            pendingImageData = null;
-            localThickness = []; localNg = []; localRemarks = [];
-            renderThicknessList(); renderNgList(); renderRemarksList();
-            
-            // 預設日期為今天
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('th_date').value = today;
-            document.getElementById('ng_date').value = today;
         }
 
-        // --- 圖片裁切處理 (Cropper.js) ---
-        document.getElementById('reg_image').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if(file) {
+        // 圖片讀取失敗時的 Fallback UI 處理
+        function handleImageError(imgElement) {
+            imgElement.onerror = null; // 防止無限迴圈
+            imgElement.style.display = 'none';
+            const parent = imgElement.parentElement;
+            let fallback = parent.querySelector('.img-error-fallback');
+            if(!fallback) {
+                fallback = document.createElement('div');
+                fallback.className = 'img-error-fallback h-36 sm:h-48 rounded-lg w-full';
+                fallback.innerHTML = `<span>圖片載入失敗<br><small class="text-slate-500">可能已被刪除或權限不足</small></span>`;
+                parent.insertBefore(fallback, imgElement);
+            }
+        }
+
+        /**
+         * ==========================================
+         * 6. 裁切 (Cropper.js) 邏輯
+         * ==========================================
+         */
+        let cropper = null;
+        const regImageInput = document.getElementById('reg_image');
+        const cropModal = document.getElementById('cropModal');
+        const cropImage = document.getElementById('cropImage');
+        const regPreviewBox = document.getElementById('regPreviewBox');
+        const regPreviewImg = document.getElementById('regPreviewImg');
+        let currentCroppedBlob = null;
+
+        regImageInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files && files.length > 0) {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('cropImage').src = e.target.result;
-                    document.getElementById('cropModal').classList.remove('hidden');
-                    if(cropper) cropper.destroy();
-                    cropper = new Cropper(document.getElementById('cropImage'), {
-                        aspectRatio: NaN,
-                        viewMode: 2,
-                        autoCropArea: 0.9,
+                reader.onload = (event) => {
+                    cropImage.src = event.target.result;
+                    cropModal.classList.remove('hidden');
+                    if (cropper) cropper.destroy();
+                    cropper = new Cropper(cropImage, {
+                        viewMode: 1,
+                        background: false,
+                        autoCropArea: 0.8,
+                        responsive: true
                     });
                 };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        document.getElementById('btnRotateLeft').addEventListener('click', () => { if(cropper) cropper.rotate(-90); });
-        document.getElementById('btnRotateRight').addEventListener('click', () => { if(cropper) cropper.rotate(90); });
-        document.getElementById('btnResetCrop').addEventListener('click', () => { if(cropper) cropper.reset(); });
-        document.getElementById('btnCancelCrop').addEventListener('click', () => {
-            document.getElementById('cropModal').classList.add('hidden');
-            document.getElementById('reg_image').value = '';
-        });
-        document.getElementById('btnConfirmCrop').addEventListener('click', () => {
-            if(cropper) {
-                pendingImageData = cropper.getCroppedCanvas({ width: 800 }).toDataURL('image/jpeg', 0.8);
-                document.getElementById('regPreviewImg').src = pendingImageData;
-                document.getElementById('regPreviewBox').classList.remove('hidden');
-                document.getElementById('cropModal').classList.add('hidden');
+                reader.readAsDataURL(files[0]);
             }
         });
 
-        // --- 表單提交邏輯 ---
+        document.getElementById('btnRotateLeft').addEventListener('click', () => cropper && cropper.rotate(-90));
+        document.getElementById('btnRotateRight').addEventListener('click', () => cropper && cropper.rotate(90));
+        document.getElementById('btnResetCrop').addEventListener('click', () => cropper && cropper.reset());
+        document.getElementById('btnCancelCrop').addEventListener('click', () => {
+            cropModal.classList.add('hidden');
+            regImageInput.value = '';
+            if (cropper) cropper.destroy();
+        });
+
+        document.getElementById('btnConfirmCrop').addEventListener('click', () => {
+            if (!cropper) return;
+            const canvas = cropper.getCroppedCanvas({ maxWidth: 1024, maxHeight: 1024 });
+            canvas.toBlob((blob) => {
+                currentCroppedBlob = blob;
+                // 用這個自訂檔名模擬 File 物件，以利上傳
+                currentCroppedBlob.name = `cropped_${Date.now()}.jpg`;
+                
+                const url = URL.createObjectURL(blob);
+                regPreviewImg.src = url;
+                regPreviewBox.classList.remove('hidden');
+                cropModal.classList.add('hidden');
+                cropper.destroy();
+                cropper = null;
+            }, 'image/jpeg', 0.85);
+        });
+
+        /**
+         * ==========================================
+         * 7. 附屬紀錄清單邏輯 (膜厚、NG、備註)
+         * ==========================================
+         */
+        window.addThicknessRecord = function() {
+            const d = document.getElementById('th_date').value;
+            const fm = document.getElementById('th_f_min').value;
+            const fx = document.getElementById('th_f_max').value;
+            const mm = document.getElementById('th_m_min').value;
+            const mx = document.getElementById('th_m_max').value;
+            const rm = document.getElementById('th_r_min').value;
+            const rx = document.getElementById('th_r_max').value;
+
+            if(!d || !fm || !fx || !mm || !mx || !rm || !rx) {
+                showToast("請填寫所有膜厚欄位！", "warning");
+                return;
+            }
+
+            thicknessRecords.push({ date: d, front: `${fm}-${fx}`, mid: `${mm}-${mx}`, rear: `${rm}-${rx}` });
+            renderThicknessList();
+            
+            // clear inputs
+            ['th_f_min','th_f_max','th_m_min','th_m_max','th_r_min','th_r_max'].forEach(id => document.getElementById(id).value = '');
+            showToast("膜厚紀錄已新增至暫存", "success");
+        };
+
+        function renderThicknessList() {
+            const c = document.getElementById('thicknessList');
+            c.innerHTML = thicknessRecords.map((r, i) => `
+                <div class="bg-slate-900 p-2 rounded border border-slate-700 flex justify-between items-center text-xs">
+                    <div>
+                        <div class="text-pink-400 font-bold">${r.date}</div>
+                        <div class="text-slate-400 mt-1">前:${r.front} | 中:${r.mid} | 後:${r.rear}</div>
+                    </div>
+                    <button type="button" onclick="removeThickness(${i})" class="text-red-400 hover:text-red-300 px-2 py-1 bg-red-900/30 rounded">✕</button>
+                </div>
+            `).join('');
+        }
+        window.removeThickness = function(i) { thicknessRecords.splice(i, 1); renderThicknessList(); };
+
+        window.addNgRecord = function() {
+            const d = document.getElementById('ng_date').value;
+            const l = document.getElementById('ng_location').value;
+            const r = document.getElementById('ng_reason').value;
+            if(!d || !l || !r) {
+                showToast("請完整填寫 NG 資訊", "warning");
+                return;
+            }
+            ngRecords.push({ date: d, location: l, reason: r });
+            renderNgList();
+            showToast("NG 紀錄已新增至暫存", "success");
+        };
+
+        function renderNgList() {
+            const c = document.getElementById('ngList');
+            c.innerHTML = ngRecords.map((r, i) => `
+                <div class="bg-slate-900 p-2 rounded border border-slate-700 flex justify-between items-center text-xs">
+                    <div>
+                        <span class="text-orange-400 font-bold mr-2">${r.date}</span>
+                        <span class="text-slate-300">[${r.location}] ${r.reason}</span>
+                    </div>
+                    <button type="button" onclick="removeNg(${i})" class="text-red-400 hover:text-red-300 px-2 py-1 bg-red-900/30 rounded">✕</button>
+                </div>
+            `).join('');
+        }
+        window.removeNg = function(i) { ngRecords.splice(i, 1); renderNgList(); };
+
+        window.addRemark = function() {
+            const el = document.getElementById('new_remark');
+            const v = el.value.trim();
+            if(!v) return;
+            remarks.push(v);
+            el.value = '';
+            renderRemarksList();
+        };
+
+        function renderRemarksList() {
+            const c = document.getElementById('remarksList');
+            c.innerHTML = remarks.map((r, i) => `
+                <div class="bg-slate-900 p-2 rounded border border-slate-700 flex justify-between items-center text-xs group">
+                    <span class="text-slate-300">${r}</span>
+                    <button type="button" onclick="removeRemark(${i})" class="text-slate-500 hover:text-red-400 px-2 rounded opacity-0 group-hover:opacity-100 transition">✕</button>
+                </div>
+            `).join('');
+        }
+        window.removeRemark = function(i) { remarks.splice(i, 1); renderRemarksList(); };
+
+        // 今日日期預設
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('th_date').value = today;
+        document.getElementById('ng_date').value = today;
+
+        /**
+         * ==========================================
+         * 8. Supabase 資料庫存取邏輯
+         * ==========================================
+         */
+        const TABLE_NAME = 'powder_params'; // 強烈建議在 Supabase 建立此 Table
+
+        // 初始化/取得下拉選單清單，並依據類別過濾
+        async function loadItemsDropdown() {
+            try {
+                const { data, error } = await supabase
+                    .from(TABLE_NAME)
+                    .select('id, category, item_name')
+                    .order('updated_at', { ascending: false });
+                
+                if (error) throw error;
+                globalItemsData = data || [];
+                
+                updateItemDropdown();
+            } catch (err) {
+                console.error("Fetch DB error:", err);
+                document.getElementById('itemSelect').innerHTML = `<option value="">讀取失敗，請重整</option>`;
+            }
+        }
+
+        // 更新下拉選單 UI (基於過濾器)
+        function updateItemDropdown() {
+            const categoryFilter = document.getElementById('queryCategorySelect').value;
+            const select = document.getElementById('itemSelect');
+            
+            let filtered = globalItemsData;
+            if(categoryFilter && categoryFilter !== 'all') {
+                filtered = globalItemsData.filter(item => item.category === categoryFilter);
+            }
+
+            select.innerHTML = `<option value="">${window.t('opt_db_select')}</option>`;
+            
+            if(filtered.length === 0) {
+                select.innerHTML += `<option value="" disabled>此類別尚無構件紀錄</option>`;
+            } else {
+                filtered.forEach(item => {
+                    select.innerHTML += `<option value="${item.id}">${item.item_name} ${item.category ? `(${item.category})` : ''}</option>`;
+                });
+            }
+        }
+
+        // 監聽類別篩選器變更
+        document.getElementById('queryCategorySelect').addEventListener('change', updateItemDropdown);
+
+        /**
+         * ==========================================
+         * 9. 顯示查詢結果 UI Render
+         * ==========================================
+         */
+        async function displayItemDetails(id) {
+            if(!id) return;
+            showLoading('loading_ai');
+            
+            try {
+                const { data, error } = await supabase
+                    .from(TABLE_NAME)
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (error) throw error;
+                if (!data) throw new Error("Data not found");
+                
+                // --- UI Render ---
+                const rb = document.getElementById('resultBoard');
+                rb.style.display = 'block';
+                document.getElementById('actionButtons').classList.remove('hidden');
+
+                // Category Badge
+                const catBadge = document.getElementById('q_category_badge');
+                if(data.category) {
+                    catBadge.innerText = data.category;
+                    catBadge.classList.remove('hidden');
+                } else {
+                    catBadge.classList.add('hidden');
+                }
+
+                // Image
+                const imgContainer = document.getElementById('imageContainer');
+                const imgMatched = document.getElementById('q_matched_image');
+                const imgLink = document.getElementById('q_matched_image_link');
+                
+                // 清除之前的錯誤
+                imgMatched.onerror = () => handleImageError(imgMatched);
+                
+                if(data.image_url) {
+                    imgMatched.src = data.image_url;
+                    imgLink.href = data.image_url;
+                    imgContainer.classList.remove('hidden');
+                    // 重置 display 因為如果有錯誤會被隱藏
+                    imgMatched.style.display = 'block'; 
+                    
+                    const fallback = imgContainer.querySelector('.img-error-fallback');
+                    if(fallback) fallback.remove();
+                } else {
+                    imgContainer.classList.add('hidden');
+                }
+
+                // Gun Data
+                const g = data.gun_data || {};
+                for(let i=1; i<=8; i++) document.getElementById(`q_gun_${i}`).innerText = g[`gun_${i}`] || '-';
+                
+                // Reciprocator Data
+                const r = data.recip_data || {};
+                document.getElementById('q_speed_left').innerText = r.speed_left || '-';
+                document.getElementById('q_speed_right').innerText = r.speed_right || '-';
+                document.getElementById('q_up_turn_left').innerText = r.up_turn_left || '-';
+                document.getElementById('q_up_turn_right').innerText = r.up_turn_right || '-';
+                document.getElementById('q_down_turn_left').innerText = r.down_turn_left || '-';
+                document.getElementById('q_down_turn_right').innerText = r.down_turn_right || '-';
+                document.getElementById('q_dist_left').innerText = r.dist_left || '-';
+                document.getElementById('q_dist_right').innerText = r.dist_right || '-';
+
+                // Elec
+                const elec = data.elec_data || {};
+                document.getElementById('q_voltage').innerText = elec.voltage || '-';
+                document.getElementById('q_current').innerText = elec.current || '-';
+
+                // Manual Helper
+                const renderManualBlock = (blockObj) => {
+                    if(!blockObj) return `<div class="text-slate-500">無設定</div>`;
+                    return `
+                        <div class="flex justify-between border-b border-slate-700/50 pb-1"><span>粉量:</span> <span class="font-mono text-emerald-400 font-bold">${blockObj.powder || 0}</span></div>
+                        <div class="flex justify-between border-b border-slate-700/50 pb-1"><span>風量:</span> <span class="font-mono text-emerald-400 font-bold">${blockObj.air || 0}</span></div>
+                        <div class="flex justify-between border-b border-slate-700/50 pb-1"><span>電氣:</span> <span class="font-mono text-amber-400">${blockObj.voltage || 0} kV / ${blockObj.current || 0} μA</span></div>
+                        <div class="flex justify-between border-b border-slate-700/50 pb-1"><span>類型:</span> <span class="text-blue-300">${blockObj.nozzle || '-'} ${blockObj.ring==='有'?'(含靜電環)':''}</span></div>
+                        <div class="flex justify-between border-b border-slate-700/50 pb-1"><span>總次數:</span> <span class="flash-gold text-lg">${blockObj.spray_count || 1}</span></div>
+                        <div class="grid grid-cols-2 gap-2 mt-2 bg-slate-950 p-2 rounded text-[10px] sm:text-xs text-slate-400">
+                            <div>左:${blockObj.spray_left||0} | 右:${blockObj.spray_right||0}</div>
+                            <div>上:${blockObj.spray_top||0} | 下:${blockObj.spray_bottom||0}</div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-1 bg-slate-950 p-2 rounded text-[10px] sm:text-xs text-slate-400">
+                            <div>中1:${blockObj.spray_mid_1||0} | 中2:${blockObj.spray_mid_2||0}</div>
+                            <div>中3:${blockObj.spray_mid_3||0} | 中4:${blockObj.spray_mid_4||0}</div>
+                        </div>
+                    `;
+                };
+
+                document.getElementById('q_manual_a_display').innerHTML = renderManualBlock(data.manual_a);
+                document.getElementById('q_manual_b_display').innerHTML = renderManualBlock(data.manual_b);
+
+                // History Records
+                const t = data.thickness_history || [];
+                const tDisp = document.getElementById('q_thickness_display');
+                if(t.length === 0) tDisp.innerHTML = `<span class="text-slate-500">尚無紀錄</span>`;
+                else tDisp.innerHTML = t.map(x => `<div class="bg-slate-900/50 p-2 rounded border border-slate-700 mb-1"><div class="text-pink-400 font-bold mb-1">${x.date}</div><div class="grid grid-cols-3 gap-1 text-[10px] sm:text-xs"><span>前:${x.front}</span><span>中:${x.mid}</span><span>後:${x.rear}</span></div></div>`).join('');
+
+                const ng = data.ng_history || [];
+                const ngDisp = document.getElementById('q_ng_display');
+                if(ng.length === 0) ngDisp.innerHTML = `<span class="text-slate-500">尚無紀錄</span>`;
+                else ngDisp.innerHTML = ng.map(x => `<div class="bg-slate-900/50 p-2 rounded border border-slate-700 mb-1"><span class="text-orange-400 font-bold">${x.date}</span> <span class="text-slate-400">[${x.location}]</span> <span class="text-white">${x.reason}</span></div>`).join('');
+
+                const rem = data.remarks || [];
+                const remDisp = document.getElementById('q_remarks_display');
+                if(rem.length === 0) remDisp.innerHTML = `<div class="col-span-3 text-slate-500">無備註</div>`;
+                else remDisp.innerHTML = rem.map(x => `<div class="bg-slate-800/80 p-2 rounded border border-slate-600 shadow-inner flex items-center gap-2"><span class="text-blue-400">🔹</span> ${x}</div>`).join('');
+
+                // 綁定編輯與刪除行為
+                currentEditId = id;
+                window.currentQueryData = data; // Cache for edit
+                
+                hideLoading();
+                
+            } catch (err) {
+                hideLoading();
+                showToast("讀取資料失敗", "error");
+                console.error(err);
+            }
+        }
+
+        document.getElementById('itemSelect').addEventListener('change', (e) => {
+            if(e.target.value) {
+                displayItemDetails(e.target.value);
+            } else {
+                document.getElementById('resultBoard').style.display = 'none';
+                document.getElementById('actionButtons').classList.add('hidden');
+            }
+        });
+
+        /**
+         * ==========================================
+         * 10. 表單處理邏輯 (收集、驗證、組裝 JSON)
+         * ==========================================
+         */
         document.getElementById('paramForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            if(!document.getElementById('reg_category').value) {
-                return Swal.fire('提示', '請選擇所屬膜厚類別', 'warning');
-            }
-
-            showLoading('loading_uploading');
-            
-            let finalImageUrl = pendingImageData;
-            // 只有當 pendingImageData 是 Base64 (新拍的) 才上傳至 GAS
-            if (pendingImageData && pendingImageData.startsWith('data:image')) {
-                try {
-                    const gasUrl = document.getElementById('inputGasUrl').value || defaultGasUrl;
-                    const b64 = pendingImageData.split(',')[1];
-                    const res = await fetch(gasUrl, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            fileName: document.getElementById('item_name').value + '_' + Date.now(),
-                            mimeType: 'image/jpeg',
-                            fileData: b64
-                        })
-                    });
-                    const resText = await res.text();
-                    if(resText.includes('http')) {
-                        finalImageUrl = resText;
-                    }
-                } catch(err) {
-                    console.error("Upload fail:", err);
-                    // 為了演示或出錯容錯，若 GAS 上傳失敗，保留 Base64 寫入資料庫
-                }
+            // 驗證類別是否選擇
+            const category = document.getElementById('reg_category').value;
+            if(!category) {
+                showToast("請選擇膜厚類別", "error");
+                document.getElementById('reg_category').focus();
+                return;
             }
 
             showLoading('loading_db');
-            
-            const payload = {
-                item_name: document.getElementById('item_name').value,
-                category: document.getElementById('reg_category').value,
-                image_url: finalImageUrl || null,
-                gun_params: [],
-                recip_params: {
-                    speed_left: document.getElementById('speed_left').value,
-                    speed_right: document.getElementById('speed_right').value,
-                    up_turn_left: document.getElementById('up_turn_left').value,
-                    up_turn_right: document.getElementById('up_turn_right').value,
-                    down_turn_left: document.getElementById('down_turn_left').value,
-                    down_turn_right: document.getElementById('down_turn_right').value,
-                    dist_left: document.getElementById('dist_left').value,
-                    dist_right: document.getElementById('dist_right').value,
-                },
-                elec_params: {
-                    voltage: document.getElementById('voltage').value,
-                    current: document.getElementById('current').value
-                },
-                manual_a: {},
-                manual_b: {},
-                thickness_records: localThickness,
-                ng_records: localNg,
-                remarks: localRemarks
-            };
 
-            for(let i=1; i<=8; i++) payload.gun_params.push(document.getElementById(`gun_${i}`).value);
-            
-            const getManual = (prefix) => ({
+            try {
+                // 1. Image Upload
+                let finalImageUrl = originalImageUrl;
+                if (currentCroppedBlob) {
+                    finalImageUrl = await uploadImageToSupabase(currentCroppedBlob);
+                }
+
+                // 2. Data Assembly
+                const payload = {
+                    item_name: document.getElementById('item_name').value.trim(),
+                    category: category,
+                    image_url: finalImageUrl,
+                    gun_data: {},
+                    recip_data: {
+                        speed_left: document.getElementById('speed_left').value,
+                        speed_right: document.getElementById('speed_right').value,
+                        up_turn_left: document.getElementById('up_turn_left').value,
+                        up_turn_right: document.getElementById('up_turn_right').value,
+                        down_turn_left: document.getElementById('down_turn_left').value,
+                        down_turn_right: document.getElementById('down_turn_right').value,
+                        dist_left: document.getElementById('dist_left').value,
+                        dist_right: document.getElementById('dist_right').value,
+                    },
+                    elec_data: {
+                        voltage: document.getElementById('voltage').value,
+                        current: document.getElementById('current').value
+                    },
+                    manual_a: collectManualData('a'),
+                    manual_b: collectManualData('b'),
+                    thickness_history: thicknessRecords,
+                    ng_history: ngRecords,
+                    remarks: remarks,
+                    updated_at: new Date().toISOString()
+                };
+
+                for(let i=1; i<=8; i++) {
+                    payload.gun_data[`gun_${i}`] = document.getElementById(`gun_${i}`).value;
+                }
+
+                // 3. Insert or Update via Supabase
+                if (isEditMode && currentEditId) {
+                    const { error } = await supabase
+                        .from(TABLE_NAME)
+                        .update(payload)
+                        .eq('id', currentEditId);
+                    if (error) throw error;
+                    showToast(window.t('toast_save_success'), 'success');
+                } else {
+                    const { error } = await supabase
+                        .from(TABLE_NAME)
+                        .insert([payload]);
+                    if (error) throw error;
+                    showToast(window.t('toast_save_success'), 'success');
+                }
+
+                // Reset & Reload
+                resetForm();
+                await loadItemsDropdown();
+                document.getElementById('tabQueryBtn').click(); // 回到查詢畫面
+                
+            } catch (err) {
+                console.error("Save Error:", err);
+                showToast("儲存失敗: " + err.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        function collectManualData(prefix) {
+            return {
                 powder: document.getElementById(`${prefix}_powder`).value,
                 air: document.getElementById(`${prefix}_air`).value,
                 voltage: document.getElementById(`${prefix}_voltage`).value,
@@ -1806,88 +1737,258 @@
                 spray_mid_2: document.getElementById(`${prefix}_spray_mid_2`).value,
                 spray_mid_3: document.getElementById(`${prefix}_spray_mid_3`).value,
                 spray_mid_4: document.getElementById(`${prefix}_spray_mid_4`).value,
-            });
-            payload.manual_a = getManual('a');
-            payload.manual_b = getManual('b');
+            };
+        }
 
-            try {
-                if (editId) {
-                    const { error } = await supabase.from(tableName).update(payload).eq('id', editId);
-                    if (error) throw error;
-                    Swal.fire('成功', t('success_save'), 'success');
-                } else {
-                    const { error } = await supabase.from(tableName).insert([payload]);
-                    if (error) throw error;
-                    Swal.fire('成功', t('success_save'), 'success');
-                }
-                
-                await fetchItems();
-                resetForm();
-                switchTab('query');
-            } catch(err) {
-                Swal.fire('錯誤', err.message, 'error');
+        /**
+         * ==========================================
+         * 11. 編輯與刪除行為
+         * ==========================================
+         */
+        document.getElementById('btnEditItem').addEventListener('click', () => {
+            if(!window.currentQueryData) return;
+            const d = window.currentQueryData;
+            
+            isEditMode = true;
+            document.getElementById('formTitle').innerHTML = window.t('form_title_edit');
+            document.getElementById('submitBtn').innerHTML = window.t('btn_submit_update');
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+            // 填入資料
+            document.getElementById('item_name').value = d.item_name;
+            if (d.category) {
+                document.getElementById('reg_category').value = d.category;
             }
             
-            hideLoading();
+            originalImageUrl = d.image_url;
+            if(d.image_url) {
+                regPreviewImg.src = d.image_url;
+                regPreviewBox.classList.remove('hidden');
+            } else {
+                regPreviewBox.classList.add('hidden');
+            }
+
+            // Gun
+            for(let i=1; i<=8; i++) document.getElementById(`gun_${i}`).value = (d.gun_data && d.gun_data[`gun_${i}`]) || '';
+            
+            // Recip
+            if(d.recip_data) {
+                ['speed_left','speed_right','up_turn_left','up_turn_right','down_turn_left','down_turn_right','dist_left','dist_right'].forEach(k => {
+                    document.getElementById(k).value = d.recip_data[k] || '';
+                });
+            }
+
+            // Elec
+            if(d.elec_data) {
+                document.getElementById('voltage').value = d.elec_data.voltage || 70;
+                document.getElementById('current').value = d.elec_data.current || 15;
+            }
+
+            // Manual
+            const fillManual = (p, obj) => {
+                if(!obj) return;
+                Object.keys(obj).forEach(k => {
+                    const el = document.getElementById(`${p}_${k}`);
+                    if(el) el.value = obj[k];
+                });
+            };
+            fillManual('a', d.manual_a);
+            fillManual('b', d.manual_b);
+
+            // History
+            thicknessRecords = d.thickness_history || [];
+            ngRecords = d.ng_history || [];
+            remarks = d.remarks || [];
+            
+            renderThicknessList();
+            renderNgList();
+            renderRemarksList();
+
+            // 切換頁籤
+            document.getElementById('tabRegisterBtn').click();
         });
 
-        // --- 膜厚總表渲染邏輯 (完美修復圖片加載) ---
-        function renderThicknessTable(dataArray) {
-            const tbody = document.getElementById('thicknessTableBody');
-            tbody.innerHTML = '';
-            
-            const filterCat = document.getElementById('thicknessCategoryFilter') ? document.getElementById('thicknessCategoryFilter').value : 'ALL';
-            
-            let rowCount = 0;
-            dataArray.forEach(item => {
-                if(filterCat !== 'ALL' && item.category !== filterCat) return;
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            resetForm();
+            document.getElementById('tabQueryBtn').click();
+        });
 
-                let thRec = item.thickness_records;
-                if(typeof thRec === 'string') thRec = JSON.parse(thRec);
-                if(!thRec || thRec.length === 0) return;
-
-                const safeImg = window.parseImageUrl(item.image_url);
-                
-                thRec.forEach(rec => {
-                    rowCount++;
-                    const tr = document.createElement('tr');
-                    tr.className = 'border-b border-slate-700/50 hover:bg-slate-800 transition';
-                    tr.innerHTML = `
-                        <td class="p-2 text-center">
-                            <img src="${safeImg}" loading="lazy" onerror="this.src='https://via.placeholder.com/60/1e293b/ffffff?text=X'" class="h-12 w-16 object-cover mx-auto rounded border border-slate-600 shadow-sm cursor-pointer hover:scale-110 transition" onclick="window.open('${safeImg}', '_blank')">
-                        </td>
-                        <td class="p-2 font-bold text-amber-300 whitespace-normal">${item.category || '-'}</td>
-                        <td class="p-2 font-bold text-white whitespace-normal">${item.item_name}</td>
-                        <td class="p-2 font-mono text-pink-400">${rec.date}</td>
-                        <td class="p-2"><span class="bg-slate-900 px-2 py-1 rounded text-slate-300 font-mono">${rec.f_min} - ${rec.f_max}</span></td>
-                        <td class="p-2"><span class="bg-slate-900 px-2 py-1 rounded text-slate-300 font-mono">${rec.m_min} - ${rec.m_max}</span></td>
-                        <td class="p-2"><span class="bg-slate-900 px-2 py-1 rounded text-slate-300 font-mono">${rec.r_min} - ${rec.r_max}</span></td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            });
-
-            if (rowCount === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-slate-500 font-bold">${t('no_thickness_record')}</td></tr>`;
+        document.getElementById('btnDeleteItem').addEventListener('click', async () => {
+            if(!currentEditId) return;
+            if(confirm("確定要刪除此構件資料嗎？(不可恢復)")) {
+                showLoading('loading_db');
+                try {
+                    const { error } = await supabase.from(TABLE_NAME).delete().eq('id', currentEditId);
+                    if (error) throw error;
+                    
+                    showToast(window.t('toast_del_success'), 'success');
+                    
+                    // Reset
+                    document.getElementById('itemSelect').value = '';
+                    document.getElementById('resultBoard').style.display = 'none';
+                    document.getElementById('actionButtons').classList.add('hidden');
+                    
+                    await loadItemsDropdown();
+                } catch(err) {
+                    showToast("刪除失敗", "error");
+                    console.error(err);
+                } finally {
+                    hideLoading();
+                }
             }
+        });
+
+        function resetForm() {
+            document.getElementById('paramForm').reset();
+            document.getElementById('formTitle').innerHTML = window.t('form_title_create');
+            document.getElementById('submitBtn').innerHTML = window.t('btn_submit_save');
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+            
+            regPreviewBox.classList.add('hidden');
+            regPreviewImg.src = '';
+            
+            isEditMode = false;
+            currentEditId = null;
+            originalImageUrl = null;
+            currentCroppedBlob = null;
+            
+            thicknessRecords = [];
+            ngRecords = [];
+            remarks = [];
+            
+            renderThicknessList();
+            renderNgList();
+            renderRemarksList();
         }
+
+        // 自動填入按鈕
+        document.getElementById('btnFillAuto').addEventListener('click', () => {
+            ['up_turn_left','up_turn_right','down_turn_left','down_turn_right'].forEach(id => {
+                document.getElementById(id).value = '自動';
+            });
+        });
+
+        /**
+         * ==========================================
+         * 12. 膜厚總表檢視 (修復圖片顯示)
+         * ==========================================
+         */
+        const thicknessModal = document.getElementById('thicknessTableModal');
+        const tbBody = document.getElementById('thicknessTableBody');
+        const thicknessCategoryFilter = document.getElementById('thicknessCategoryFilter');
 
         document.getElementById('btnOpenThicknessModal').addEventListener('click', () => {
-            renderThicknessTable(itemsData);
-            document.getElementById('thicknessTableModal').classList.remove('hidden');
+            thicknessModal.classList.remove('hidden');
+            renderThicknessMasterTable();
         });
+        
         document.getElementById('btnCloseThicknessModal').addEventListener('click', () => {
-            document.getElementById('thicknessTableModal').classList.add('hidden');
+            thicknessModal.classList.add('hidden');
         });
-        if(document.getElementById('thicknessCategoryFilter')) {
-            document.getElementById('thicknessCategoryFilter').addEventListener('change', () => {
-                renderThicknessTable(itemsData);
+
+        thicknessCategoryFilter.addEventListener('change', renderThicknessMasterTable);
+
+        function renderThicknessMasterTable() {
+            const filterCat = thicknessCategoryFilter.value;
+            let rowsHtml = '';
+            
+            // Collect all records across components
+            const allRecords = [];
+            
+            globalItemsData.forEach(item => {
+                // Find complete data from global if possible, or we need full fetch.
+                // Since loadItemsDropdown only fetches id, category, item_name, 
+                // we should fetch full table for this feature to be perfect.
             });
+            
+            // To be perfectly robust, fetch full data dynamically for the table
+            fetchFullDataForThicknessTable(filterCat);
         }
 
-        // --- 初始化啟動 ---
-        applyLanguage();
-        fetchItems();
+        async function fetchFullDataForThicknessTable(filterCategory) {
+            tbBody.innerHTML = `<tr><td colspan="7" class="text-center p-4 text-slate-400">資料讀取中...</td></tr>`;
+            try {
+                let query = supabase.from(TABLE_NAME).select('item_name, category, image_url, thickness_history');
+                if(filterCategory && filterCategory !== 'all') {
+                    query = query.eq('category', filterCategory);
+                }
+                
+                const { data, error } = await query;
+                if(error) throw error;
+                
+                let rows = [];
+                data.forEach(item => {
+                    const thArr = item.thickness_history || [];
+                    thArr.forEach(th => {
+                        rows.push({
+                            name: item.item_name,
+                            category: item.category || '無類別',
+                            img: item.image_url,
+                            date: th.date,
+                            front: th.front,
+                            mid: th.mid,
+                            rear: th.rear
+                        });
+                    });
+                });
+                
+                // 依照日期排序 (新到舊)
+                rows.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                if(rows.length === 0) {
+                    tbBody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-slate-500">${window.t('no_thickness_record')}</td></tr>`;
+                    return;
+                }
+                
+                tbBody.innerHTML = rows.map(r => `
+                    <tr class="hover:bg-slate-800/50 transition border-b border-slate-700/50">
+                        <td class="p-3 sm:p-4 text-center">
+                            ${r.img ? `<img src="${r.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" class="h-10 w-10 object-cover rounded mx-auto border border-slate-600"><span class="text-xs text-red-400" style="display:none;">無法載入</span>` : '<span class="text-xs text-slate-600">無圖</span>'}
+                        </td>
+                        <td class="p-3 sm:p-4 text-emerald-400 font-bold text-xs">${r.category}</td>
+                        <td class="p-3 sm:p-4 text-white font-bold">${r.name}</td>
+                        <td class="p-3 sm:p-4 text-pink-400 font-mono">${r.date}</td>
+                        <td class="p-3 sm:p-4 font-mono text-slate-300">${r.front}</td>
+                        <td class="p-3 sm:p-4 font-mono text-slate-300">${r.mid}</td>
+                        <td class="p-3 sm:p-4 font-mono text-slate-300">${r.rear}</td>
+                    </tr>
+                `).join('');
+                
+            } catch(err) {
+                console.error(err);
+                tbBody.innerHTML = `<tr><td colspan="7" class="text-center p-4 text-red-500">載入失敗: ${err.message}</td></tr>`;
+            }
+        }
+
+        /**
+         * ==========================================
+         * 13. UI 頁籤切換與初始化
+         * ==========================================
+         */
+        const tQ = document.getElementById('tabQueryBtn');
+        const tR = document.getElementById('tabRegisterBtn');
+        const sQ = document.getElementById('querySection');
+        const sR = document.getElementById('registerSection');
+
+        tQ.addEventListener('click', () => {
+            tQ.className = 'flex-1 bg-gradient-to-r from-blue-700 to-blue-900 border border-blue-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-blue-900/20 transition-all text-white';
+            tR.className = 'flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white';
+            sQ.classList.remove('hidden');
+            sR.classList.add('hidden');
+        });
+
+        tR.addEventListener('click', () => {
+            tR.className = 'flex-1 bg-gradient-to-r from-emerald-700 to-emerald-900 border border-emerald-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-emerald-900/20 transition-all text-white';
+            tQ.className = 'flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white';
+            sR.classList.remove('hidden');
+            sQ.classList.add('hidden');
+        });
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            updateI18n();
+            loadItemsDropdown();
+        });
 
     </script>
 </body>

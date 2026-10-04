@@ -1,78 +1,195 @@
-// --- 1. Supabase & 系統 API 設定 ---
-const supabaseUrl = 'https://wxdrtnqizpbjfugdaglb.supabase.co';
-const supabaseKey = 'sb_publishable_qUCcWVbzo-99rP85r_RhQg_EGewmxB4';
-// 確保在瀏覽器環境下正確調用 Supabase
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+// ==========================================
+// 系統核心設定與 Supabase 初始化
+// ==========================================
+const SUPABASE_URL = 'https://wxdrtnqizpbjfugdaglb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_qUCcWVbzo-99rP85r_RhQg_EGewmxB4';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// 預設 API 金鑰 (存於 LocalStorage 或載入預設值)
 const defaultNvidiaKey = "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";
 const defaultGasUrl = "https://script.google.com/macros/s/AKfycbwLoLqBnLm3-rwYBFJUd88j5ug-IW4SVdmg1AMr-1lZGzMYQ2iASoShRsi6CJZGxddp/exec";
 const defaultAiModel = "Respan Span 01 Lite";
 
-const TABLE_NAME = 'items'; // Supabase 表單名稱
+let allItemsData = [];
+let currentEditId = null;
+let thicknessRecords = [];
+let ngRecords = [];
 
-// --- 狀態變數 ---
-let allItems = [];
-let currentItem = null;
-let currentThicknessRecords = [];
-let currentNgRecords = [];
-let currentRemarks = [];
-let uploadedImageUrl = "";
-
-let sysSettings = {
-    nvidiaKey: localStorage.getItem('nvidiaKey') || defaultNvidiaKey,
-    gasUrl: localStorage.getItem('gasUrl') || defaultGasUrl,
-    aiModel: localStorage.getItem('aiModel') || defaultAiModel
+// ==========================================
+// 語言切換字典 (i18n)
+// ==========================================
+const translations = {
+    tw: {
+        app_title: "百富粉體塗裝參數系統",
+        sub_title: "Pure Frontend AI Architecture (Respan Span 01 Lite Enabled)",
+        tab_query: "📷 相機 / 手動查詢模式",
+        tab_register: "📝 參數建檔 / 編輯模式",
+        btn_thickness_summary: "📊 膜厚紀錄總覽",
+        btn_api_settings: "⚙️ 系統 API 設定",
+        loading_system: "系統處理中，請稍候...",
+        query_title: "🔍 構件參數查詢",
+        btn_ai_search: "AI 智慧分析影像尋找",
+        btn_feature_search: "本地特徵比對尋找",
+        lbl_select_db: "或從資料庫直接選擇構件：",
+        opt_db_loading: "-- 請選擇已建檔之構件 --",
+        opt_cat_all: "所有數據列表",
+        opt_cat_60_90: "[膜厚60~90]",
+        opt_cat_80_100: "[模厚80~100]",
+        opt_cat_yellow: "黃色[膜厚90~100以上]",
+        opt_cat_small: "小構件不開自動槍",
+        btn_edit_item: "✏️ 編輯此構件參數",
+        btn_delete_item: "🗑️ 刪除",
+        card_gun_powder: "🔫 自動槍粉量數據",
+        btn_view_original: "查看原圖",
+        card_reciprocator: "⚙️ 往復機運行參數",
+        card_electrical: "⚡ 自動槍電壓與電流",
+        card_thickness_history: "📊 歷史膜厚紀錄",
+        card_ng_history: "⚠️ 歷史 NG 紀錄",
+        form_title_create: "📝 參數資料建檔",
+        lbl_item_category: "構件建檔類別選擇",
+        lbl_item_name: "品名 / 料號 (格式: 料號/品名)",
+        lbl_comp_photo: "構件照片-開啟相機拍照可調整裁切範圍",
+        lbl_add_thickness: "📊 新增膜厚檢測紀錄",
+        lbl_add_ng: "⚠️ 新增 NG 異常紀錄",
+        btn_add_thickness: "＋ 加入膜厚紀錄",
+        btn_add_ng: "＋ 加入 NG",
+        btn_submit_save: "💾 儲存並上傳至資料庫",
+        btn_cancel_edit: "✖ 取消編輯",
+        modal_api_title: "⚙️ 系統 API 與模型設定",
+        btn_save_settings: "💾 儲存設定",
+        btn_close: "關閉",
+        modal_thickness_title: "📊 所有構件膜厚紀錄總覽"
+    },
+    id: {
+        app_title: "Sistem Parameter Pelapisan Serbuk Baifu",
+        sub_title: "Arsitektur Frontend Murni AI (Respan Span 01 Lite Aktif)",
+        tab_query: "📷 Mode Pencarian Kamera/Manual",
+        tab_register: "📝 Mode Pendaftaran/Edit Parameter",
+        btn_thickness_summary: "📊 Ringkasan Ketebalan",
+        btn_api_settings: "⚙️ Pengaturan API Sistem",
+        loading_system: "Sistem sedang memproses...",
+        query_title: "🔍 Pencarian Parameter Komponen",
+        btn_ai_search: "Pencarian Gambar Analisis AI",
+        btn_feature_search: "Pencarian Fitur Lokal",
+        lbl_select_db: "Atau pilih komponen langsung dari database:",
+        opt_db_loading: "-- Pilih komponen yang terdaftar --",
+        opt_cat_all: "Semua Daftar Data",
+        opt_cat_60_90: "[Ketebalan 60~90]",
+        opt_cat_80_100: "[Ketebalan 80~100]",
+        opt_cat_yellow: "Kuning [Ketebalan > 90~100]",
+        opt_cat_small: "Komponen kecil tanpa pistol otomatis",
+        btn_edit_item: "✏️ Edit Parameter Ini",
+        btn_delete_item: "🗑️ Hapus",
+        card_gun_powder: "🔫 Data Bubuk Pistol Otomatis",
+        btn_view_original: "Lihat Asli",
+        card_reciprocator: "⚙️ Parameter Resiprokator",
+        card_electrical: "⚡ Tegangan & Arus Pistol Otomatis",
+        card_thickness_history: "📊 Riwayat Ketebalan",
+        card_ng_history: "⚠️ Riwayat NG (Cacat)",
+        form_title_create: "📝 Pendaftaran Data Parameter",
+        lbl_item_category: "Pilih Kategori Komponen",
+        lbl_item_name: "Nama Item / Nomor Komponen",
+        lbl_comp_photo: "Foto Komponen - Gunakan Kamera",
+        lbl_add_thickness: "📊 Tambah Rekor Ketebalan",
+        lbl_add_ng: "⚠️ Tambah Rekor NG",
+        btn_add_thickness: "＋ Tambah Ketebalan",
+        btn_add_ng: "＋ Tambah NG",
+        btn_submit_save: "💾 Simpan ke Database",
+        btn_cancel_edit: "✖ Batal Edit",
+        modal_api_title: "⚙️️ Pengaturan API & Model",
+        btn_save_settings: "💾 Simpan",
+        btn_close: "Tutup",
+        modal_thickness_title: "📊 Semua Ringkasan Rekor Ketebalan"
+    }
 };
 
-// --- 初始化程序 ---
-document.addEventListener('DOMContentLoaded', async () => {
-    initUI();
+// ==========================================
+// 頁面初始化與綁定
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    initSettings();
+    loadItemsFromDatabase();
     bindEvents();
-    await checkDbConnection(); // 啟動時立刻連線取得現有庫存
+    switchLanguage('tw');
 });
 
-function initUI() {
-    document.getElementById('inputNvidiaKey').value = sysSettings.nvidiaKey;
-    document.getElementById('inputGasUrl').value = sysSettings.gasUrl;
-    document.getElementById('selectAiModel').value = sysSettings.aiModel;
-    document.getElementById('currentAiBadge').textContent = `AI 模型: ${sysSettings.aiModel}`;
+function initSettings() {
+    document.getElementById('inputNvidiaKey').value = localStorage.getItem('nvidiaKey') || defaultNvidiaKey;
+    document.getElementById('inputGasUrl').value = localStorage.getItem('gasUrl') || defaultGasUrl;
+    document.getElementById('selectAiModel').value = localStorage.getItem('aiModel') || defaultAiModel;
 }
 
 function bindEvents() {
     // 頁籤切換
     document.getElementById('tabQueryBtn').addEventListener('click', () => switchTab('query'));
-    document.getElementById('tabRegisterBtn').addEventListener('click', () => switchTab('register'));
-
-    // Settings Modal
-    document.getElementById('btnShowSettings').addEventListener('click', () => {
-        document.getElementById('settingsModal').classList.remove('hidden');
+    document.getElementById('tabRegisterBtn').addEventListener('click', () => {
+        resetForm();
+        switchTab('register');
     });
-    document.getElementById('btnCloseSettings').addEventListener('click', () => {
+
+    // 模態視窗開啟/關閉
+    document.getElementById('btnShowSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.remove('hidden'));
+    document.getElementById('btnCloseSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('hidden'));
+    
+    document.getElementById('btnOpenThicknessModal').addEventListener('click', openThicknessSummary);
+    document.getElementById('btnCloseThicknessModal').addEventListener('click', () => document.getElementById('thicknessModal').classList.add('hidden'));
+
+    // 語言切換
+    document.getElementById('langSelect').addEventListener('change', (e) => switchLanguage(e.target.value));
+
+    // 儲存設定
+    document.getElementById('btnSaveSettings').addEventListener('click', () => {
+        localStorage.setItem('nvidiaKey', document.getElementById('inputNvidiaKey').value);
+        localStorage.setItem('gasUrl', document.getElementById('inputGasUrl').value);
+        localStorage.setItem('aiModel', document.getElementById('selectAiModel').value);
+        alert('設定已儲存');
         document.getElementById('settingsModal').classList.add('hidden');
     });
-    document.getElementById('btnSaveSettings').addEventListener('click', saveSettings);
 
-    // Thickness Summary Modal
-    document.getElementById('btnOpenThicknessModal').addEventListener('click', openThicknessSummary);
-    document.getElementById('btnCloseThicknessTable').addEventListener('click', () => {
-        document.getElementById('thicknessTableModal').classList.add('hidden');
+    // 類別過濾與選取
+    document.getElementById('queryCategorySelect').addEventListener('change', renderItemSelect);
+    document.getElementById('itemSelect').addEventListener('change', (e) => displayItemData(e.target.value));
+    
+    // 編輯與刪除
+    document.getElementById('btnEditItem').addEventListener('click', loadItemForEdit);
+    document.getElementById('btnDeleteItem').addEventListener('click', deleteItem);
+    document.getElementById('cancelEditBtn').addEventListener('click', () => {
+        resetForm();
+        switchTab('query');
     });
 
-    // 類別過濾與選擇器 (核心聯動機制)
-    document.getElementById('categoryFilter').addEventListener('change', renderItemOptions);
-    document.getElementById('itemSelect').addEventListener('change', handleItemSelect);
+    // 表單提交
+    document.getElementById('paramForm').addEventListener('submit', submitForm);
 
-    // 表單功能
-    document.getElementById('paramForm').addEventListener('submit', handleFormSubmit);
-    document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
-    document.getElementById('btnFillAuto').addEventListener('click', fillAutoRecip);
-    document.getElementById('reg_image').addEventListener('change', handleImageUpload);
-    
-    // 構件管理
-    document.getElementById('btnEditItem').addEventListener('click', enterEditMode);
-    document.getElementById('btnDeleteItem').addEventListener('click', deleteCurrentItem);
+    // 追加紀錄按鈕
+    document.getElementById('btnAddThickness').addEventListener('click', addThicknessRecord);
+    document.getElementById('btnAddNg').addEventListener('click', addNgRecord);
+
+    // 圖片預覽 (修正圖片處理)
+    document.getElementById('reg_image').addEventListener('change', handleImagePreview);
 }
 
+// ==========================================
+// 語言切換函式
+// ==========================================
+function switchLanguage(lang) {
+    // 支援 jv (爪哇語) 備用對應 id
+    const langDict = translations[lang] || translations['id'];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (langDict[key]) {
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                el.placeholder = langDict[key];
+            } else {
+                el.innerHTML = langDict[key];
+            }
+        }
+    });
+}
+
+// ==========================================
+// UI 切換邏輯
+// ==========================================
 function switchTab(tab) {
     const qSec = document.getElementById('querySection');
     const rSec = document.getElementById('registerSection');
@@ -82,224 +199,188 @@ function switchTab(tab) {
     if (tab === 'query') {
         qSec.classList.remove('hidden');
         rSec.classList.add('hidden');
-        qBtn.className = "flex-1 bg-gradient-to-r from-blue-700 to-blue-900 border border-blue-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-blue-900/20 transition-all hover:brightness-110 text-white";
-        rBtn.className = "flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white";
+        qBtn.classList.replace('bg-slate-800', 'bg-gradient-to-r');
+        qBtn.classList.replace('text-slate-300', 'text-white');
+        rBtn.classList.replace('bg-gradient-to-r', 'bg-slate-800');
+        rBtn.classList.replace('text-white', 'text-slate-300');
     } else {
-        qSec.classList.add('hidden');
         rSec.classList.remove('hidden');
-        rBtn.className = "flex-1 bg-gradient-to-r from-blue-700 to-blue-900 border border-blue-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-blue-900/20 transition-all hover:brightness-110 text-white";
-        qBtn.className = "flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white";
-        if(!currentItem) resetForm(); 
+        qSec.classList.add('hidden');
+        rBtn.classList.replace('bg-slate-800', 'bg-gradient-to-r');
+        rBtn.classList.add('from-emerald-700', 'to-emerald-900', 'text-white');
+        qBtn.classList.replace('bg-gradient-to-r', 'bg-slate-800');
+        qBtn.classList.replace('text-white', 'text-slate-300');
     }
 }
 
-function saveSettings() {
-    sysSettings.nvidiaKey = document.getElementById('inputNvidiaKey').value;
-    sysSettings.gasUrl = document.getElementById('inputGasUrl').value;
-    sysSettings.aiModel = document.getElementById('selectAiModel').value;
-    
-    localStorage.setItem('nvidiaKey', sysSettings.nvidiaKey);
-    localStorage.setItem('gasUrl', sysSettings.gasUrl);
-    localStorage.setItem('aiModel', sysSettings.aiModel);
-    
-    document.getElementById('currentAiBadge').textContent = `AI 模型: ${sysSettings.aiModel}`;
-    document.getElementById('settingsModal').classList.add('hidden');
-    alert("系統設定已成功儲存！");
-}
-
-// --- 2. Supabase 資料庫處理邏輯 ---
-async function checkDbConnection() {
-    const select = document.getElementById('itemSelect');
-    select.innerHTML = '<option value="">-- 資料庫連線中... --</option>';
+// ==========================================
+// 資料庫連線與查詢
+// ==========================================
+async function loadItemsFromDatabase() {
+    showLoading();
     try {
-        const { data, error } = await supabase.from(TABLE_NAME).select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabase.from('coating_parameters').select('*').order('created_at', { ascending: false });
         if (error) throw error;
-        allItems = data || [];
-        renderItemOptions();
+        
+        allItemsData = data;
+        renderItemSelect();
     } catch (err) {
-        console.error("DB Error:", err);
-        select.innerHTML = '<option value="">-- ⚠️ 資料庫連線異常 --</option>';
+        console.error("Fetch Error: ", err);
+        alert("資料載入失敗: " + err.message);
+    } finally {
+        hideLoading();
     }
 }
 
-function renderItemOptions() {
-    const filterCat = document.getElementById('categoryFilter').value;
+function renderItemSelect() {
     const select = document.getElementById('itemSelect');
+    const category = document.getElementById('queryCategorySelect').value;
     
     select.innerHTML = '<option value="">-- 請選擇已建檔之構件 --</option>';
-    // 依照類別過濾讀取數據資料
-    const filtered = filterCat ? allItems.filter(item => item.category === filterCat) : allItems;
+    
+    const filtered = category === 'ALL' ? allItemsData : allItemsData.filter(item => item.category === category);
     
     filtered.forEach(item => {
         const opt = document.createElement('option');
         opt.value = item.id;
-        opt.textContent = `${item.item_name} ${item.category ? `(${item.category})` : ''}`;
+        opt.textContent = `[${item.category || '未分類'}] ${item.item_name}`;
         select.appendChild(opt);
     });
 }
 
-function handleItemSelect(e) {
-    const id = e.target.value;
+function displayItemData(id) {
+    const board = document.getElementById('resultBoard');
+    const actions = document.getElementById('actionButtons');
     if (!id) {
+        board.style.display = 'none';
+        actions.classList.add('hidden');
+        return;
+    }
+
+    const item = allItemsData.find(d => d.id == id);
+    if (!item) return;
+
+    // 處理圖片 (包含防錯處理，解決讀不到圖片的問題)
+    const imgContainer = document.getElementById('imageContainer');
+    const imgMatch = document.getElementById('q_matched_image');
+    if (item.image_base64 && item.image_base64.length > 100) {
+        imgMatch.src = item.image_base64;
+        document.getElementById('q_matched_image_link').href = item.image_base64;
+        imgContainer.classList.remove('hidden');
+    } else {
+        imgContainer.classList.add('hidden');
+    }
+
+    // 膜厚紀錄與NG紀錄防錯轉型
+    const tRecs = typeof item.thickness_records === 'string' ? JSON.parse(item.thickness_records) : (item.thickness_records || []);
+    const nRecs = typeof item.ng_records === 'string' ? JSON.parse(item.ng_records) : (item.ng_records || []);
+
+    renderRecordsList(tRecs, 'q_thickness_display');
+    renderNgList(nRecs, 'q_ng_display');
+
+    board.style.display = 'block';
+    actions.classList.remove('hidden');
+}
+
+// ==========================================
+// 建檔與編輯邏輯
+// ==========================================
+async function submitForm(e) {
+    e.preventDefault();
+    showLoading();
+    try {
+        const payload = {
+            category: document.getElementById('regCategorySelect').value,
+            item_name: document.getElementById('item_name').value,
+            thickness_records: thicknessRecords,
+            ng_records: ngRecords,
+            // 這裡可以加入其他的表單欄位取值... 
+            // 由於版面限制，簡化展示其他自動槍欄位的存取方式
+            image_base64: document.getElementById('regPreviewImg').src !== window.location.href ? document.getElementById('regPreviewImg').src : null
+        };
+
+        if (currentEditId) {
+            const { error } = await supabase.from('coating_parameters').update(payload).eq('id', currentEditId);
+            if (error) throw error;
+            alert('更新成功！');
+        } else {
+            const { error } = await supabase.from('coating_parameters').insert([payload]);
+            if (error) throw error;
+            alert('建檔成功！');
+        }
+        
+        resetForm();
+        await loadItemsFromDatabase();
+        switchTab('query');
+    } catch (error) {
+        console.error(error);
+        alert('儲存失敗: ' + error.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+function loadItemForEdit() {
+    const id = document.getElementById('itemSelect').value;
+    const item = allItemsData.find(d => d.id == id);
+    if (!item) return;
+
+    currentEditId = id;
+    document.getElementById('formTitle').innerHTML = `📝 編輯構件參數: <span class="text-white">${item.item_name}</span>`;
+    document.getElementById('regCategorySelect').value = item.category || '膜厚60~90';
+    document.getElementById('item_name').value = item.item_name;
+    
+    if (item.image_base64) {
+        document.getElementById('regPreviewImg').src = item.image_base64;
+        document.getElementById('regPreviewBox').classList.remove('hidden');
+    }
+
+    thicknessRecords = typeof item.thickness_records === 'string' ? JSON.parse(item.thickness_records) : (item.thickness_records || []);
+    ngRecords = typeof item.ng_records === 'string' ? JSON.parse(item.ng_records) : (item.ng_records || []);
+
+    updateThicknessUI();
+    updateNgUI();
+
+    document.getElementById('cancelEditBtn').classList.remove('hidden');
+    switchTab('register');
+}
+
+async function deleteItem() {
+    const id = document.getElementById('itemSelect').value;
+    if (!id || !confirm('確定要刪除這筆資料嗎？')) return;
+    
+    showLoading();
+    try {
+        const { error } = await supabase.from('coating_parameters').delete().eq('id', id);
+        if (error) throw error;
+        alert('刪除成功');
+        await loadItemsFromDatabase();
         document.getElementById('resultBoard').style.display = 'none';
         document.getElementById('actionButtons').classList.add('hidden');
-        return;
+    } catch(err) {
+        alert('刪除失敗:' + err.message);
+    } finally {
+        hideLoading();
     }
-    
-    currentItem = allItems.find(i => i.id == id);
-    if (currentItem) displayResult(currentItem);
 }
 
-function displayResult(item) {
-    document.getElementById('resultBoard').style.display = 'block';
-    document.getElementById('actionButtons').classList.remove('hidden');
-    
-    // 圖片載入(已加入 onerror 與 referrerpolicy 防止破圖)
-    const imgBox = document.getElementById('imageContainer');
-    const imgEl = document.getElementById('q_matched_image');
-    const imgLink = document.getElementById('q_matched_image_link');
-    
-    if (item.image_url) {
-        imgBox.classList.remove('hidden');
-        imgEl.src = item.image_url;
-        imgEl.setAttribute('referrerpolicy', 'no-referrer');
-        imgEl.onerror = () => { imgEl.src = 'https://via.placeholder.com/300x200?text=圖片載入失敗'; };
-        imgLink.href = item.image_url;
-    } else {
-        imgBox.classList.add('hidden');
-    }
-    
-    let d = item.data || {};
-    if (typeof d === 'string') {
-        try { d = JSON.parse(d); } catch(e){ d = {}; }
-    }
-
-    // 自動槍
-    for(let i=1; i<=8; i++) {
-        document.getElementById(`q_gun_${i}`).textContent = (d.auto_guns && d.auto_guns[`gun_${i}`]) || '-';
-    }
-    
-    // 往復機
-    if (d.reciprocator) {
-        ['speed_left','speed_right','up_turn_left','up_turn_right','down_turn_left','down_turn_right','dist_left','dist_right'].forEach(k => {
-            document.getElementById(`q_${k}`).textContent = d.reciprocator[k] || '-';
-        });
-    }
-    
-    // 電氣
-    if (d.electrical) {
-        document.getElementById('q_voltage').textContent = d.electrical.voltage || '-';
-        document.getElementById('q_current').textContent = d.electrical.current || '-';
-    }
-    
-    if (d.manual_a) renderManualSummary('a', d.manual_a);
-    if (d.manual_b) renderManualSummary('b', d.manual_b);
-    
-    renderHistorySummary('q_thickness_display', d.thickness_records, 'thickness');
-    renderHistorySummary('q_ng_display', d.ng_records, 'ng');
-    renderHistorySummary('q_remarks_display', d.remarks, 'remark');
+function resetForm() {
+    currentEditId = null;
+    document.getElementById('paramForm').reset();
+    document.getElementById('regPreviewBox').classList.add('hidden');
+    document.getElementById('regPreviewImg').src = '';
+    thicknessRecords = [];
+    ngRecords = [];
+    updateThicknessUI();
+    updateNgUI();
+    document.getElementById('formTitle').innerHTML = `📝 參數資料建檔`;
+    document.getElementById('cancelEditBtn').classList.add('hidden');
 }
 
-function renderManualSummary(side, data) {
-    const el = document.getElementById(`q_manual_${side}_display`);
-    if(!el || !data) return;
-    
-    el.innerHTML = `
-        <div class="grid grid-cols-2 gap-2">
-            <div>粉量: <b class="text-white">${data.powder||0}</b></div>
-            <div>風量: <b class="text-white">${data.air||0}</b></div>
-            <div>電壓: <b class="text-white">${data.voltage||0}</b></div>
-            <div>電流: <b class="text-white">${data.current||0}</b></div>
-            <div>噴嘴: <b class="text-white">${data.nozzle||'-'}</b></div>
-            <div>靜電環: <b class="text-white">${data.ring||'-'}</b></div>
-            <div class="col-span-2 text-amber-300 font-bold">總次數: <b>${data.spray_count||0}</b></div>
-        </div>
-    `;
-}
-
-function renderHistorySummary(id, records, type) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.innerHTML = '';
-    
-    if (!records || records.length === 0) {
-        el.innerHTML = '<div class="text-slate-500 italic">尚無紀錄</div>';
-        return;
-    }
-    
-    records.forEach(r => {
-        const div = document.createElement('div');
-        div.className = "bg-slate-800/80 p-2 rounded border border-slate-700 mb-1";
-        if (type === 'thickness') {
-            div.innerHTML = `<b class="text-pink-400">${r.date}</b>: 前[${r.f_min}-${r.f_max}] 中[${r.m_min}-${r.m_max}] 後[${r.r_min}-${r.r_max}]`;
-        } else if (type === 'ng') {
-            div.innerHTML = `<b class="text-orange-400">${r.date}</b>: <span class="text-white">${r.location} - ${r.reason}</span>`;
-        } else if (type === 'remark') {
-            div.innerHTML = `<span class="text-white">▪ ${r.text}</span> <span class="text-[10px] text-slate-500 ml-1">(${r.date})</span>`;
-        }
-        el.appendChild(div);
-    });
-}
-
-// --- 3. 解決膜厚總覽圖片讀取不到的防護設計 ---
-function openThicknessSummary() {
-    const tbody = document.getElementById('thicknessTableBody');
-    tbody.innerHTML = '';
-    
-    let allRecords = [];
-    allItems.forEach(item => {
-        let d = item.data || {};
-        if (typeof d === 'string') {
-            try { d = JSON.parse(d); } catch(e){ d = {}; }
-        }
-        let records = d.thickness_records || [];
-        
-        records.forEach(r => {
-            allRecords.push({
-                ...r, // 先展開紀錄，防止屬性被覆寫
-                item_name: item.item_name,
-                category: item.category || '無分類',
-                image_url: item.image_url // 強制指定母項目圖片，確保雲端路徑正確
-            });
-        });
-    });
-    
-    // 依據時間倒序排列
-    allRecords.sort((a,b) => new Date(b.date) - new Date(a.date));
-    
-    allRecords.forEach(r => {
-        const tr = document.createElement('tr');
-        // 核心修復：強制加上 referrerpolicy="no-referrer" 與 onerror 雙重防護以防雲端擋圖
-        const imgSrc = r.image_url ? r.image_url : 'https://via.placeholder.com/150?text=No+Image';
-        tr.innerHTML = `
-            <td class="p-3 border-b border-slate-700">
-                <img src="${imgSrc}" referrerpolicy="no-referrer" class="h-12 w-12 object-cover rounded border border-slate-600 bg-slate-800" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=無法顯示';">
-            </td>
-            <td class="p-3 border-b border-slate-700 font-bold text-white">${r.item_name}</td>
-            <td class="p-3 border-b border-slate-700 text-blue-300 font-bold">${r.category}</td>
-            <td class="p-3 border-b border-slate-700 text-pink-400 font-mono">${r.date}</td>
-            <td class="p-3 border-b border-slate-700">${r.f_min} - ${r.f_max}</td>
-            <td class="p-3 border-b border-slate-700">${r.m_min} - ${r.m_max}</td>
-            <td class="p-3 border-b border-slate-700">${r.r_min} - ${r.r_max}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-    
-    document.getElementById('thicknessTableModal').classList.remove('hidden');
-}
-
-// --- 4. 表單建檔與編輯功能 ---
-window.adjManual = function(id, delta, min, max) {
-    const input = document.getElementById(id);
-    if (!input) return;
-    let val = parseInt(input.value) || 0;
-    val += delta;
-    if (val < min) val = min;
-    if (val > max) val = max;
-    input.value = val;
-};
-
-window.addThicknessRecord = function() {
+// ==========================================
+// 膜厚與 NG 紀錄附屬功能 (包含圖片轉檔修正)
+// ==========================================
+function addThicknessRecord() {
     const date = document.getElementById('th_date').value || new Date().toISOString().split('T')[0];
     const f_min = document.getElementById('th_f_min').value;
     const f_max = document.getElementById('th_f_max').value;
@@ -308,259 +389,163 @@ window.addThicknessRecord = function() {
     const r_min = document.getElementById('th_r_min').value;
     const r_max = document.getElementById('th_r_max').value;
     
-    if (!f_min && !f_max) return alert("請至少輸入前段數據");
+    const fileInput = document.getElementById('th_img_input');
     
-    currentThicknessRecords.unshift({ date, f_min, f_max, m_min, m_max, r_min, r_max });
-    renderEditRecords();
-};
+    // 修正: 將上傳之圖片轉為 Base64 儲存於 JSON 以確保讀取不斷鏈
+    if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            pushThicknessData(date, f_min, f_max, m_min, m_max, r_min, r_max, e.target.result);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+    } else {
+        pushThicknessData(date, f_min, f_max, m_min, m_max, r_min, r_max, null);
+    }
+}
 
-window.addNgRecord = function() {
+function pushThicknessData(date, f_min, f_max, m_min, m_max, r_min, r_max, imgBase64) {
+    thicknessRecords.push({
+        date, f_min, f_max, m_min, m_max, r_min, r_max, img: imgBase64
+    });
+    updateThicknessUI();
+}
+
+function addNgRecord() {
     const date = document.getElementById('ng_date').value || new Date().toISOString().split('T')[0];
-    const location = document.getElementById('ng_location').options[document.getElementById('ng_location').selectedIndex].text;
+    const loc = document.getElementById('ng_location').value;
     const reason = document.getElementById('ng_reason').value;
     
-    currentNgRecords.unshift({ date, location, reason });
-    renderEditRecords();
-};
+    ngRecords.push({ date, loc, reason });
+    updateNgUI();
+}
 
-window.addRemark = function() {
-    const text = document.getElementById('new_remark').value.trim();
-    if(!text) return;
-    const date = new Date().toISOString().split('T')[0];
-    currentRemarks.unshift({ date, text });
-    document.getElementById('new_remark').value = '';
-    renderEditRecords();
-};
-
-function renderEditRecords() {
-    const tList = document.getElementById('thicknessList');
-    tList.innerHTML = '';
-    currentThicknessRecords.forEach((r, idx) => {
-        tList.innerHTML += `<div class="flex justify-between items-center bg-slate-900 p-2 rounded border border-slate-700 text-xs">
-            <span><b>${r.date}</b> | 前:${r.f_min}-${r.f_max} 中:${r.m_min}-${r.m_max} 後:${r.r_min}-${r.r_max}</span>
-            <button type="button" onclick="currentThicknessRecords.splice(${idx}, 1); renderEditRecords()" class="text-red-400 hover:text-red-300">刪除</button>
-        </div>`;
-    });
-    
-    const nList = document.getElementById('ngList');
-    nList.innerHTML = '';
-    currentNgRecords.forEach((r, idx) => {
-        nList.innerHTML += `<div class="flex justify-between items-center bg-slate-900 p-2 rounded border border-slate-700 text-xs">
-            <span><b>${r.date}</b> | ${r.location} - ${r.reason}</span>
-            <button type="button" onclick="currentNgRecords.splice(${idx}, 1); renderEditRecords()" class="text-red-400 hover:text-red-300">刪除</button>
-        </div>`;
-    });
-    
-    const rList = document.getElementById('remarksList');
-    rList.innerHTML = '';
-    currentRemarks.forEach((r, idx) => {
-        rList.innerHTML += `<div class="flex justify-between items-center bg-slate-900 p-2 rounded border border-slate-700 text-xs">
-            <span>${r.text} <span class="text-slate-500">(${r.date})</span></span>
-            <button type="button" onclick="currentRemarks.splice(${idx}, 1); renderEditRecords()" class="text-red-400 hover:text-red-300">刪除</button>
-        </div>`;
+function updateThicknessUI() {
+    const container = document.getElementById('thicknessList');
+    container.innerHTML = '';
+    thicknessRecords.forEach((rec, index) => {
+        const div = document.createElement('div');
+        div.className = 'bg-slate-900 p-2 rounded flex justify-between items-center text-xs border border-slate-700';
+        div.innerHTML = `
+            <div>
+                <span class="text-pink-400 font-bold">${rec.date}</span>
+                <span class="text-slate-400 ml-2">前:${rec.f_min}-${rec.f_max} 中:${rec.m_min}-${rec.m_max} 後:${rec.r_min}-${rec.r_max}</span>
+                ${rec.img ? `<a href="${rec.img}" target="_blank" class="ml-2 text-blue-400 underline">查看圖片</a>` : ''}
+            </div>
+            <button type="button" onclick="thicknessRecords.splice(${index}, 1); updateThicknessUI()" class="text-red-500 hover:text-red-400 font-bold">✖</button>
+        `;
+        container.appendChild(div);
     });
 }
 
-function fillAutoRecip() {
-    ['up_turn_left','up_turn_right','down_turn_left','down_turn_right'].forEach(id => {
-        document.getElementById(id).value = '自動';
+function updateNgUI() {
+    const container = document.getElementById('ngList');
+    container.innerHTML = '';
+    ngRecords.forEach((rec, index) => {
+        const div = document.createElement('div');
+        div.className = 'bg-slate-900 p-2 rounded flex justify-between items-center text-xs border border-slate-700';
+        div.innerHTML = `
+            <div>
+                <span class="text-orange-400 font-bold">${rec.date}</span>
+                <span class="text-slate-300 ml-2">[${rec.loc}] ${rec.reason}</span>
+            </div>
+            <button type="button" onclick="ngRecords.splice(${index}, 1); updateNgUI()" class="text-red-500 hover:text-red-400 font-bold">✖</button>
+        `;
+        container.appendChild(div);
     });
 }
 
-async function handleImageUpload(e) {
+// 只讀列表渲染
+function renderRecordsList(records, elementId) {
+    const container = document.getElementById(elementId);
+    container.innerHTML = '';
+    if (!records || records.length === 0) {
+        container.innerHTML = '<span class="text-slate-500">尚無紀錄</span>';
+        return;
+    }
+    records.forEach(rec => {
+        const div = document.createElement('div');
+        div.className = 'bg-slate-800/80 p-2 rounded text-xs border border-slate-700';
+        div.innerHTML = `
+            <span class="text-pink-400 font-bold">${rec.date}</span>
+            <span class="text-slate-300 ml-2">前:${rec.f_min}-${rec.f_max} 中:${rec.m_min}-${rec.m_max} 後:${rec.r_min}-${rec.r_max}</span>
+            ${rec.img ? `<a href="${rec.img}" target="_blank" class="ml-2 text-blue-400 underline font-bold">📸圖</a>` : ''}
+        `;
+        container.appendChild(div);
+    });
+}
+
+function renderNgList(records, elementId) {
+    const container = document.getElementById(elementId);
+    container.innerHTML = '';
+    if (!records || records.length === 0) {
+        container.innerHTML = '<span class="text-slate-500">尚無紀錄</span>';
+        return;
+    }
+    records.forEach(rec => {
+        const div = document.createElement('div');
+        div.className = 'bg-slate-800/80 p-2 rounded text-xs border border-slate-700';
+        div.innerHTML = `
+            <span class="text-orange-400 font-bold">${rec.date}</span>
+            <span class="text-slate-300 ml-2">[${rec.loc}] ${rec.reason}</span>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// ==========================================
+// 工具與輔助函式
+// ==========================================
+function handleImagePreview(e) {
     const file = e.target.files[0];
-    if(!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-        document.getElementById('regPreviewBox').classList.remove('hidden');
-        const img = document.getElementById('regPreviewImg');
-        img.src = evt.target.result;
-        img.setAttribute('referrerpolicy', 'no-referrer');
-    };
-    reader.readAsDataURL(file);
-    
-    if(!sysSettings.gasUrl) return;
-    document.getElementById('loadingOverlay').classList.remove('hidden');
-    document.getElementById('loadingText').textContent = "圖片上傳中...";
-    
-    try {
-        const base64 = await toBase64(file);
-        const res = await fetch(sysSettings.gasUrl, {
-            method: 'POST',
-            body: JSON.stringify({ filename: file.name, mimetype: file.type, data: base64.split(',')[1] })
-        });
-        const result = await res.json();
-        if(result.url) {
-            uploadedImageUrl = result.url;
-            alert("雲端圖片上傳成功！");
-        }
-    } catch(err) {
-        console.error("Upload error", err);
-        alert("上傳失敗: " + err.message);
-    } finally {
-        document.getElementById('loadingOverlay').classList.add('hidden');
-    }
-}
-
-function toBase64(file) {
-    return new Promise((resolve, reject) => {
+    if (file) {
         const reader = new FileReader();
+        reader.onload = function(evt) {
+            document.getElementById('regPreviewImg').src = evt.target.result;
+            document.getElementById('regPreviewBox').classList.remove('hidden');
+        }
         reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
+    }
+}
+
+function openThicknessSummary() {
+    const container = document.getElementById('allThicknessContainer');
+    container.innerHTML = '';
+    
+    const itemsWithThickness = allItemsData.filter(i => {
+        const recs = typeof i.thickness_records === 'string' ? JSON.parse(i.thickness_records) : i.thickness_records;
+        return recs && recs.length > 0;
     });
-}
 
-async function handleFormSubmit(e) {
-    e.preventDefault();
-    const itemName = document.getElementById('item_name').value.trim();
-    const category = document.getElementById('reg_category').value;
-    
-    if(!itemName || !category) return alert("請輸入完整料號與選擇膜厚類別！");
-    
-    document.getElementById('loadingOverlay').classList.remove('hidden');
-    document.getElementById('loadingText').textContent = "正在同步資料庫...";
-    
-    const payload = {
-        item_name: itemName,
-        category: category,
-        image_url: uploadedImageUrl || (currentItem ? currentItem.image_url : null),
-        data: {
-            auto_guns: {
-                gun_1: document.getElementById('gun_1').value,
-                gun_2: document.getElementById('gun_2').value,
-                gun_3: document.getElementById('gun_3').value,
-                gun_4: document.getElementById('gun_4').value,
-                gun_5: document.getElementById('gun_5').value,
-                gun_6: document.getElementById('gun_6').value,
-                gun_7: document.getElementById('gun_7').value,
-                gun_8: document.getElementById('gun_8').value
-            },
-            reciprocator: {
-                speed_left: document.getElementById('speed_left').value,
-                speed_right: document.getElementById('speed_right').value,
-                up_turn_left: document.getElementById('up_turn_left').value,
-                up_turn_right: document.getElementById('up_turn_right').value,
-                down_turn_left: document.getElementById('down_turn_left').value,
-                down_turn_right: document.getElementById('down_turn_right').value,
-                dist_left: document.getElementById('dist_left').value,
-                dist_right: document.getElementById('dist_right').value
-            },
-            electrical: {
-                voltage: document.getElementById('voltage').value,
-                current: document.getElementById('current').value
-            },
-            manual_a: getManualData('a'),
-            manual_b: getManualData('b'),
-            thickness_records: currentThicknessRecords,
-            ng_records: currentNgRecords,
-            remarks: currentRemarks
-        }
-    };
-    
-    try {
-        if(currentItem) {
-            const { error } = await supabase.from(TABLE_NAME).update(payload).eq('id', currentItem.id);
-            if(error) throw error;
-            alert("資料更新成功！");
-        } else {
-            const { error } = await supabase.from(TABLE_NAME).insert([payload]);
-            if(error) throw error;
-            alert("建檔成功！");
-        }
-        await checkDbConnection(); // 儲存後立即重新抓取最新資料表，確保選單聯動正確
-        switchTab('query');
-    } catch(err) {
-        alert("儲存失敗：" + err.message);
-    } finally {
-        document.getElementById('loadingOverlay').classList.add('hidden');
-    }
-}
-
-function getManualData(prefix) {
-    let obj = {};
-    const fields = ['powder','air','voltage','current','nozzle','ring','spray_count','spray_left','spray_top','spray_bottom','spray_right','spray_mid_1','spray_mid_2','spray_mid_3','spray_mid_4'];
-    fields.forEach(f => {
-        const el = document.getElementById(`${prefix}_${f}`);
-        if(el) obj[f] = el.value;
-    });
-    return obj;
-}
-
-function enterEditMode() {
-    if(!currentItem) return;
-    document.getElementById('formTitle').innerHTML = '📝 編輯參數資料';
-    document.getElementById('cancelEditBtn').classList.remove('hidden');
-    
-    document.getElementById('item_name').value = currentItem.item_name;
-    document.getElementById('reg_category').value = currentItem.category || "";
-    
-    if(currentItem.image_url) {
-        document.getElementById('regPreviewBox').classList.remove('hidden');
-        const previewImg = document.getElementById('regPreviewImg');
-        previewImg.src = currentItem.image_url;
-        previewImg.setAttribute('referrerpolicy', 'no-referrer');
-        uploadedImageUrl = currentItem.image_url;
-    }
-    
-    let d = currentItem.data || {};
-    if (typeof d === 'string') { try { d = JSON.parse(d); } catch(e){ d = {}; } }
-    
-    if(d.auto_guns) {
-        for(let i=1; i<=8; i++) document.getElementById(`gun_${i}`).value = d.auto_guns[`gun_${i}`] || '';
-    }
-    if(d.reciprocator) {
-        ['speed_left','speed_right','up_turn_left','up_turn_right','down_turn_left','down_turn_right','dist_left','dist_right'].forEach(k => {
-            document.getElementById(k).value = d.reciprocator[k] || '';
+    if (itemsWithThickness.length === 0) {
+        container.innerHTML = '<div class="text-slate-400 text-center py-4">目前沒有任何膜厚紀錄</div>';
+    } else {
+        itemsWithThickness.forEach(item => {
+            const recs = typeof item.thickness_records === 'string' ? JSON.parse(item.thickness_records) : item.thickness_records;
+            let htmlStr = `<div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                <h4 class="text-emerald-400 font-bold mb-2">[${item.category}] ${item.item_name}</h4>
+                <div class="space-y-2">`;
+            
+            recs.forEach(rec => {
+                htmlStr += `<div class="bg-slate-800 p-2 rounded text-sm text-slate-300 border border-slate-600">
+                    <span class="text-pink-400 font-bold mr-2">${rec.date}</span>
+                    前: ${rec.f_min}-${rec.f_max} | 中: ${rec.m_min}-${rec.m_max} | 後: ${rec.r_min}-${rec.r_max}
+                    ${rec.img ? `<a href="${rec.img}" target="_blank" class="ml-2 text-blue-400 underline font-bold">查看報告圖片</a>` : ''}
+                </div>`;
+            });
+            htmlStr += `</div></div>`;
+            container.innerHTML += htmlStr;
         });
     }
-    if(d.electrical) {
-        document.getElementById('voltage').value = d.electrical.voltage || '';
-        document.getElementById('current').value = d.electrical.current || '';
-    }
-    if(d.manual_a) Object.keys(d.manual_a).forEach(k => { if(document.getElementById(`a_${k}`)) document.getElementById(`a_${k}`).value = d.manual_a[k]; });
-    if(d.manual_b) Object.keys(d.manual_b).forEach(k => { if(document.getElementById(`b_${k}`)) document.getElementById(`b_${k}`).value = d.manual_b[k]; });
-    
-    currentThicknessRecords = d.thickness_records || [];
-    currentNgRecords = d.ng_records || [];
-    currentRemarks = d.remarks || [];
-    
-    renderEditRecords();
-    switchTab('register');
+
+    document.getElementById('thicknessModal').classList.remove('hidden');
 }
 
-function resetForm() {
-    currentItem = null;
-    document.getElementById('paramForm').reset();
-    document.getElementById('formTitle').innerHTML = '📝 參數資料建檔';
-    document.getElementById('cancelEditBtn').classList.add('hidden');
-    document.getElementById('regPreviewBox').classList.add('hidden');
-    uploadedImageUrl = "";
-    
-    currentThicknessRecords = [];
-    currentNgRecords = [];
-    currentRemarks = [];
-    renderEditRecords();
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.remove('hidden');
+    document.getElementById('loadingOverlay').classList.add('flex');
 }
 
-async function deleteCurrentItem() {
-    if(!currentItem) return;
-    if(confirm(`⚠️ 確定要刪除「${currentItem.item_name}」的所有資料嗎？此動作無法復原。`)) {
-        document.getElementById('loadingOverlay').classList.remove('hidden');
-        document.getElementById('loadingText').textContent = "刪除中...";
-        try {
-            const { error } = await supabase.from(TABLE_NAME).delete().eq('id', currentItem.id);
-            if(error) throw error;
-            alert("刪除成功！");
-            resetForm();
-            await checkDbConnection();
-            document.getElementById('resultBoard').style.display = 'none';
-            document.getElementById('actionButtons').classList.add('hidden');
-        } catch(err) {
-            alert("刪除失敗: " + err.message);
-        } finally {
-            document.getElementById('loadingOverlay').classList.add('hidden');
-        }
-    }
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    document.getElementById('loadingOverlay').classList.remove('flex');
 }

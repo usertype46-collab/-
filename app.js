@@ -256,10 +256,10 @@ function openThicknessSummary() {
         
         records.forEach(r => {
             allRecords.push({
+                ...r, // 先展開紀錄，防止屬性被覆寫
                 item_name: item.item_name,
                 category: item.category || '無分類',
-                image_url: item.image_url,
-                ...r
+                image_url: item.image_url // 強制指定母項目圖片，確保雲端路徑正確
             });
         });
     });
@@ -269,11 +269,11 @@ function openThicknessSummary() {
     
     allRecords.forEach(r => {
         const tr = document.createElement('tr');
-        // 核心修復：強制加上 referrerpolicy="no-referrer" 與 onerror 雙重防護
+        // 核心修復：強制加上 referrerpolicy="no-referrer" 與 onerror 雙重防護以防雲端擋圖
         const imgSrc = r.image_url ? r.image_url : 'https://via.placeholder.com/150?text=No+Image';
         tr.innerHTML = `
             <td class="p-3 border-b border-slate-700">
-                <img src="${imgSrc}" referrerpolicy="no-referrer" class="h-12 w-12 object-cover rounded border border-slate-600 bg-slate-800" onerror="this.src='https://via.placeholder.com/150?text=無法顯示'">
+                <img src="${imgSrc}" referrerpolicy="no-referrer" class="h-12 w-12 object-cover rounded border border-slate-600 bg-slate-800" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=無法顯示';">
             </td>
             <td class="p-3 border-b border-slate-700 font-bold text-white">${r.item_name}</td>
             <td class="p-3 border-b border-slate-700 text-blue-300 font-bold">${r.category}</td>

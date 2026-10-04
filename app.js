@@ -152,7 +152,6 @@ function displayResult(item) {
     document.getElementById('resultBoard').style.display = 'block';
     document.getElementById('actionButtons').classList.remove('hidden');
     
-    // 圖片載入(已加入 onerror 防止版面崩潰)
     const imgBox = document.getElementById('imageContainer');
     const imgEl = document.getElementById('q_matched_image');
     const imgLink = document.getElementById('q_matched_image_link');
@@ -160,7 +159,10 @@ function displayResult(item) {
     if (item.image_url) {
         imgBox.classList.remove('hidden');
         imgEl.src = item.image_url;
-        imgEl.onerror = () => { imgEl.src = 'https://via.placeholder.com/300x200?text=圖片載入失敗'; };
+        imgEl.onerror = function() { 
+            this.onerror = null; // 防止無限迴圈
+            this.src = 'https://via.placeholder.com/300x200?text=圖片載入失敗'; 
+        };
         imgLink.href = item.image_url;
     } else {
         imgBox.classList.add('hidden');
@@ -266,11 +268,11 @@ function openThicknessSummary() {
     
     allRecords.forEach(r => {
         const tr = document.createElement('tr');
-        // 核心修復：強制加上 onerror 避免部分 Google Drive URL 無法跨域或失效造成版面破壞
+        // 加入 referrerpolicy 與 this.onerror=null 防堵無限報錯迴圈
         const imgSrc = r.image_url ? r.image_url : 'https://via.placeholder.com/150?text=No+Image';
         tr.innerHTML = `
             <td class="p-3 border-b border-slate-700">
-                <img src="${imgSrc}" class="h-12 w-12 object-cover rounded border border-slate-600 bg-slate-800" onerror="this.src='https://via.placeholder.com/150?text=Error'">
+                <img src="${imgSrc}" referrerpolicy="no-referrer" class="h-12 w-12 object-cover rounded border border-slate-600 bg-slate-800" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Error';">
             </td>
             <td class="p-3 border-b border-slate-700 font-bold text-white">${r.item_name}</td>
             <td class="p-3 border-b border-slate-700 text-blue-300 font-bold">${r.category}</td>

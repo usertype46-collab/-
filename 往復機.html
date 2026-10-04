@@ -34,28 +34,28 @@
     <!-- 全局讀取動畫 -->
     <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/80 z-[100] hidden flex-col items-center justify-center p-4 text-center">
         <div class="loader mb-4"></div>
-        <div id="loadingText" class="text-blue-400 font-bold text-base sm:text-lg tracking-wider" data-i18n="loading_ai">系統處理中，請稍候...</div>
+        <div id="loadingText" class="text-blue-400 font-bold text-base sm:text-lg tracking-wider">系統處理中，請稍候...</div>
     </div>
     
     <!-- 懸浮功能按鈕區 -->
     <div class="fixed top-2 right-2 sm:top-4 sm:right-4 z-40 flex flex-col gap-1.5 sm:gap-2">
         <button id="btnOpenThicknessModal" class="bg-gradient-to-r from-pink-600 to-pink-800 hover:from-pink-500 hover:to-pink-700 border border-pink-400/50 text-white shadow-[0_0_15px_rgba(236,72,153,0.4)] px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm transition-all transform hover:scale-105 flex items-center gap-1.5">
-            <span data-i18n="btn_thickness_summary">📊 膜厚紀錄總覽</span>
+            <span>📊 膜厚紀錄總覽</span>
         </button>
         <button id="btnShowSettings" class="bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-600 hover:to-slate-800 border border-slate-500 text-white shadow-lg px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm transition-all transform hover:scale-105 flex items-center justify-center gap-1.5">
-            <span data-i18n="btn_api_settings">⚙️ 系統 API 設定</span>
+            <span>⚙️ 系統 API 設定</span>
         </button>
     </div>
 
     <div class="max-w-6xl mx-auto p-3 sm:p-4 mt-20 sm:mt-16 md:mt-6">
         
-        <!-- 頂部標題與語言切換 -->
+        <!-- 頂部標題 -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 bg-slate-800/50 p-4 sm:p-6 rounded-2xl border border-slate-700/50 shadow-xl">
             <div class="flex-1">
-                <h1 class="text-2xl sm:text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300" data-i18n="app_title">
+                <h1 class="text-2xl sm:text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">
                     百富粉體塗裝參數系統
                 </h1>
-                <p class="text-xs sm:text-sm text-cyan-400/80 mt-1 font-semibold tracking-wider flex items-center gap-2" data-i18n="sub_title">
+                <p class="text-xs sm:text-sm text-cyan-400/80 mt-1 font-semibold tracking-wider flex items-center gap-2">
                     <span class="inline-block w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
                     Pure Frontend AI Architecture (Respan Span 01 Lite Enabled)
                 </p>
@@ -75,15 +75,15 @@
 
         <!-- 頁籤切換 -->
         <div class="flex gap-2 sm:gap-4 mb-6">
-            <button id="tabQueryBtn" class="flex-1 bg-gradient-to-r from-blue-700 to-blue-900 border border-blue-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-blue-900/20 transition-all hover:brightness-110" data-i18n="tab_query">📷 相機 / 手動查詢模式</button>
-            <button id="tabRegisterBtn" class="flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white" data-i18n="tab_register">📝 參數建檔 / 編輯模式</button>
+            <button id="tabQueryBtn" class="flex-1 bg-gradient-to-r from-blue-700 to-blue-900 border border-blue-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-blue-900/20 transition-all hover:brightness-110">📷 相機 / 手動查詢模式</button>
+            <button id="tabRegisterBtn" class="flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white">📝 參數建檔 / 編輯模式</button>
         </div>
 
         <!-- 查詢模式區塊 -->
         <div id="querySection" class="block animate-[fadeIn_0.3s_ease-in-out]">
             <div class="glass-panel p-4 sm:p-6 rounded-2xl mb-8 shadow-2xl">
                 <h2 class="text-lg sm:text-xl mb-4 sm:mb-6 font-bold text-amber-400 flex flex-wrap items-center gap-2 border-b border-slate-700 pb-3">
-                    <span data-i18n="query_title">🔍 構件參數查詢</span>
+                    <span>🔍 構件參數查詢</span>
                     <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30" id="currentAiBadge">AI 模型: Respan Span 01 Lite</span>
                 </h2>
                 
@@ -91,18 +91,17 @@
                     <input type="file" accept="image/*" capture="environment" id="cameraInput" class="hidden">
                     <button onclick="document.getElementById('cameraInput').click()" class="group bg-gradient-to-br from-emerald-600 to-emerald-800 hover:from-emerald-500 hover:to-emerald-700 border border-emerald-500/50 p-4 sm:p-6 rounded-xl font-bold shadow-lg transition-all flex flex-col items-center justify-center gap-2 sm:gap-3">
                         <span class="text-2xl sm:text-3xl group-hover:scale-110 transition-transform">📸</span>
-                        <span class="text-sm sm:text-lg" data-i18n="btn_ai_search">AI 智慧分析影像尋找 (開啟相機)</span>
+                        <span class="text-sm sm:text-lg">AI 智慧分析影像尋找 (開啟相機)</span>
                     </button>
                     
                     <input type="file" accept="image/*" capture="environment" id="tesseractInput" class="hidden">
                     <button onclick="document.getElementById('tesseractInput').click()" class="group bg-gradient-to-br from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 border border-blue-500/50 p-4 sm:p-6 rounded-xl font-bold shadow-lg transition-all flex flex-col items-center justify-center gap-2 sm:gap-3">
                         <span class="text-2xl sm:text-3xl group-hover:scale-110 transition-transform">🖼️</span>
-                        <span class="text-sm sm:text-lg" data-i18n="btn_feature_search">本地特徵比對尋找 (開啟相機)</span>
+                        <span class="text-sm sm:text-lg">本地特徵比對尋找 (開啟相機)</span>
                     </button>
                 </div>
 
                 <div class="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-700">
-                    <!-- 新增膜厚類別篩選 -->
                     <label class="block text-slate-400 mb-2 font-bold text-xs sm:text-sm">📌 膜厚類別篩選：</label>
                     <select id="categoryFilter" class="w-full bg-slate-900 p-3 sm:p-4 rounded-xl border border-slate-600 text-white font-bold text-xs sm:text-base mb-4 focus:ring-2 focus:ring-blue-500 transition shadow-inner">
                         <option value="">-- 顯示全部類別 --</option>
@@ -112,15 +111,15 @@
                         <option value="小構件不開自動槍">小構件不開自動槍</option>
                     </select>
 
-                    <label class="block text-slate-400 mb-2 font-bold text-xs sm:text-sm" data-i18n="lbl_select_db">或從資料庫直接選擇構件：</label>
+                    <label class="block text-slate-400 mb-2 font-bold text-xs sm:text-sm">或從資料庫直接選擇構件 (依照類別讀取數據資料)：</label>
                     <select id="itemSelect" class="w-full bg-slate-900 p-3 sm:p-4 rounded-xl border border-slate-600 text-white font-bold text-xs sm:text-base focus:ring-2 focus:ring-blue-500 transition shadow-inner">
-                        <option value="" data-i18n="opt_db_loading">-- 資料庫連線中... --</option>
+                        <option value="">-- 資料庫連線中... --</option>
                     </select>
                 </div>
 
                 <div id="actionButtons" class="mt-6 flex gap-3 sm:gap-4 hidden">
-                    <button id="btnEditItem" class="flex-1 bg-amber-600/80 hover:bg-amber-500 border border-amber-500/50 py-2.5 sm:py-3 rounded-xl font-bold text-xs sm:text-base shadow transition text-white" data-i18n="btn_edit_item">✏️ 編輯此構件參數</button>
-                    <button id="btnDeleteItem" class="flex-none w-1/3 bg-red-600/80 hover:bg-red-500 border border-red-500/50 py-2.5 sm:py-3 rounded-xl font-bold text-xs sm:text-base shadow transition text-white" data-i18n="btn_delete_item">🗑️ 刪除</button>
+                    <button id="btnEditItem" class="flex-1 bg-amber-600/80 hover:bg-amber-500 border border-amber-500/50 py-2.5 sm:py-3 rounded-xl font-bold text-xs sm:text-base shadow transition text-white">✏️️ 編輯此構件參數</button>
+                    <button id="btnDeleteItem" class="flex-none w-1/3 bg-red-600/80 hover:bg-red-500 border border-red-500/50 py-2.5 sm:py-3 rounded-xl font-bold text-xs sm:text-base shadow transition text-white">🗑️ 刪除</button>
                 </div>
             </div>
 
@@ -130,9 +129,9 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                     <!-- 左：圖片與槍粉量 -->
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-blue-500 flex flex-col">
-                        <h3 class="font-bold mb-3 sm:mb-4 text-blue-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_gun_powder"><span class="text-lg sm:text-xl">🔫</span> 自動槍粉量數據</h3>
+                        <h3 class="font-bold mb-3 sm:mb-4 text-blue-300 flex items-center gap-2 text-sm sm:text-base"><span class="text-lg sm:text-xl">🔫</span> 自動槍粉量數據</h3>
                         <div id="imageContainer" class="mb-4 bg-black/50 p-2 rounded-xl text-center border border-slate-700 hidden shadow-inner relative group">
-                            <img id="q_matched_image" src="" class="mx-auto rounded-lg h-36 sm:h-48 w-full object-contain">
+                            <img id="q_matched_image" src="" referrerpolicy="no-referrer" class="mx-auto rounded-lg h-36 sm:h-48 w-full object-contain">
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
                                 <a id="q_matched_image_link" href="#" target="_blank" class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">查看原圖</a>
                             </div>
@@ -155,26 +154,26 @@
 
                     <!-- 中：往復機 -->
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-amber-500 flex flex-col justify-between">
-                        <h3 class="font-bold mb-3 sm:mb-4 text-amber-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_reciprocator"><span class="text-lg sm:text-xl">⚙️</span> 往復機運行參數</h3>
+                        <h3 class="font-bold mb-3 sm:mb-4 text-amber-300 flex items-center gap-2 text-sm sm:text-base"><span class="text-lg sm:text-xl">⚙️</span> 往復機運行參數</h3>
                         <div class="space-y-3 text-xs sm:text-sm mt-auto">
                             <div class="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700 shadow-inner">
                                 <span class="w-1/3 text-left text-amber-400 font-mono">左1: <b id="q_speed_left" class="text-base sm:text-xl"></b></span>
-                                <span class="w-1/3 text-center text-slate-300 font-bold leading-tight" data-i18n="lbl_speed">上下速度<br><span class="text-[10px] text-slate-500">(百)</span></span>
+                                <span class="w-1/3 text-center text-slate-300 font-bold leading-tight">上下速度<br><span class="text-[10px] text-slate-500">(百)</span></span>
                                 <span class="w-1/3 text-right text-amber-400 font-mono">右2: <b id="q_speed_right" class="text-base sm:text-xl"></b></span>
                             </div>
                             <div class="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700 shadow-inner">
                                 <span class="w-1/3 text-left text-amber-400 font-mono">左1: <b id="q_up_turn_left" class="text-base sm:text-xl"></b></span>
-                                <span class="w-1/3 text-center text-slate-300 font-bold leading-tight" data-i18n="lbl_up_turn">左上換向<br><span class="text-[10px] text-slate-500">(千)</span></span>
+                                <span class="w-1/3 text-center text-slate-300 font-bold leading-tight">左上換向<br><span class="text-[10px] text-slate-500">(千)</span></span>
                                 <span class="w-1/3 text-right text-amber-400 font-mono">右2: <b id="q_up_turn_right" class="text-base sm:text-xl"></b></span>
                             </div>
                             <div class="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700 shadow-inner">
                                 <span class="w-1/3 text-left text-amber-400 font-mono">左1: <b id="q_down_turn_left" class="text-base sm:text-xl"></b></span>
-                                <span class="w-1/3 text-center text-slate-300 font-bold leading-tight" data-i18n="lbl_down_turn">左下換向<br><span class="text-[10px] text-slate-500">(千)</span></span>
+                                <span class="w-1/3 text-center text-slate-300 font-bold leading-tight">左下換向<br><span class="text-[10px] text-slate-500">(千)</span></span>
                                 <span class="w-1/3 text-right text-amber-400 font-mono">右2: <b id="q_down_turn_right" class="text-base sm:text-xl"></b></span>
                             </div>
                             <div class="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700 shadow-inner">
                                 <span class="w-1/3 text-left text-amber-400 font-mono">左1: <b id="q_dist_left" class="text-base sm:text-xl"></b></span>
-                                <span class="w-1/3 text-center text-slate-300 font-bold leading-tight" data-i18n="lbl_distance">工件距離<br><span class="text-[10px] text-slate-500">(百)</span></span>
+                                <span class="w-1/3 text-center text-slate-300 font-bold leading-tight">工件距離<br><span class="text-[10px] text-slate-500">(百)</span></span>
                                 <span class="w-1/3 text-right text-amber-400 font-mono">右2: <b id="q_dist_right" class="text-base sm:text-xl"></b></span>
                             </div>
                         </div>
@@ -182,14 +181,14 @@
 
                     <!-- 右：電壓/電流 -->
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-red-500">
-                        <h3 class="font-bold mb-3 sm:mb-4 text-red-400 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_electrical"><span class="text-lg sm:text-xl">⚡</span> 自動槍電壓與電流</h3>
+                        <h3 class="font-bold mb-3 sm:mb-4 text-red-400 flex items-center gap-2 text-sm sm:text-base"><span class="text-lg sm:text-xl">⚡</span> 自動槍電壓與電流</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-3">
                             <div class="bg-gradient-to-b from-slate-800 to-slate-900 p-4 sm:p-6 rounded-xl flex flex-col items-center justify-center border border-slate-700 shadow-inner">
-                                <div class="text-slate-400 text-xs sm:text-sm mb-1 font-bold tracking-widest" data-i18n="lbl_voltage_sys">系統電壓 (kV)</div>
+                                <div class="text-slate-400 text-xs sm:text-sm mb-1 font-bold tracking-widest">系統電壓 (kV)</div>
                                 <div class="text-4xl sm:text-6xl text-red-500 font-black drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" id="q_voltage"></div>
                             </div>
                             <div class="bg-gradient-to-b from-slate-800 to-slate-900 p-4 sm:p-6 rounded-xl flex flex-col items-center justify-center border border-slate-700 shadow-inner">
-                                <div class="text-slate-400 text-xs sm:text-sm mb-1 font-bold tracking-widest" data-i18n="lbl_current_sys">系統電流 (μA)</div>
+                                <div class="text-slate-400 text-xs sm:text-sm mb-1 font-bold tracking-widest">系統電流 (μA)</div>
                                 <div class="text-4xl sm:text-6xl text-red-500 font-black drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" id="q_current"></div>
                             </div>
                         </div>
@@ -199,11 +198,11 @@
                 <!-- 手動槍參數 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-indigo-500">
-                        <h3 class="font-bold mb-3 sm:mb-4 text-indigo-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_manual_a"><span class="text-lg sm:text-xl">🖌️</span> 區塊 A: 整體外觀面</h3>
+                        <h3 class="font-bold mb-3 sm:mb-4 text-indigo-300 flex items-center gap-2 text-sm sm:text-base"><span class="text-lg sm:text-xl">🖌️</span> 區塊 A: 整體外觀面</h3>
                         <div class="space-y-2 text-xs sm:text-sm bg-slate-900/50 p-3 sm:p-4 rounded-xl border border-slate-700 shadow-inner" id="q_manual_a_display"></div>
                     </div>
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-teal-500">
-                        <h3 class="font-bold mb-3 sm:mb-4 text-teal-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_manual_b"><span class="text-lg sm:text-xl">🖌️</span> 區塊 B: 邊角與溝槽</h3>
+                        <h3 class="font-bold mb-3 sm:mb-4 text-teal-300 flex items-center gap-2 text-sm sm:text-base"><span class="text-lg sm:text-xl">🖌️</span> 區塊 B: 邊角與溝槽</h3>
                         <div class="space-y-2 text-xs sm:text-sm bg-slate-900/50 p-3 sm:p-4 rounded-xl border border-slate-700 shadow-inner" id="q_manual_b_display"></div>
                     </div>
                 </div>
@@ -211,17 +210,17 @@
                 <!-- 紀錄區 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-l-4 border-l-pink-500">
-                        <h3 class="font-bold mb-3 text-pink-400 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_thickness_history">📊 歷史膜厚紀錄</h3>
+                        <h3 class="font-bold mb-3 text-pink-400 flex items-center gap-2 text-sm sm:text-base">📊 歷史膜厚紀錄</h3>
                         <div id="q_thickness_display" class="space-y-2 text-xs sm:text-sm text-slate-300 max-h-32 overflow-y-auto custom-scrollbar pr-2"></div>
                     </div>
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-l-4 border-l-orange-500">
-                        <h3 class="font-bold mb-3 text-orange-400 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_ng_history">⚠️ 歷史 NG 紀錄</h3>
+                        <h3 class="font-bold mb-3 text-orange-400 flex items-center gap-2 text-sm sm:text-base">⚠️ 歷史 NG 紀錄</h3>
                         <div id="q_ng_display" class="space-y-2 text-xs sm:text-sm text-slate-300 max-h-32 overflow-y-auto custom-scrollbar pr-2"></div>
                     </div>
                 </div>
 
                 <div class="glass-panel p-4 sm:p-5 rounded-2xl border border-slate-600">
-                    <h3 class="font-bold mb-3 text-slate-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_remarks_history">📝 修正備註</h3>
+                    <h3 class="font-bold mb-3 text-slate-300 flex items-center gap-2 text-sm sm:text-base">📝 修正備註</h3>
                     <div id="q_remarks_display" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs sm:text-sm"></div>
                 </div>
             </div>
@@ -230,7 +229,7 @@
         <!-- 建檔/編輯模式區塊 -->
         <div id="registerSection" class="hidden animate-[fadeIn_0.3s_ease-in-out]">
             <div class="glass-panel p-4 sm:p-8 rounded-2xl shadow-2xl relative">
-                <h2 id="formTitle" class="text-xl sm:text-2xl mb-6 font-bold text-emerald-400 flex items-center gap-2 border-b border-slate-700 pb-4" data-i18n="form_title_create">
+                <h2 id="formTitle" class="text-xl sm:text-2xl mb-6 font-bold text-emerald-400 flex items-center gap-2 border-b border-slate-700 pb-4">
                     📝 參數資料建檔
                 </h2>
                 
@@ -238,9 +237,9 @@
                     <!-- 基本資料 -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                         <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700">
-                            <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_item_name">品名 / 料號 (格式: 料號/品名)</label>
+                            <label class="block text-slate-300 mb-2 font-bold">品名 / 料號 (格式: 料號/品名)</label>
                             <div class="flex flex-col sm:flex-row gap-2">
-                                <input type="text" id="item_name" placeholder="例如：UC-280B/轉軸座" data-i18n-placeholder="placeholder_item_name" required class="flex-1 bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none transition text-xs sm:text-sm">
+                                <input type="text" id="item_name" placeholder="例如：UC-280B/轉軸座" required class="flex-1 bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none transition text-xs sm:text-sm">
                             </div>
                         </div>
 
@@ -257,17 +256,17 @@
                         </div>
 
                         <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700">
-                            <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_comp_photo">構件照片 (將上傳雲端庫)</label>
+                            <label class="block text-slate-300 mb-2 font-bold">構件照片 (將上傳雲端庫)</label>
                             <input type="file" id="reg_image" accept="image/*" capture="environment" class="w-full bg-slate-900 p-2 rounded-lg border border-slate-600 text-slate-300 cursor-pointer file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 transition text-xs">
                             <div id="regPreviewBox" class="hidden mt-3 bg-black/50 p-2 rounded-lg text-center border border-slate-700">
-                                <img id="regPreviewImg" class="h-28 sm:h-32 mx-auto rounded object-contain">
+                                <img id="regPreviewImg" class="h-28 sm:h-32 mx-auto rounded object-contain" referrerpolicy="no-referrer">
                             </div>
                         </div>
                     </div>
 
                     <!-- 自動槍參數 -->
                     <div class="pt-4 sm:pt-6 border-t border-slate-700">
-                        <h3 class="text-blue-400 mb-3 sm:mb-4 font-bold text-base sm:text-lg flex items-center gap-2" data-i18n="card_gun_powder">🔫 自動槍粉量數據</h3>
+                        <h3 class="text-blue-400 mb-3 sm:mb-4 font-bold text-base sm:text-lg flex items-center gap-2">🔫 自動槍粉量數據</h3>
                         <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2 sm:gap-3">
                             <input type="text" id="gun_1" placeholder="槍1" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
                             <input type="text" id="gun_2" placeholder="槍2" class="bg-slate-900 p-2.5 rounded-lg w-full text-center font-bold text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
@@ -283,27 +282,27 @@
                     <!-- 往復機 -->
                     <div class="pt-4 sm:pt-6 border-t border-slate-700">
                         <div class="flex flex-wrap justify-between items-center mb-3 sm:mb-4 gap-2">
-                            <h3 class="text-amber-400 font-bold text-base sm:text-lg flex items-center gap-2" data-i18n="lbl_recip_params">⚙️ 往復機運行參數</h3>
-                            <button type="button" id="btnFillAuto" class="bg-amber-600/20 hover:bg-amber-600/40 text-amber-400 border border-amber-500/50 px-2.5 py-1 rounded-lg font-bold transition text-xs" data-i18n="btn_fill_auto">⚡ 換向填入「自動」</button>
+                            <h3 class="text-amber-400 font-bold text-base sm:text-lg flex items-center gap-2">⚙️ 往復機運行參數</h3>
+                            <button type="button" id="btnFillAuto" class="bg-amber-600/20 hover:bg-amber-600/40 text-amber-400 border border-amber-500/50 px-2.5 py-1 rounded-lg font-bold transition text-xs">⚡ 換向填入「自動」</button>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
-                                <span class="w-20 text-center text-slate-400 font-bold text-xs" data-i18n="lbl_recip_speed">上下速度</span>
+                                <span class="w-20 text-center text-slate-400 font-bold text-xs">上下速度</span>
                                 <input type="text" id="speed_left" value="600" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="左1">
                                 <input type="text" id="speed_right" value="600" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="右2">
                             </div>
                             <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
-                                <span class="w-20 text-center text-slate-400 font-bold text-xs" data-i18n="lbl_recip_upturn">上換向點</span>
+                                <span class="w-20 text-center text-slate-400 font-bold text-xs">上換向點</span>
                                 <input type="text" id="up_turn_left" value="自動" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="左1">
                                 <input type="text" id="up_turn_right" value="自動" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="右2">
                             </div>
                             <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
-                                <span class="w-20 text-center text-slate-400 font-bold text-xs" data-i18n="lbl_recip_downturn">下換向點</span>
+                                <span class="w-20 text-center text-slate-400 font-bold text-xs">下換向點</span>
                                 <input type="text" id="down_turn_left" value="自動" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="左1">
                                 <input type="text" id="down_turn_right" value="自動" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="右2">
                             </div>
                             <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
-                                <span class="w-20 text-center text-slate-400 font-bold text-xs" data-i18n="lbl_recip_dist">工件距離</span>
+                                <span class="w-20 text-center text-slate-400 font-bold text-xs">工件距離</span>
                                 <input type="text" id="dist_left" value="380" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="左1">
                                 <input type="text" id="dist_right" value="420" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="右2">
                             </div>
@@ -312,14 +311,14 @@
 
                     <!-- 電壓與電流 -->
                     <div class="pt-4 sm:pt-6 border-t border-slate-700">
-                        <h3 class="text-red-400 mb-3 sm:mb-4 font-bold text-base sm:text-lg flex items-center gap-2" data-i18n="lbl_gun_elec">⚡ 自動槍電氣參數</h3>
+                        <h3 class="text-red-400 mb-3 sm:mb-4 font-bold text-base sm:text-lg flex items-center gap-2">⚡ 自動槍電氣參數</h3>
                         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
                             <div class="flex-1 flex items-center gap-2 bg-slate-800/50 p-2.5 sm:p-3 rounded-lg border border-slate-700">
-                                <span class="text-slate-300 font-bold w-16 text-right text-xs sm:text-sm" data-i18n="lbl_voltage">電壓:</span>
+                                <span class="text-slate-300 font-bold w-16 text-right text-xs sm:text-sm">電壓:</span>
                                 <input type="text" id="voltage" value="70" class="w-full bg-slate-900 p-2 rounded-lg text-red-400 font-bold text-lg sm:text-xl border border-slate-600 text-center">
                             </div>
                             <div class="flex-1 flex items-center gap-2 bg-slate-800/50 p-2.5 sm:p-3 rounded-lg border border-slate-700">
-                                <span class="text-slate-300 font-bold w-16 text-right text-xs sm:text-sm" data-i18n="lbl_current">電流:</span>
+                                <span class="text-slate-300 font-bold w-16 text-right text-xs sm:text-sm">電流:</span>
                                 <input type="text" id="current" value="15" class="w-full bg-slate-900 p-2 rounded-lg text-red-400 font-bold text-lg sm:text-xl border border-slate-600 text-center">
                             </div>
                         </div>
@@ -327,23 +326,55 @@
 
                     <!-- 手動槍 A/B 面 -->
                     <div class="pt-6 sm:pt-8 border-t border-slate-700">
-                        <h3 class="text-indigo-400 font-bold text-lg sm:text-xl mb-4 sm:mb-6 flex items-center gap-2" data-i18n="lbl_manual_fine">🖌 手動槍精細參數</h3>
+                        <h3 class="text-indigo-400 font-bold text-lg sm:text-xl mb-4 sm:mb-6 flex items-center gap-2">🖌 手動槍精細參數</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
                             <!-- A 面 -->
                             <div class="bg-gradient-to-br from-slate-900 to-indigo-900/30 p-4 sm:p-5 rounded-2xl border border-indigo-500/30 shadow-lg">
-                                <h4 class="text-center font-black text-indigo-300 mb-3 sm:mb-4 pb-2 border-b border-indigo-500/30 tracking-wider text-xs sm:text-sm" data-i18n="title_block_a">區塊 (A) : 外觀大面積</h4>
+                                <h4 class="text-center font-black text-indigo-300 mb-3 sm:mb-4 pb-2 border-b border-indigo-500/30 tracking-wider text-xs sm:text-sm">區塊 (A) : 外觀大面積</h4>
                                 <div class="space-y-2.5 text-xs sm:text-sm">
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
-                                        <span class="text-slate-300" data-i18n="lbl_powder">粉量 (±10)</span>
+                                        <span class="text-slate-300">粉量 (±10)</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('a_powder', -10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="a_powder" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
                                             <button type="button" onclick="adjManual('a_powder', 10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
-                                    <!-- ...(保持原始設計的風量/電壓/等參數, 由於篇幅此處使用相同的完整架構)... -->
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
-                                        <span class="text-slate-300 font-bold text-amber-300" data-i18n="lbl_spray_count">總噴塗次數</span>
+                                        <span class="text-slate-300">風量 (±10)</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjManual('a_air', -10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <input type="text" id="a_air" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
+                                            <button type="button" onclick="adjManual('a_air', 10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
+                                        <span class="text-slate-300">電壓 (kV)</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjManual('a_voltage', -5, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <input type="text" id="a_voltage" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
+                                            <button type="button" onclick="adjManual('a_voltage', 5, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
+                                        <span class="text-slate-300">電流 (μA)</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjManual('a_current', -5, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <input type="text" id="a_current" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
+                                            <button type="button" onclick="adjManual('a_current', 5, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
+                                        <span class="text-slate-300">噴嘴</span>
+                                        <input type="text" id="a_nozzle" placeholder="填寫形式" class="w-24 bg-black text-center text-white border border-slate-600 rounded py-1">
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
+                                        <span class="text-slate-300">靜電環</span>
+                                        <input type="text" id="a_ring" placeholder="填寫形式" class="w-24 bg-black text-center text-white border border-slate-600 rounded py-1">
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700 mt-2">
+                                        <span class="text-slate-300 font-bold text-amber-300">總噴塗次數</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('a_spray_count', -1, 1, 20)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="a_spray_count" value="1" class="w-14 sm:w-16 bg-black text-center flash-gold border border-amber-500/50 rounded py-1 font-mono text-base sm:text-lg">
@@ -364,23 +395,64 @@
 
                             <!-- B 面 -->
                             <div class="bg-gradient-to-br from-slate-900 to-teal-900/30 p-4 sm:p-5 rounded-2xl border border-teal-500/30 shadow-lg">
-                                <h4 class="text-center font-black text-teal-300 mb-3 sm:mb-4 pb-2 border-b border-teal-500/30 tracking-wider text-xs sm:text-sm" data-i18n="title_block_b">區塊 (B) : 邊角與溝槽死角</h4>
+                                <h4 class="text-center font-black text-teal-300 mb-3 sm:mb-4 pb-2 border-b border-teal-500/30 tracking-wider text-xs sm:text-sm">區塊 (B) : 邊角與溝槽死角</h4>
                                 <div class="space-y-2.5 text-xs sm:text-sm">
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
-                                        <span class="text-slate-300" data-i18n="lbl_powder">粉量 (±10)</span>
+                                        <span class="text-slate-300">粉量 (±10)</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('b_powder', -10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="b_powder" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
                                             <button type="button" onclick="adjManual('b_powder', 10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
-                                    <!-- ...(同A面結構)... -->
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
-                                        <span class="text-slate-300 font-bold text-amber-300" data-i18n="lbl_spray_count">總噴塗次數</span>
+                                        <span class="text-slate-300">風量 (±10)</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjManual('b_air', -10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <input type="text" id="b_air" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
+                                            <button type="button" onclick="adjManual('b_air', 10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
+                                        <span class="text-slate-300">電壓 (kV)</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjManual('b_voltage', -5, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <input type="text" id="b_voltage" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
+                                            <button type="button" onclick="adjManual('b_voltage', 5, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
+                                        <span class="text-slate-300">電流 (μA)</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjManual('b_current', -5, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <input type="text" id="b_current" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
+                                            <button type="button" onclick="adjManual('b_current', 5, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
+                                        <span class="text-slate-300">噴嘴</span>
+                                        <input type="text" id="b_nozzle" placeholder="填寫形式" class="w-24 bg-black text-center text-white border border-slate-600 rounded py-1">
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
+                                        <span class="text-slate-300">靜電環</span>
+                                        <input type="text" id="b_ring" placeholder="填寫形式" class="w-24 bg-black text-center text-white border border-slate-600 rounded py-1">
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700 mt-2">
+                                        <span class="text-slate-300 font-bold text-amber-300">總噴塗次數</span>
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" onclick="adjManual('b_spray_count', -1, 1, 20)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="b_spray_count" value="1" class="w-14 sm:w-16 bg-black text-center flash-gold border border-amber-500/50 rounded py-1 font-mono text-base sm:text-lg">
                                             <button type="button" onclick="adjManual('b_spray_count', 1, 1, 20)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 pt-3 border-t border-teal-500/30 space-y-2.5">
+                                        <div class="text-[11px] sm:text-xs font-bold text-teal-300 flex items-center gap-1"><span>📍 方位噴塗次數</span></div>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800"><span class="text-slate-300 text-xs">左側</span><div class="flex items-center gap-1"><button type="button" onclick="adjManual('b_spray_left', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button><input type="text" id="b_spray_left" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono"><button type="button" onclick="adjManual('b_spray_left', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button></div></div>
+                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800"><span class="text-slate-300 text-xs">上方</span><div class="flex items-center gap-1"><button type="button" onclick="adjManual('b_spray_top', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button><input type="text" id="b_spray_top" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono"><button type="button" onclick="adjManual('b_spray_top', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button></div></div>
+                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800"><span class="text-slate-300 text-xs">下方</span><div class="flex items-center gap-1"><button type="button" onclick="adjManual('b_spray_bottom', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button><input type="text" id="b_spray_bottom" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono"><button type="button" onclick="adjManual('b_spray_bottom', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button></div></div>
+                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800"><span class="text-slate-300 text-xs">右側</span><div class="flex items-center gap-1"><button type="button" onclick="adjManual('b_spray_right', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button><input type="text" id="b_spray_right" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono"><button type="button" onclick="adjManual('b_spray_right', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button></div></div>
                                         </div>
                                     </div>
                                 </div>
@@ -392,15 +464,15 @@
                     <div class="pt-6 sm:pt-8 border-t border-slate-700 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
                         <!-- 膜厚 -->
                         <div>
-                            <h3 class="text-pink-400 font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2" data-i18n="lbl_add_thickness">📊 新增膜厚檢測紀錄</h3>
+                            <h3 class="text-pink-400 font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2">📊 新增膜厚檢測紀錄</h3>
                             <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700 mb-4 flex flex-col gap-2.5">
                                 <input type="date" id="th_date" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white text-xs sm:text-sm">
                                 <div class="grid grid-cols-3 gap-2 text-xs">
-                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_front_sec">前段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_f_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_f_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
-                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_mid_sec">中段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_m_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_m_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
-                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_rear_sec">後段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_r_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_r_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
+                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs">前段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_f_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_f_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
+                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs">中段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_m_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_m_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
+                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs">後段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_r_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_r_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
                                 </div>
-                                <button type="button" onclick="addThicknessRecord()" class="bg-pink-600 hover:bg-pink-500 text-white w-full py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm" data-i18n="btn_add_thickness">＋ 加入膜厚紀錄</button>
+                                <button type="button" onclick="addThicknessRecord()" class="bg-pink-600 hover:bg-pink-500 text-white w-full py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm">＋ 加入膜厚紀錄</button>
                             </div>
                             <div id="thicknessList" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2"></div>
                         </div>
@@ -408,7 +480,7 @@
                         <!-- NG與備註 -->
                         <div class="space-y-6 sm:space-y-8">
                             <div>
-                                <h3 class="text-orange-400 font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2" data-i18n="lbl_add_ng">⚠️ 新增 NG 異常紀錄</h3>
+                                <h3 class="text-orange-400 font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2">⚠️ 新增 NG 異常紀錄</h3>
                                 <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700 mb-4 flex flex-col gap-2.5">
                                     <div class="flex flex-col sm:flex-row gap-2">
                                         <input type="date" id="ng_date" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white text-xs sm:text-sm">
@@ -427,14 +499,14 @@
                                             <option value="爆粉">爆粉</option>
                                             <option value="皺痕">皺痕</option>
                                         </select>
-                                        <button type="button" onclick="addNgRecord()" class="bg-orange-600 hover:bg-orange-500 text-white px-3 py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm shrink-0" data-i18n="btn_add_ng">＋ 加入 NG</button>
+                                        <button type="button" onclick="addNgRecord()" class="bg-orange-600 hover:bg-orange-500 text-white px-3 py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm shrink-0">＋ 加入 NG</button>
                                     </div>
                                 </div>
                                 <div id="ngList" class="space-y-2 max-h-32 overflow-y-auto custom-scrollbar pr-2"></div>
                             </div>
                             
                             <div>
-                                <h3 class="text-slate-300 font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2" data-i18n="lbl_add_remark">📝 修正備註欄位</h3>
+                                <h3 class="text-slate-300 font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2">📝 修正備註欄位</h3>
                                 <div class="flex gap-2 mb-4">
                                     <input type="text" id="new_remark" placeholder="輸入備註或特殊叮嚀..." class="flex-1 bg-slate-900 p-2.5 rounded-lg text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
                                     <button type="button" onclick="addRemark()" class="bg-slate-600 hover:bg-slate-500 px-3 py-2 rounded-lg font-bold text-white shadow transition text-xs sm:text-sm shrink-0">＋ 新增</button>
@@ -458,7 +530,7 @@
     <div id="settingsModal" class="fixed inset-0 bg-slate-900/95 flex items-center justify-center hidden z-50 p-4 backdrop-blur-sm">
         <div class="bg-slate-800 border border-slate-600 p-6 sm:p-8 rounded-2xl max-w-lg w-full shadow-2xl relative">
             <h3 class="text-xl sm:text-2xl font-black text-white mb-6 flex items-center gap-3">
-                <span data-i18n="modal_api_title">⚙️ 系統 API 與模型設定</span>
+                <span>⚙️ 系統 API 與模型設定</span>
                 <span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">Local Storage</span>
             </h3>
             
@@ -495,7 +567,6 @@
                 <h3 class="text-xl sm:text-2xl font-black text-pink-400">📊 膜厚檢測紀錄總覽</h3>
                 <button id="btnCloseThicknessTable" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-white font-bold transition text-xs sm:text-sm">✕</button>
             </div>
-            <!-- 加了橫向捲軸以防跑版 -->
             <div class="overflow-x-auto custom-scrollbar flex-1 bg-slate-900/50 rounded-xl border border-slate-700 p-2">
                 <table class="w-full text-left text-xs sm:text-sm text-slate-300 min-w-[600px]">
                     <thead class="bg-slate-900 text-slate-400 font-bold border-b border-slate-700">

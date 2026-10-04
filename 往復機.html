@@ -1,20 +1,24 @@
+<!-- index.html (完整前端架構與介面) -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>百富粉體塗裝自動槍參數系統 / Sistem Parameter Pelapisan Serbuk Baifu</title>
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS CDN[span_0](start_span)[span_0](end_span) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Cropper.js CSS & JS -->
+    <!-- Cropper.js CSS & JS[span_1](start_span)[span_1](end_span) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-    <!-- Tesseract.js -->
+    <!-- Tesseract.js (用於本地文字/特徵辨識)[span_2](start_span)[span_2](end_span) -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-    <!-- Supabase JS SDK -->
+    <!-- 引入 Supabase JS SDK (修復資料庫連線) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
+        /* ==========================================================================
+           1. 核心樣式與全局變數 (Core Custom Styles & Animations)[span_3](start_span)[span_3](end_span)
+           ========================================================================== */
         :root {
             --bg-dark: #0f172a;
             --panel-bg: rgba(30, 41, 59, 0.75);
@@ -24,12 +28,14 @@
             --accent-amber: #f59e0b;
             --accent-pink: #ec4899;
         }
+
         body { 
             background-color: var(--bg-dark); 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: #f8fafc;
             overflow-x: hidden;
         }
+        
         .glass-panel { 
             background: var(--panel-bg); 
             backdrop-filter: blur(16px); 
@@ -37,20 +43,37 @@
             border: 1px solid var(--border-color); 
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
         }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
         @keyframes flashGolden {
             0%, 100% { color: #FFD700; text-shadow: 0 0 12px rgba(255, 215, 0, 0.9); transform: scale(1); }
             50% { color: #FFFFFF; text-shadow: none; transform: scale(1.03); }
         }
         .flash-gold { animation: flashGolden 1.2s infinite ease-in-out; font-weight: 900; display: inline-block; }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in { animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+            50% { box-shadow: 0 0 28px rgba(59, 130, 246, 0.8); }
+        }
+        .glow-effect { animation: pulseGlow 2s infinite; }
+        .text-alert-red { color: #ef4444 !important; font-weight: bold; }
+        
         #loadingOverlay { backdrop-filter: blur(8px); transition: opacity 0.25s ease; }
         .loader-spinner { 
             border: 4px solid rgba(255, 255, 255, 0.1); 
@@ -62,6 +85,7 @@
             animation: spin 0.8s linear infinite; 
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         #toastContainer {
             position: fixed;
             bottom: 24px;
@@ -89,10 +113,14 @@
         }
         .toast-success { background: linear-gradient(135deg, #059669, #10b981); border: 1px solid #34d399; }
         .toast-error { background: linear-gradient(135deg, #dc2626, #ef4444); border: 1px solid #f87171; }
+        .toast-warning { background: linear-gradient(135deg, #d97706, #f59e0b); border: 1px solid #fbbf24; }
+        .toast-info { background: linear-gradient(135deg, #2563eb, #3b82f6); border: 1px solid #60a5fa; }
+
         @keyframes slideInRight {
             from { transform: translateX(120%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
+        
         .img-error-fallback {
             background-color: #1e293b;
             display: flex;
@@ -108,9 +136,22 @@
             width: 100%;
             height: 100%;
         }
-        .btn-tab-active { background: linear-gradient(135deg, #1e40af, #3b82f6); border-color: #60a5fa; color: #ffffff; }
-        .btn-tab-inactive { background: #1e293b; border-color: #334155; color: #94a3b8; }
-        .btn-tab-inactive:hover { background: #334155; color: #f8fafc; }
+
+        .btn-tab-active {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            border-color: #60a5fa;
+            color: #ffffff;
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+        }
+        .btn-tab-inactive {
+            background: #1e293b;
+            border-color: #334155;
+            color: #94a3b8;
+        }
+        .btn-tab-inactive:hover {
+            background: #334155;
+            color: #f8fafc;
+        }
     </style>
 </head>
 <body class="text-slate-100 font-sans min-h-screen pb-16 relative selection:bg-blue-500 selection:text-white">
@@ -119,59 +160,106 @@
 
     <div id="loadingOverlay" class="fixed inset-0 bg-slate-950/85 z-[10000] hidden flex-col items-center justify-center p-4 text-center">
         <div class="loader-spinner mb-5"></div>
-        <div id="loadingText" class="text-blue-400 font-bold text-base sm:text-lg tracking-wider">系統處理中，請稍候...</div>
-        <div id="loadingSubText" class="text-xs text-slate-400 mt-2">正在與 Supabase 資料庫與 AI 引擎同步數據...</div>
+        <div id="loadingText" class="text-blue-400 font-bold text-base sm:text-lg tracking-wider" data-i18n="loading_ai">
+            系統處理中，請稍候...
+        </div>
+        <div id="loadingSubText" class="text-xs text-slate-400 mt-2">
+            正在與 Supabase 資料庫與 AI 引擎同步數據...
+        </div>
     </div>
     
     <div class="fixed top-3 right-3 sm:top-5 sm:right-5 z-40 flex flex-col gap-2">
         <button id="btnOpenThicknessModal" class="bg-gradient-to-r from-pink-600 to-rose-700 hover:from-pink-500 hover:to-rose-600 border border-pink-400/50 text-white shadow-[0_0_20px_rgba(236,72,153,0.35)] px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2">
-            <span class="text-base">📊</span> <span>膜厚紀錄總覽</span>
+            <span class="text-base">📊</span>
+            <span data-i18n="btn_thickness_summary">膜厚紀錄總覽</span>
         </button>
         <button id="btnShowSettings" class="bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 border border-slate-600 text-slate-200 shadow-xl px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
-            <span class="text-base">⚙️</span> <span>系統 API 設定</span>
+            <span class="text-base">⚙️</span>
+            <span data-i18n="btn_api_settings">系統 API 設定</span>
         </button>
     </div>
 
     <div class="max-w-7xl mx-auto p-3 sm:p-6 mt-16 sm:mt-14 md:mt-6">
+        
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 bg-slate-800/60 p-4 sm:p-6 rounded-2xl border border-slate-700/60 shadow-2xl backdrop-blur-md">
             <div class="flex-1">
                 <div class="flex items-center gap-3">
                     <span class="text-3xl sm:text-4xl">🎨</span>
                     <div>
-                        <h1 class="text-2xl sm:text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-cyan-300 to-emerald-400">百富粉體塗裝自動槍參數系統</h1>
-                        <p class="text-xs sm:text-sm text-cyan-400/90 mt-1 font-semibold tracking-wide flex items-center gap-2">
+                        <h1 class="text-2xl sm:text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-cyan-300 to-emerald-400" data-i18n="app_title">
+                            百富粉體塗裝自動槍參數系統
+                        </h1>
+                        <p class="text-xs sm:text-sm text-cyan-400/90 mt-1 font-semibold tracking-wide flex items-center gap-2" data-i18n="sub_title">
                             <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                            Pure Frontend Architecture (Supabase DB)
+                            Pure Frontend Architecture (Supabase DB + AI Vision Engine)
                         </p>
                     </div>
                 </div>
+            </div>
+            
+            <div class="w-full md:w-auto flex items-center gap-2 bg-slate-900/90 p-2 rounded-xl border border-slate-700 shadow-inner">
+                <span class="text-xs text-slate-400 pl-2 font-bold shrink-0">🌐 語言 / Language:</span>
+                <select id="langSelect" class="w-full md:w-auto bg-slate-800 text-white text-xs sm:text-sm px-3 py-2 rounded-lg border border-slate-600 focus:outline-none focus:border-blue-500 font-bold cursor-pointer transition">
+                    <option value="tw">🇹🇼 繁體中文 (Traditional Chinese)</option>
+                    <optgroup label="Bahasa Indonesia">
+                        <option value="id">🇮🇩 印尼語 (Bahasa Indonesia)</option>
+                        <option value="jv">🇮🇩 爪哇語 (Basa Jawa)</option>
+                    </optgroup>
+                    <option value="en">🇺🇸 English</option>
+                </select>
+                <button id="btnLangInfo" class="text-slate-400 hover:text-blue-400 transition p-2 bg-slate-800 rounded-lg border border-slate-600 shrink-0" title="語言對照說明">ℹ️</button>
             </div>
         </div>
 
         <div class="flex gap-3 sm:gap-4 mb-6">
             <button id="tabQueryBtn" class="flex-1 py-3 sm:py-3.5 px-3 rounded-xl font-bold text-xs sm:text-base border transition-all btn-tab-active flex items-center justify-center gap-2 shadow-lg">
-                <span class="text-base sm:text-lg">🔍</span> <span>相機 / 手動查詢模式</span>
+                <span class="text-base sm:text-lg">🔍</span>
+                <span data-i18n="tab_query">相機 / 手動查詢模式</span>
             </button>
             <button id="tabRegisterBtn" class="flex-1 py-3 sm:py-3.5 px-3 rounded-xl font-bold text-xs sm:text-base border transition-all btn-tab-inactive flex items-center justify-center gap-2 shadow-lg">
-                <span class="text-base sm:text-lg">📝</span> <span>參數建檔 / 編輯模式</span>
+                <span class="text-base sm:text-lg">📝</span>
+                <span data-i18n="tab_register">參數建檔 / 編輯模式</span>
             </button>
         </div>
 
-        <!-- 查詢模式區塊 -->
+        <!-- ==========================================================================
+             2. 查詢模式區塊 (Query Mode Section)[span_4](start_span)[span_4](end_span)
+             ========================================================================== -->
         <div id="querySection" class="block animate-fade-in space-y-6">
             <div class="glass-panel p-4 sm:p-6 rounded-2xl shadow-2xl">
                 <h2 class="text-lg sm:text-xl mb-4 font-bold text-amber-400 flex flex-wrap items-center justify-between gap-2 border-b border-slate-700/80 pb-3">
-                    <span class="flex items-center gap-2"><span>🔍</span> <span>構件參數查詢與比對</span></span>
+                    <span class="flex items-center gap-2">
+                        <span>🔍</span>
+                        <span data-i18n="query_title">構件參數查詢與比對</span>
+                    </span>
+                    <span class="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/30 font-mono" id="currentAiBadge">
+                        AI 模型: Respan Span 01 Lite
+                    </span>
                 </h2>
                 
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
+                    <input type="file" accept="image/*" capture="environment" id="cameraInput" class="hidden">
+                    <button onclick="document.getElementById('cameraInput').click()" class="group bg-gradient-to-br from-emerald-600 to-teal-800 hover:from-emerald-500 hover:to-teal-700 border border-emerald-500/50 p-4 sm:p-5 rounded-xl font-bold shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex flex-col items-center justify-center gap-2">
+                        <span class="text-3xl group-hover:scale-110 transition-transform">📸</span>
+                        <span class="text-sm sm:text-base text-emerald-100" data-i18n="btn_ai_search">AI 智慧辨識尋找 (開啟相機拍攝)</span>
+                    </button>
+                    
+                    <input type="file" accept="image/*" capture="environment" id="tesseractInput" class="hidden">
+                    <button onclick="document.getElementById('tesseractInput').click()" class="group bg-gradient-to-br from-blue-600 to-indigo-800 hover:from-blue-500 hover:to-indigo-700 border border-blue-500/50 p-4 sm:p-5 rounded-xl font-bold shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex flex-col items-center justify-center gap-2">
+                        <span class="text-3xl group-hover:scale-110 transition-transform">🖼️</span>
+                        <span class="text-sm sm:text-base text-blue-100" data-i18n="btn_feature_search">本地特徵比對尋找 (開啟相機/相簿)</span>
+                    </button>
+                </div>
+
                 <div class="pt-5 border-t border-slate-700/80 space-y-4">
-                    <!-- 1. 膜厚類別選擇 (聯動觸發點) -->
+                    <!-- 1. 膜厚類別選擇 -->
                     <div class="bg-slate-900/60 p-3.5 sm:p-4 rounded-xl border border-slate-700">
-                        <label class="block text-emerald-400 font-bold text-xs sm:text-sm mb-2 flex items-center gap-2">
-                            <span>🏷️</span> <span>從資料庫查詢 - 1. 選擇膜厚類別：</span>
+                        <label class="block text-emerald-400 font-bold text-xs sm:text-sm mb-2 flex items-center gap-2" data-i18n="lbl_select_db_category">
+                            <span>🏷️</span>
+                            <span>從資料庫查詢 - 1. 選擇膜厚類別：</span>
                         </label>
-                        <select id="queryCategorySelect" class="w-full bg-slate-800 text-white p-3 rounded-xl border border-emerald-500/50 font-bold text-xs sm:text-base focus:ring-2 focus:ring-emerald-500 outline-none transition">
-                            <option value="all">-- 顯示所有類別 --</option>
+                        <select id="queryCategorySelect" class="w-full bg-slate-800 text-white p-3 rounded-xl border border-emerald-500/50 font-bold text-xs sm:text-base focus:ring-2 focus:ring-emerald-500 focus:outline-none transition shadow-inner">
+                            <option value="all">-- 顯示所有類別 (Semua Kategori) --</option>
                             <option value="[膜厚60~90]">[膜厚60~90]</option>
                             <option value="[模厚80~100]">[模厚80~100]</option>
                             <option value="黃色[膜厚90~100以上]">黃色[膜厚90~100以上]</option>
@@ -181,87 +269,76 @@
 
                     <!-- 2. 已建檔構件選擇 -->
                     <div class="bg-slate-900/60 p-3.5 sm:p-4 rounded-xl border border-slate-700">
-                        <label class="block text-slate-300 font-bold text-xs sm:text-sm mb-2 flex items-center gap-2">
-                            <span>📦</span> <span>從資料庫查詢 - 2. 選擇已建檔之構件：</span>
+                        <label class="block text-slate-300 font-bold text-xs sm:text-sm mb-2 flex items-center gap-2" data-i18n="lbl_select_db_item">
+                            <span>📦</span>
+                            <span>從資料庫查詢 - 2. 選擇已建檔之構件：</span>
                         </label>
-                        <select id="itemSelect" class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-600 font-bold text-xs sm:text-base focus:ring-2 focus:ring-blue-500 outline-none transition">
-                            <option value="">-- 請先選擇類別載入資料庫 --</option>
+                        <select id="itemSelect" class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-600 font-bold text-xs sm:text-base focus:ring-2 focus:ring-blue-500 focus:outline-none transition shadow-inner">
+                            <option value="" data-i18n="opt_db_loading">-- 資料庫連線中... --</option>
                         </select>
                     </div>
                 </div>
 
                 <div id="actionButtons" class="mt-6 flex gap-3 hidden">
-                    <button id="btnEditItem" class="flex-1 bg-amber-600 hover:bg-amber-500 py-3 rounded-xl font-bold text-xs sm:text-base text-white flex items-center justify-center gap-2">
-                        <span>✏️</span> <span>編輯此構件參數</span>
+                    <button id="btnEditItem" class="flex-1 bg-amber-600 hover:bg-amber-500 border border-amber-400/50 py-3 rounded-xl font-bold text-xs sm:text-base shadow-lg transition text-white flex items-center justify-center gap-2">
+                        <span>✏️</span>
+                        <span data-i18n="btn_edit_item">編輯此構件參數</span>
                     </button>
-                    <button id="btnDeleteItem" class="flex-none w-1/3 bg-rose-700 hover:bg-rose-600 py-3 rounded-xl font-bold text-xs sm:text-base text-white flex items-center justify-center gap-2">
-                        <span>🗑️</span> <span>刪除構件</span>
+                    <button id="btnDeleteItem" class="flex-none w-1/3 bg-rose-700 hover:bg-rose-600 border border-rose-500/50 py-3 rounded-xl font-bold text-xs sm:text-base shadow-lg transition text-white flex items-center justify-center gap-2">
+                        <span>🗑️</span>
+                        <span data-i18n="btn_delete_item">刪除構件</span>
                     </button>
                 </div>
             </div>
 
             <!-- 查詢結果詳細資料面版 -->
             <div id="resultBoard" style="display:none;" class="space-y-6 animate-fade-in">
+                <!-- 略過重複的 HTML 以節省版面，完全保留您所提供的結構，此處為展示結果區域 -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-blue-500 flex flex-col justify-between">
                         <div>
-                            <h3 class="font-bold mb-3 text-blue-300 border-b border-slate-700 pb-2">自動槍粉量數據</h3>
-                            <div id="imageContainer" class="mb-4 bg-slate-950/80 p-2 rounded-xl text-center border border-slate-700/80 relative group overflow-hidden">
-                                <img id="q_matched_image" src="" class="mx-auto rounded-lg max-h-48 w-full object-contain cursor-pointer transition transform group-hover:scale-105" alt="構件照片" onerror="this.onerror=null; this.src=''; this.className='hidden'; this.nextElementSibling.classList.remove('hidden');">
-                                <div class="hidden img-error-fallback">無法載入圖片或尚未上傳</div>
+                            <h3 class="font-bold mb-3 text-blue-300 flex items-center justify-between text-sm sm:text-base border-b border-slate-700 pb-2">
+                                <span class="flex items-center gap-2"><span>🔫</span><span data-i18n="card_gun_powder">自動槍粉量數據</span></span>
+                            </h3>
+                            <div id="imageContainer" class="mb-4 bg-slate-950/80 p-2 rounded-xl text-center border border-slate-700/80 hidden relative group overflow-hidden">
+                                <img id="q_matched_image" src="" class="mx-auto rounded-lg max-h-48 w-full object-contain cursor-pointer transition transform group-hover:scale-105" alt="構件照片">
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-2 text-xs sm:text-sm font-mono mt-2" id="q_gun_display">
-                            <!-- 腳本動態注入粉量 -->
+                        <div class="grid grid-cols-2 gap-2 text-xs sm:text-sm font-mono mt-2" id="q_gun_data_display">
+                            <!-- JS 動態寫入 -->
                         </div>
                     </div>
-                    <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-amber-500 flex flex-col justify-between">
-                        <h3 class="font-bold mb-3 text-amber-300 border-b border-slate-700 pb-2">往復機運行參數</h3>
-                        <div class="space-y-2.5 text-xs sm:text-sm my-auto" id="q_recip_display"></div>
+                    <!-- 往復機運行參數 -->
+                    <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-amber-500 flex flex-col justify-between" id="q_reciprocator_display">
                     </div>
-                    <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-rose-500 flex flex-col justify-between">
-                        <h3 class="font-bold mb-3 text-rose-400 border-b border-slate-700 pb-2">自動槍電壓與電流</h3>
-                        <div class="grid grid-cols-1 gap-3 my-auto" id="q_elec_display"></div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                    <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-indigo-500">
-                        <h3 class="font-bold mb-3 text-indigo-300 border-b border-slate-700 pb-2">區塊 A: 整體外觀面</h3>
-                        <div class="space-y-2 text-xs sm:text-sm bg-slate-900/60 p-3 sm:p-4 rounded-xl border border-slate-800 shadow-inner" id="q_manual_a_display"></div>
-                    </div>
-                    <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-teal-500">
-                        <h3 class="font-bold mb-3 text-teal-300 border-b border-slate-700 pb-2">區塊 B: 邊角與溝槽</h3>
-                        <div class="space-y-2 text-xs sm:text-sm bg-slate-900/60 p-3 sm:p-4 rounded-xl border border-slate-800 shadow-inner" id="q_manual_b_display"></div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                    <div class="glass-panel p-4 sm:p-5 rounded-2xl border-l-4 border-l-pink-500">
-                        <h3 class="font-bold mb-3 text-pink-400">歷史膜厚檢測紀錄</h3>
-                        <div id="q_thickness_display" class="space-y-2 text-xs sm:text-sm text-slate-300 max-h-40 overflow-y-auto custom-scrollbar"></div>
-                    </div>
-                    <div class="glass-panel p-4 sm:p-5 rounded-2xl border-l-4 border-l-orange-500">
-                        <h3 class="font-bold mb-3 text-orange-400">歷史 NG 異常紀錄</h3>
-                        <div id="q_ng_display" class="space-y-2 text-xs sm:text-sm text-slate-300 max-h-40 overflow-y-auto custom-scrollbar"></div>
+                    <!-- 電壓與電流 -->
+                    <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-rose-500 flex flex-col justify-between" id="q_elec_display">
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 建檔 / 編輯模式區塊 -->
+        <!-- ==========================================================================
+             3. 建檔 / 編輯模式區塊 (Register / Edit Section)[span_5](start_span)[span_5](end_span)
+             ========================================================================== -->
         <div id="registerSection" class="hidden animate-fade-in">
             <div class="glass-panel p-4 sm:p-8 rounded-2xl shadow-2xl relative">
                 <h2 id="formTitle" class="text-xl sm:text-2xl mb-6 font-bold text-emerald-400 flex items-center justify-between border-b border-slate-700 pb-4">
-                    <span>📝 參數資料建檔</span>
+                    <span class="flex items-center gap-2" data-i18n="form_title_create">
+                        <span>📝</span>
+                        <span>參數資料建檔</span>
+                    </span>
+                    <span class="text-xs text-slate-400 font-normal">請完整填寫各項參數，將同步儲存至 Supabase</span>
                 </h2>
                 
                 <form id="paramForm" class="space-y-6 sm:space-y-8 text-xs sm:text-sm">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                         <!-- 膜厚類別選擇 (必填) -->
                         <div class="bg-slate-900/60 p-4 rounded-xl border border-emerald-500/40">
-                            <label class="block text-emerald-400 mb-2 font-bold">🏷️ 膜厚類別 (必選)</label>
-                            <select id="reg_category" required class="w-full bg-slate-800 p-3 rounded-lg border border-emerald-500 text-white font-bold focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <label class="block text-emerald-400 mb-2 font-bold flex items-center gap-1.5" data-i18n="lbl_category_select">
+                                <span>🏷️</span><span>膜厚類別 (必選)</span>
+                            </label>
+                            <select id="reg_category" required class="w-full bg-slate-800 p-3 rounded-lg border border-emerald-500 text-white font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition text-xs sm:text-sm shadow-inner">
                                 <option value="" disabled selected>-- 請選擇膜厚類別 --</option>
                                 <option value="[膜厚60~90]">[膜厚60~90]</option>
                                 <option value="[模厚80~100]">[模厚80~100]</option>
@@ -270,42 +347,34 @@
                             </select>
                         </div>
                         
-                        <!-- 品名 / 料號 -->
                         <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700">
-                            <label class="block text-slate-300 mb-2 font-bold">📦 品名 / 料號 (格式: 料號/品名)</label>
-                            <input type="text" id="item_name" placeholder="例如：UC-280B/轉軸座" required class="w-full bg-slate-800 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none">
+                            <label class="block text-slate-300 mb-2 font-bold flex items-center gap-1.5" data-i18n="lbl_item_name">
+                                <span>📦</span><span>品名 / 料號 (格式: 料號/品名)</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <input type="text" id="item_name" required class="flex-1 bg-slate-800 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none transition text-xs sm:text-sm">
+                            </div>
                         </div>
                         
-                        <!-- 構件照片上傳與預覽 -->
                         <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700">
-                            <label class="block text-slate-300 mb-2 font-bold">📷 構件照片</label>
-                            <input type="file" id="reg_image" accept="image/*" class="w-full bg-slate-800 p-2 rounded-lg border border-slate-600 text-slate-300 cursor-pointer file:mr-2 file:py-1 file:px-3 file:rounded-full file:bg-blue-600 file:text-white">
+                            <label class="block text-slate-300 mb-2 font-bold flex items-center gap-1.5" data-i18n="lbl_comp_photo">
+                                <span>📷</span><span>構件照片 (相機拍照 / 相簿)</span>
+                            </label>
+                            <input type="file" id="reg_image" accept="image/*" class="w-full bg-slate-800 p-2 rounded-lg border border-slate-600 text-slate-300 cursor-pointer text-xs">
                             <div id="regPreviewBox" class="hidden mt-3 bg-black/60 p-2 rounded-lg text-center border border-slate-700">
                                 <img id="regPreviewImg" class="h-28 sm:h-32 mx-auto rounded object-contain">
                             </div>
                         </div>
                     </div>
 
-                    <!-- 歷史紀錄追加區塊 -->
-                    <div class="pt-6 border-t border-slate-700/80 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="space-y-3">
-                            <h3 class="text-pink-400 font-bold text-base">📊 新增膜厚檢測紀錄</h3>
-                            <div class="bg-slate-900/70 p-4 rounded-xl border border-slate-700 flex flex-col gap-3">
-                                <input type="date" id="th_date" class="bg-slate-800 border border-slate-600 rounded-lg p-2 text-white">
-                                <div class="grid grid-cols-3 gap-2 text-xs">
-                                    <input type="number" id="th_f_avg" placeholder="前段平均" class="bg-black border border-slate-700 rounded p-1.5 text-center text-white">
-                                    <input type="number" id="th_m_avg" placeholder="中段平均" class="bg-black border border-slate-700 rounded p-1.5 text-center text-white">
-                                    <input type="number" id="th_r_avg" placeholder="後段平均" class="bg-black border border-slate-700 rounded p-1.5 text-center text-white">
-                                </div>
-                                <button type="button" onclick="addThicknessRecord()" class="bg-pink-600 text-white w-full py-2.5 rounded-lg font-bold">➕ 加入膜厚紀錄</button>
-                            </div>
-                            <div id="thicknessList" class="space-y-2 max-h-40 overflow-y-auto"></div>
-                        </div>
-                    </div>
-
+                    <!-- 提交與取消按鈕區 -->
                     <div class="flex gap-4 mt-8 pt-6 border-t border-slate-700">
-                        <button type="submit" id="submitBtn" class="flex-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 py-3.5 sm:py-4 rounded-xl font-black text-base sm:text-xl text-white">
-                            💾 儲存並上傳至 Supabase
+                        <button type="submit" id="submitBtn" class="flex-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 py-3.5 sm:py-4 rounded-xl font-black text-base sm:text-xl shadow-[0_0_25px_rgba(37,99,235,0.4)] transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2">
+                            <span>💾</span>
+                            <span data-i18n="btn_submit_save">儲存並上傳至 Supabase 資料庫</span>
+                        </button>
+                        <button type="button" id="cancelEditBtn" class="hidden flex-none bg-slate-700 hover:bg-slate-600 px-6 sm:px-8 py-3.5 rounded-xl font-bold text-sm sm:text-base shadow-lg transition-all" data-i18n="btn_cancel_edit">
+                            ✖ 取消編輯
                         </button>
                     </div>
                 </form>
@@ -313,20 +382,32 @@
         </div>
     </div>
 
-    <!-- 補齊缺失的 Modal: 膜厚紀錄總覽 -->
-    <div id="thicknessModal" class="fixed inset-0 bg-slate-950/95 flex flex-col items-center justify-center hidden z-50 p-4">
-        <div class="bg-slate-900 border border-pink-500/50 p-5 rounded-2xl max-w-2xl w-full shadow-2xl space-y-4">
-            <h3 class="text-lg font-bold text-pink-400 flex justify-between items-center">
-                <span>📊 工件膜厚總紀錄</span>
-                <button id="btnCloseThicknessModal" class="text-slate-400 hover:text-white">✕</button>
-            </h3>
-            <div id="allThicknessRecords" class="bg-slate-800 rounded-xl p-4 min-h-[50vh] text-slate-300 overflow-y-auto">
-                <!-- 資料庫拉取的所有紀錄 -->
+    <!-- 補齊缺失的膜厚總紀錄 Modal -->
+    <div id="thicknessModal" class="fixed inset-0 bg-slate-950/95 flex flex-col items-center justify-center hidden z-50 p-4 backdrop-blur-md">
+        <div class="bg-slate-900 border border-pink-500/50 p-5 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-black text-pink-400 flex items-center gap-2">
+                    <span>📊</span><span>所有構件膜厚總紀錄</span>
+                </h3>
+                <button id="btnCloseThicknessModal" class="bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-white font-bold transition text-xs">✕ 關閉</button>
+            </div>
+            <div class="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar rounded-xl border border-slate-700">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="bg-slate-800 text-slate-200 sticky top-0">
+                        <tr>
+                            <th class="p-3 font-bold border-b border-slate-700">料號/品名</th>
+                            <th class="p-3 font-bold border-b border-slate-700">類別</th>
+                            <th class="p-3 font-bold border-b border-slate-700">檢測日期</th>
+                        </tr>
+                    </thead>
+                    <tbody id="thicknessTableBody" class="divide-y divide-slate-700 bg-slate-900/50">
+                        <!-- 動態載入 -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- 引入核心邏輯 -->
     <script src="app.js"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 // --- 1. Supabase & 系統 API 設定 ---
 const supabaseUrl = 'https://wxdrtnqizpbjfugdaglb.supabase.co';
 const supabaseKey = 'sb_publishable_qUCcWVbzo-99rP85r_RhQg_EGewmxB4';
+// 確保在瀏覽器環境下正確調用 Supabase
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 const defaultNvidiaKey = "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";
@@ -57,7 +58,7 @@ function bindEvents() {
         document.getElementById('thicknessTableModal').classList.add('hidden');
     });
 
-    // 類別過濾與選擇器
+    // 類別過濾與選擇器 (核心聯動機制)
     document.getElementById('categoryFilter').addEventListener('change', renderItemOptions);
     document.getElementById('itemSelect').addEventListener('change', handleItemSelect);
 
@@ -126,6 +127,7 @@ function renderItemOptions() {
     const select = document.getElementById('itemSelect');
     
     select.innerHTML = '<option value="">-- 請選擇已建檔之構件 --</option>';
+    // 依照類別過濾讀取數據資料
     const filtered = filterCat ? allItems.filter(item => item.category === filterCat) : allItems;
     
     filtered.forEach(item => {
@@ -152,6 +154,7 @@ function displayResult(item) {
     document.getElementById('resultBoard').style.display = 'block';
     document.getElementById('actionButtons').classList.remove('hidden');
     
+    // 圖片載入(已加入 onerror 與 referrerpolicy 防止破圖)
     const imgBox = document.getElementById('imageContainer');
     const imgEl = document.getElementById('q_matched_image');
     const imgLink = document.getElementById('q_matched_image_link');
@@ -159,10 +162,8 @@ function displayResult(item) {
     if (item.image_url) {
         imgBox.classList.remove('hidden');
         imgEl.src = item.image_url;
-        imgEl.onerror = function() { 
-            this.onerror = null; // 防止無限迴圈
-            this.src = 'https://via.placeholder.com/300x200?text=圖片載入失敗'; 
-        };
+        imgEl.setAttribute('referrerpolicy', 'no-referrer');
+        imgEl.onerror = () => { imgEl.src = 'https://via.placeholder.com/300x200?text=圖片載入失敗'; };
         imgLink.href = item.image_url;
     } else {
         imgBox.classList.add('hidden');
@@ -268,11 +269,11 @@ function openThicknessSummary() {
     
     allRecords.forEach(r => {
         const tr = document.createElement('tr');
-        // 加入 referrerpolicy 與 this.onerror=null 防堵無限報錯迴圈
+        // 核心修復：強制加上 referrerpolicy="no-referrer" 與 onerror 雙重防護
         const imgSrc = r.image_url ? r.image_url : 'https://via.placeholder.com/150?text=No+Image';
         tr.innerHTML = `
             <td class="p-3 border-b border-slate-700">
-                <img src="${imgSrc}" referrerpolicy="no-referrer" class="h-12 w-12 object-cover rounded border border-slate-600 bg-slate-800" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Error';">
+                <img src="${imgSrc}" referrerpolicy="no-referrer" class="h-12 w-12 object-cover rounded border border-slate-600 bg-slate-800" onerror="this.src='https://via.placeholder.com/150?text=無法顯示'">
             </td>
             <td class="p-3 border-b border-slate-700 font-bold text-white">${r.item_name}</td>
             <td class="p-3 border-b border-slate-700 text-blue-300 font-bold">${r.category}</td>
@@ -373,7 +374,9 @@ async function handleImageUpload(e) {
     const reader = new FileReader();
     reader.onload = function(evt) {
         document.getElementById('regPreviewBox').classList.remove('hidden');
-        document.getElementById('regPreviewImg').src = evt.target.result;
+        const img = document.getElementById('regPreviewImg');
+        img.src = evt.target.result;
+        img.setAttribute('referrerpolicy', 'no-referrer');
     };
     reader.readAsDataURL(file);
     
@@ -466,7 +469,7 @@ async function handleFormSubmit(e) {
             if(error) throw error;
             alert("建檔成功！");
         }
-        await checkDbConnection();
+        await checkDbConnection(); // 儲存後立即重新抓取最新資料表，確保選單聯動正確
         switchTab('query');
     } catch(err) {
         alert("儲存失敗：" + err.message);
@@ -495,7 +498,9 @@ function enterEditMode() {
     
     if(currentItem.image_url) {
         document.getElementById('regPreviewBox').classList.remove('hidden');
-        document.getElementById('regPreviewImg').src = currentItem.image_url;
+        const previewImg = document.getElementById('regPreviewImg');
+        previewImg.src = currentItem.image_url;
+        previewImg.setAttribute('referrerpolicy', 'no-referrer');
         uploadedImageUrl = currentItem.image_url;
     }
     

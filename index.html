@@ -182,11 +182,18 @@
             </div>
         </section>
 
-        <!-- 唯讀資料表格 -->
+        <!-- 唯讀資料表格與匯出按鈕 -->
         <section class="glass-panel rounded-2xl p-5 shadow-xl space-y-4">
             <div class="flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-slate-200"><i class="fa-solid fa-table text-amber-400 mr-2"></i>每日用粉明細 (唯讀)</h3>
-                <span class="text-xs text-slate-400">點擊標題可檢視內容</span>
+                <div>
+                    <h3 class="text-sm font-semibold text-slate-200"><i class="fa-solid fa-table text-amber-400 mr-2"></i>每日用粉明細 (唯讀)</h3>
+                    <span class="text-xs text-slate-400">點擊標題可檢視內容</span>
+                </div>
+                <!-- 新增的匯出 Excel 按鈕 -->
+                <button id="exportExcelBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-lg transition duration-200 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-file-export"></i>
+                    <span>匯出 XLSX</span>
+                </button>
             </div>
 
             <!-- 手機版 RWD 滾動容器 -->
@@ -236,6 +243,7 @@
         const resetFiltersBtn = document.getElementById('resetFiltersBtn');
         const statusBadge = document.getElementById('statusBadge');
         const loadedStatusText = document.getElementById('loadedStatusText');
+        const exportExcelBtn = document.getElementById('exportExcelBtn'); // 新增匯出按鈕引用
 
         // 初始化 Chart.js
         function initChart() {
@@ -304,7 +312,7 @@
             return isNaN(num) ? 0 : num;
         }
 
-        // 自動掃描並讀取 ./xlsx/ 資料夾內的所有 xlsx 檔案 (兼顧 GitHub Pages API 與 本地 Nginx/KSWEB AutoIndex)
+        // 自動掃描並讀取 ./xlsx/ 資料夾內的所有 xlsx 檔案
         async function autoLoadXlsxFolder() {
             try {
                 statusBadge.classList.remove('hidden');
@@ -347,7 +355,7 @@
                     }
                 }
 
-                // 備用模式 B：若非 GitHub Pages 或 API 無回應，使用傳統 HTML AutoIndex 掃描 (適用 KSWEB / 本地 Apache / Nginx)
+                // 備用模式 B：若非 GitHub Pages 或 API 無回應，使用傳統 HTML AutoIndex 掃描
                 if (xlsxFiles.length === 0) {
                     const response = await fetch('./xlsx/');
                     if (response.ok) {
@@ -695,10 +703,47 @@
             chartInstance.update();
         }
 
+        // 匯出 Excel (XLSX) 邏輯
+        function exportToExcel() {
+            if (filteredDataset.length === 0) {
+                alert('當前沒有任何資料可供匯出！');
+                return;
+            }
+
+            // 格式化準備匯出的資料
+            const exportData = filteredDataset.map(row => ({
+                '日期': row.date,
+                '粉號': row.powderCode,
+                '代號': row.itemCode,
+                '出庫數量': Math.round(row.out),
+                '散粉數量': Math.round(row.scatter),
+                '總用量': Math.round(row.usage),
+                '來源檔案': row.fileName
+            }));
+
+            // 使用 SheetJS 建立工作表
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "每日用粉明細");
+
+            // 產生含有當下時間的檔案名稱 (例如: 每日用粉明細_20261005_114232.xlsx)
+            const now = new Date();
+            const timestamp = now.getFullYear().toString() + 
+                              String(now.getMonth() + 1).padStart(2, '0') + 
+                              String(now.getDate()).padStart(2, '0') + "_" + 
+                              String(now.getHours()).padStart(2, '0') + 
+                              String(now.getMinutes()).padStart(2, '0') + 
+                              String(now.getSeconds()).padStart(2, '0');
+
+            // 執行下載
+            XLSX.writeFile(workbook, `每日用粉明細_${timestamp}.xlsx`);
+        }
+
         // 事件監聽綁定
         filterPowderCode.addEventListener('change', applyFilters);
         filterItemCode.addEventListener('change', applyFilters);
         filterDate.addEventListener('input', applyFilters);
+        exportExcelBtn.addEventListener('click', exportToExcel); // 綁定匯出按鈕點擊事件
 
         resetFiltersBtn.addEventListener('click', () => {
             filterPowderCode.value = '';

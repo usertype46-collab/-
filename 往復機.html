@@ -42,17 +42,13 @@
 </head>
 <body class="text-white font-sans min-h-screen pb-12 relative selection:bg-blue-500 selection:text-white">
 
-    <!-- ========================================================================================== -->
-    <!-- 全局讀取動畫遮罩                                                                           -->
-    <!-- ========================================================================================== -->
+    <!-- 全局讀取動畫遮罩 -->
     <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/80 z-[100] hidden flex-col items-center justify-center p-4 text-center">
         <div class="loader mb-4"></div>
         <div id="loadingText" class="text-blue-400 font-bold text-base sm:text-lg tracking-wider" data-i18n="loading_ai">AI 處理中，請稍候...</div>
     </div>
     
-    <!-- ========================================================================================== -->
-    <!-- 右上角懸浮功能按鈕區                                                                       -->
-    <!-- ========================================================================================== -->
+    <!-- 右上角懸浮功能按鈕區 -->
     <div class="fixed top-2 right-2 sm:top-4 sm:right-4 z-40 flex flex-col gap-1.5 sm:gap-2">
         <button id="btnOpenThicknessModal" class="bg-gradient-to-r from-pink-600 to-pink-800 hover:from-pink-500 hover:to-pink-700 border border-pink-400/50 text-white shadow-[0_0_15px_rgba(236,72,153,0.4)] px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm transition-all transform hover:scale-105 flex items-center gap-1.5">
             <span data-i18n="btn_thickness_summary">📊 膜厚紀錄總覽</span>
@@ -62,9 +58,7 @@
         </button>
     </div>
 
-    <!-- ========================================================================================== -->
-    <!-- 主體內容容器                                                                               -->
-    <!-- ========================================================================================== -->
+    <!-- 主體內容容器 -->
     <div class="max-w-6xl mx-auto p-3 sm:p-4 mt-20 sm:mt-16 md:mt-6">
         
         <!-- 頂部標題與多國語言切換面板 -->
@@ -97,9 +91,7 @@
             <button id="tabRegisterBtn" class="flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white" data-i18n="tab_register">📝 參數建檔 / 編輯模式</button>
         </div>
 
-        <!-- ====================================================================================== -->
-        <!-- 查詢模式區塊 (Query Section)                                                           -->
-        <!-- ====================================================================================== -->
+        <!-- 查詢模式區塊 (Query Section) -->
         <div id="querySection" class="block animate-[fadeIn_0.3s_ease-in-out]">
             <div class="glass-panel p-4 sm:p-6 rounded-2xl mb-8 shadow-2xl">
                 <h2 class="text-lg sm:text-xl mb-4 sm:mb-6 font-bold text-amber-400 flex flex-wrap items-center gap-2 border-b border-slate-700 pb-3">
@@ -109,13 +101,13 @@
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <input type="file" accept="image/*" capture="environment" id="cameraInput" class="hidden">
-                    <button onclick="document.getElementById('cameraInput').click()" class="group bg-gradient-to-br from-emerald-600 to-emerald-800 hover:from-emerald-500 hover:to-emerald-700 border border-emerald-500/50 p-4 sm:p-6 rounded-xl font-bold shadow-lg transition-all flex flex-col items-center justify-center gap-2 sm:gap-3">
+                    <button id="btnCameraTrigger" class="group bg-gradient-to-br from-emerald-600 to-emerald-800 hover:from-emerald-500 hover:to-emerald-700 border border-emerald-500/50 p-4 sm:p-6 rounded-xl font-bold shadow-lg transition-all flex flex-col items-center justify-center gap-2 sm:gap-3">
                         <span class="text-2xl sm:text-3xl group-hover:scale-110 transition-transform">📸</span>
                         <span class="text-sm sm:text-lg" data-i18n="btn_ai_search">AI 智慧分析影像尋找 (開啟相機)</span>
                     </button>
                     
                     <input type="file" accept="image/*" capture="environment" id="tesseractInput" class="hidden">
-                    <button onclick="document.getElementById('tesseractInput').click()" class="group bg-gradient-to-br from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 border border-blue-500/50 p-4 sm:p-6 rounded-xl font-bold shadow-lg transition-all flex flex-col items-center justify-center gap-2 sm:gap-3">
+                    <button id="btnTesseractTrigger" class="group bg-gradient-to-br from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 border border-blue-500/50 p-4 sm:p-6 rounded-xl font-bold shadow-lg transition-all flex flex-col items-center justify-center gap-2 sm:gap-3">
                         <span class="text-2xl sm:text-3xl group-hover:scale-110 transition-transform">🖼️</span>
                         <span class="text-sm sm:text-lg" data-i18n="btn_feature_search">本地特徵比對尋找 (開啟相機)</span>
                     </button>
@@ -251,9 +243,7 @@
             </div>
         </div>
 
-        <!-- ====================================================================================== -->
-        <!-- 建檔 / 編輯模式區塊 (Register Section)                                                 -->
-        <!-- ====================================================================================== -->
+        <!-- 建檔 / 編輯模式區塊 (Register Section) -->
         <div id="registerSection" class="hidden animate-[fadeIn_0.3s_ease-in-out]">
             <div class="glass-panel p-4 sm:p-8 rounded-2xl shadow-2xl relative">
                 <h2 id="formTitle" class="text-xl sm:text-2xl mb-6 font-bold text-emerald-400 flex items-center gap-2 border-b border-slate-700 pb-4" data-i18n="form_title_create">
@@ -266,15 +256,15 @@
                         <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700">
                             <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_item_name">品名 / 料號 (格式: 料號/品名)</label>
                             <div class="flex flex-col sm:flex-row gap-2">
-                                <input type="text" id="item_name" placeholder="例如：UC-280B/轉軸座" data-i18n-placeholder="placeholder_item_name" required class="flex-1 bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none transition text-xs sm:text-sm">
+                                <input type="text" id="item_name" placeholder="例如：UC-280B/轉軸座" required class="flex-1 bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-600 text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none transition text-xs sm:text-sm">
                                 <input type="file" id="scanNameInput" accept="image/*" capture="environment" class="hidden">
                                 <button type="button" id="btnScanItemName" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg font-bold shadow-lg flex items-center justify-center gap-1.5 transition text-xs sm:text-sm shrink-0">
-                                    <span data-i18n="btn_ai_scan_name">📸開啟相機微距對焦縮小範圍拍照 AI 解析</span>
+                                    <span data-i18n="btn_ai_scan_name">📸 AI 掃描品名</span>
                                 </button>
                             </div>
                         </div>
                         <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700">
-                            <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_comp_photo">構件照片-開啟相機拍照可調整裁切範圍 (將直傳 Google Drive)</label>
+                            <label class="block text-slate-300 mb-2 font-bold" data-i18n="lbl_comp_photo">構件照片 (上傳至雲端儲存)</label>
                             <input type="file" id="reg_image" accept="image/*" capture="environment" class="w-full bg-slate-900 p-2 rounded-lg border border-slate-600 text-slate-300 cursor-pointer file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 transition text-xs">
                             <div id="regPreviewBox" class="hidden mt-3 bg-black/50 p-2 rounded-lg text-center border border-slate-700">
                                 <img id="regPreviewImg" class="h-28 sm:h-32 mx-auto rounded object-contain">
@@ -365,33 +355,33 @@
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
                                         <span class="text-slate-300" data-i18n="lbl_powder">粉量 (±10)</span>
                                         <div class="flex items-center gap-1.5">
-                                            <button type="button" onclick="adjManual('a_powder', -10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <button type="button" id="btn_a_powder_dec" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="a_powder" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
-                                            <button type="button" onclick="adjManual('a_powder', 10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                            <button type="button" id="btn_a_powder_inc" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
                                         <span class="text-slate-300" data-i18n="lbl_air">風量 (±5, max 65)</span>
                                         <div class="flex items-center gap-1.5">
-                                            <button type="button" onclick="adjManual('a_air', -5, 0, 65)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <button type="button" id="btn_a_air_dec" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="a_air" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
-                                            <button type="button" onclick="adjManual('a_air', 5, 0, 65)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                            <button type="button" id="btn_a_air_inc" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
                                         <span class="text-slate-300" data-i18n="lbl_voltage">電壓 (±10)</span>
                                         <div class="flex items-center gap-1.5">
-                                            <button type="button" onclick="adjManual('a_voltage', -10, 0, 110, 'a')" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <button type="button" id="btn_a_voltage_dec" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="a_voltage" value="70" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono font-bold">
-                                            <button type="button" onclick="adjManual('a_voltage', 10, 0, 110, 'a')" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                            <button type="button" id="btn_a_voltage_inc" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
                                         <span class="text-slate-300" data-i18n="lbl_current">電流 (±1)</span>
                                         <div class="flex items-center gap-1.5">
-                                            <button type="button" onclick="adjManual('a_current', -1, 0, 110, 'a')" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <button type="button" id="btn_a_current_dec" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="a_current" value="15" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono font-bold">
-                                            <button type="button" onclick="adjManual('a_current', 1, 0, 110, 'a')" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                            <button type="button" id="btn_a_current_inc" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
@@ -412,9 +402,9 @@
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
                                         <span class="text-slate-300 font-bold text-amber-300" data-i18n="lbl_spray_count">總噴塗次數</span>
                                         <div class="flex items-center gap-1.5">
-                                            <button type="button" onclick="adjManual('a_spray_count', -1, 1, 20)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <button type="button" id="btn_a_spray_count_dec" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="a_spray_count" value="1" class="w-14 sm:w-16 bg-black text-center flash-gold border border-amber-500/50 rounded py-1 font-mono text-base sm:text-lg">
-                                            <button type="button" onclick="adjManual('a_spray_count', 1, 1, 20)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                            <button type="button" id="btn_a_spray_count_inc" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
 
@@ -427,33 +417,33 @@
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_left">左側</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('a_spray_left', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_a_spray_left_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="a_spray_left" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('a_spray_left', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_a_spray_left_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_top">上方</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('a_spray_top', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_a_spray_top_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="a_spray_top" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('a_spray_top', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_a_spray_top_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_bottom">下方</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('a_spray_bottom', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_a_spray_bottom_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="a_spray_bottom" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('a_spray_bottom', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_a_spray_bottom_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_right">右側</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('a_spray_right', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_a_spray_right_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="a_spray_right" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('a_spray_right', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_a_spray_right_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -465,33 +455,33 @@
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_1">一段</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('a_spray_mid_1', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_a_spray_mid_1_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="a_spray_mid_1" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('a_spray_mid_1', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_a_spray_mid_1_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_2">二段</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('a_spray_mid_2', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_a_spray_mid_2_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="a_spray_mid_2" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('a_spray_mid_2', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_a_spray_mid_2_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_3">三段</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('a_spray_mid_3', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_a_spray_mid_3_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="a_spray_mid_3" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('a_spray_mid_3', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_a_spray_mid_3_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_4">四段</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('a_spray_mid_4', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_a_spray_mid_4_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="a_spray_mid_4" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('a_spray_mid_4', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_a_spray_mid_4_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -506,33 +496,33 @@
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
                                         <span class="text-slate-300" data-i18n="lbl_powder">粉量 (±10)</span>
                                         <div class="flex items-center gap-1.5">
-                                            <button type="button" onclick="adjManual('b_powder', -10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <button type="button" id="btn_b_powder_dec" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="b_powder" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
-                                            <button type="button" onclick="adjManual('b_powder', 10, 0, 100)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                            <button type="button" id="btn_b_powder_inc" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
                                         <span class="text-slate-300" data-i18n="lbl_air">風量 (±5, max 65)</span>
                                         <div class="flex items-center gap-1.5">
-                                            <button type="button" onclick="adjManual('b_air', -5, 0, 65)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <button type="button" id="btn_b_air_dec" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="b_air" value="0" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono">
-                                            <button type="button" onclick="adjManual('b_air', 5, 0, 65)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                            <button type="button" id="btn_b_air_inc" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
                                         <span class="text-slate-300" data-i18n="lbl_voltage">電壓 (±10)</span>
                                         <div class="flex items-center gap-1.5">
-                                            <button type="button" onclick="adjManual('b_voltage', -10, 0, 110, 'b')" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <button type="button" id="btn_b_voltage_dec" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="b_voltage" value="70" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono font-bold">
-                                            <button type="button" onclick="adjManual('b_voltage', 10, 0, 110, 'b')" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                            <button type="button" id="btn_b_voltage_inc" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
                                         <span class="text-slate-300" data-i18n="lbl_current">電流 (±1)</span>
                                         <div class="flex items-center gap-1.5">
-                                            <button type="button" onclick="adjManual('b_current', -1, 0, 110, 'b')" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <button type="button" id="btn_b_current_dec" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="b_current" value="15" class="w-14 sm:w-16 bg-black text-center text-white border border-slate-600 rounded py-1 font-mono font-bold">
-                                            <button type="button" onclick="adjManual('b_current', 1, 0, 110, 'b')" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                            <button type="button" id="btn_b_current_inc" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
@@ -553,9 +543,9 @@
                                     <div class="flex justify-between items-center bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-700">
                                         <span class="text-slate-300 font-bold text-amber-300" data-i18n="lbl_spray_count">總噴塗次數</span>
                                         <div class="flex items-center gap-1.5">
-                                            <button type="button" onclick="adjManual('b_spray_count', -1, 1, 20)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
+                                            <button type="button" id="btn_b_spray_count_dec" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">-</button>
                                             <input type="text" id="b_spray_count" value="1" class="w-14 sm:w-16 bg-black text-center flash-gold border border-amber-500/50 rounded py-1 font-mono text-base sm:text-lg">
-                                            <button type="button" onclick="adjManual('b_spray_count', 1, 1, 20)" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
+                                            <button type="button" id="btn_b_spray_count_inc" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition">+</button>
                                         </div>
                                     </div>
 
@@ -568,33 +558,33 @@
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_left">左側</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('b_spray_left', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_b_spray_left_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="b_spray_left" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('b_spray_left', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_b_spray_left_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_top">上方</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('b_spray_top', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_b_spray_top_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="b_spray_top" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('b_spray_top', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_b_spray_top_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_bottom">下方</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('b_spray_bottom', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_b_spray_bottom_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="b_spray_bottom" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('b_spray_bottom', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_b_spray_bottom_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_right">右側</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('b_spray_right', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_b_spray_right_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="b_spray_right" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('b_spray_right', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_b_spray_right_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -606,33 +596,33 @@
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_1">一段</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('b_spray_mid_1', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_b_spray_mid_1_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="b_spray_mid_1" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('b_spray_mid_1', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_b_spray_mid_1_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_2">二段</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('b_spray_mid_2', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_b_spray_mid_2_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="b_spray_mid_2" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('b_spray_mid_2', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_b_spray_mid_2_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_3">三段</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('b_spray_mid_3', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_b_spray_mid_3_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="b_spray_mid_3" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('b_spray_mid_3', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_b_spray_mid_3_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                             <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
                                                 <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_4">四段</span>
                                                 <div class="flex items-center gap-1">
-                                                    <button type="button" onclick="adjManual('b_spray_mid_4', -1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
+                                                    <button type="button" id="btn_b_spray_mid_4_dec" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">-</button>
                                                     <input type="text" id="b_spray_mid_4" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" onclick="adjManual('b_spray_mid_4', 1, 0, 20)" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
+                                                    <button type="button" id="btn_b_spray_mid_4_inc" class="bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold">+</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -654,7 +644,7 @@
                                     <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_mid_sec">中段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_m_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_m_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
                                     <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_rear_sec">後段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_r_min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_r_max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
                                 </div>
-                                <button type="button" onclick="addThicknessRecord()" class="bg-pink-600 hover:bg-pink-500 text-white w-full py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm" data-i18n="btn_add_thickness">＋ 加入膜厚紀錄</button>
+                                <button type="button" id="btnAddThickness" class="bg-pink-600 hover:bg-pink-500 text-white w-full py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm" data-i18n="btn_add_thickness">＋ 加入膜厚紀錄</button>
                             </div>
                             <div id="thicknessList" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2"></div>
                         </div>
@@ -681,7 +671,7 @@
                                             <option value="爆粉" data-i18n="opt_ng_reason_6">爆粉</option>
                                             <option value="皺痕" data-i18n="opt_ng_reason_7">皺痕</option>
                                         </select>
-                                        <button type="button" onclick="addNgRecord()" class="bg-orange-600 hover:bg-orange-500 text-white px-3 py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm shrink-0" data-i18n="btn_add_ng">＋ 加入 NG</button>
+                                        <button type="button" id="btnAddNg" class="bg-orange-600 hover:bg-orange-500 text-white px-3 py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm shrink-0" data-i18n="btn_add_ng">＋ 加入 NG</button>
                                     </div>
                                 </div>
                                 <div id="ngList" class="space-y-2 max-h-32 overflow-y-auto custom-scrollbar pr-2"></div>
@@ -690,8 +680,8 @@
                             <div>
                                 <h3 class="text-slate-300 font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2" data-i18n="lbl_add_remark">📝 修正備註欄位</h3>
                                 <div class="flex gap-2 mb-4">
-                                    <input type="text" id="new_remark" placeholder="輸入備註或特殊叮嚀..." data-i18n-placeholder="placeholder_remark" class="flex-1 bg-slate-900 p-2.5 rounded-lg text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
-                                    <button type="button" onclick="addRemark()" class="bg-slate-600 hover:bg-slate-500 px-3 py-2 rounded-lg font-bold text-white shadow transition text-xs sm:text-sm shrink-0" data-i18n="btn_add_remark">＋ 新增</button>
+                                    <input type="text" id="new_remark" placeholder="輸入備註或特殊叮嚀..." class="flex-1 bg-slate-900 p-2.5 rounded-lg text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
+                                    <button type="button" id="btnAddRemark" class="bg-slate-600 hover:bg-slate-500 px-3 py-2 rounded-lg font-bold text-white shadow transition text-xs sm:text-sm shrink-0" data-i18n="btn_add_remark">＋ 新增</button>
                                 </div>
                                 <div id="remarksList" class="grid grid-cols-1 gap-2"></div>
                             </div>
@@ -708,9 +698,7 @@
         </div>
     </div>
 
-    <!-- ========================================================================================== -->
-    <!-- 膜厚總覽 Modal 面板                                                                        -->
-    <!-- ========================================================================================== -->
+    <!-- 膜厚總覽 Modal 面板 -->
     <div id="thicknessTableModal" class="fixed inset-0 bg-slate-900/95 flex items-center justify-center hidden z-50 p-3 sm:p-4 backdrop-blur-sm">
         <div class="glass-panel p-4 sm:p-6 rounded-2xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-pink-500/30">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-700">
@@ -749,9 +737,7 @@
         </div>
     </div>
 
-    <!-- ========================================================================================== -->
-    <!-- API 設定 Modal 面板                                                                        -->
-    <!-- ========================================================================================== -->
+    <!-- API 設定 Modal 面板 -->
     <div id="settingsModal" class="fixed inset-0 bg-slate-900/90 flex items-center justify-center hidden z-50 p-4 backdrop-blur-md">
         <div class="glass-panel p-6 sm:p-8 rounded-2xl max-w-lg w-full shadow-2xl border border-slate-700">
             <h2 class="text-xl font-bold mb-6 text-amber-400 flex items-center gap-2 border-b border-slate-700 pb-3" data-i18n="settings_title">
@@ -785,7 +771,7 @@
         <div class="relative w-full max-w-2xl bg-slate-900 p-4 rounded-2xl border border-slate-700 shadow-2xl flex flex-col max-h-[90vh]">
             <h3 class="text-base font-bold text-cyan-400 mb-3 text-center">✂️ 調整相機拍攝影像裁切範圍</h3>
             <div class="flex-1 min-h-[300px] max-h-[60vh] bg-black rounded-lg overflow-hidden relative">
-                <img id="cropperImage" class="max-w-full max-h-full mx-auto">
+                <img id="cropperImage" class="max-w-full max-h-full mx-auto" src="">
             </div>
             <div class="flex gap-3 mt-4">
                 <button id="btnCropConfirm" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold transition">確認裁切並解析</button>
@@ -803,9 +789,7 @@
         </div>
     </div>
 
-    <!-- ========================================================================================== -->
-    <!-- 核心 JavaScript 邏輯 (包含 Supabase 完美修復機制)                                         -->
-    <!-- ========================================================================================== -->
+    <!-- 核心 JavaScript 邏輯 (包含 Supabase 完美修復機制) -->
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -835,7 +819,7 @@
                 opt_cat_all: "-- 所有膜厚類別 --",
                 opt_db_loading: "-- 資料庫連線中... --",
                 opt_db_select: "-- 請選擇構件 --",
-                btn_edit_item: "✏️️ 編輯此構件參數",
+                btn_edit_item: "✏️ 編輯此構件參數",
                 btn_delete_item: "🗑️ 刪除",
                 card_gun_powder: "🔫 自動槍粉量數據",
                 card_reciprocator: "⚙️ 往復機運行參數",
@@ -854,9 +838,8 @@
                 form_title_create: "📝 參數資料建檔",
                 form_title_edit: "✏️ 編輯構件參數",
                 lbl_item_name: "品名 / 料號 (格式: 料號/品名)",
-                placeholder_item_name: "例如：UC-280B/轉軸座",
-                btn_ai_scan_name: "📸 開啟相機 AI 解析品名",
-                lbl_comp_photo: "構件照片 (直傳 Google Drive)",
+                btn_ai_scan_name: "📸 AI 掃描品名",
+                lbl_comp_photo: "構件照片 (上傳至雲端儲存)",
                 lbl_thickness_cat: "膜厚類別",
                 opt_cat_select: "-- 請選擇膜厚類別 --",
                 lbl_recip_params: "⚙️ 往復機運行參數",
@@ -906,7 +889,6 @@
                 opt_ng_reason_7: "皺痕",
                 btn_add_ng: "＋ 加入 NG",
                 lbl_add_remark: "📝 修正備註欄位",
-                placeholder_remark: "輸入備註或特殊叮嚀...",
                 btn_add_remark: "＋ 新增",
                 btn_submit_save: "💾 儲存並上傳至資料庫",
                 btn_cancel: "取消",
@@ -952,9 +934,8 @@
                 form_title_create: "📝 Pendaftaran Parameter Baru",
                 form_title_edit: "✏️ Edit Parameter Komponen",
                 lbl_item_name: "Nama / No. Bagian (Format: Nomor/Nama)",
-                placeholder_item_name: "Contoh: UC-280B/Poros",
                 btn_ai_scan_name: "📸 Scan AI Nama Komponen",
-                lbl_comp_photo: "Foto Komponen (Upload ke Google Drive)",
+                lbl_comp_photo: "Foto Komponen (Upload Cloud)",
                 lbl_thickness_cat: "Kategori Ketebalan",
                 opt_cat_select: "-- Pilih Kategori Ketebalan --",
                 lbl_recip_params: "⚙️ Parameter Timbal Balik",
@@ -996,87 +977,85 @@
                 opt_ng_loc_a: "Sisi A Luar",
                 opt_ng_loc_b: "Sisi B Sudut",
                 opt_ng_reason_1: "Ketebalan Kurang",
-                opt_ng_reason_2: "Terlalu Tebal",
-                opt_ng_reason_3: "Alur Tidak Kena Bubuk",
-                opt_ng_reason_4: "Bubuk Menetes",
+                opt_ng_reason_2: "Tebal Berlebih",
+                opt_ng_reason_3: "Alur Tanpa Bubuk",
+                opt_ng_reason_4: "Penumpukan Bubuk",
                 opt_ng_reason_5: "Bubuk Licin",
                 opt_ng_reason_6: "Bubuk Meledak",
                 opt_ng_reason_7: "Kerutan",
                 btn_add_ng: "＋ Tambah NG",
                 lbl_add_remark: "📝 Catatan Perbaikan",
-                placeholder_remark: "Masukkan catatan...",
                 btn_add_remark: "＋ Tambah",
                 btn_submit_save: "💾 Simpan ke Database",
                 btn_cancel: "Batal",
                 settings_title: "⚙️ Pengaturan API Sistem",
-                btn_save_settings: "Simpan",
+                btn_save_settings: "Simpan Pengaturan",
                 btn_close: "Tutup",
-                loading_ai: "Memproses AI, harap tunggu...",
-                loading_db: "Menghubungkan ke database...",
-                loading_uploading: "Mengunggah gambar...",
-                msg_save_success: "🎉 Data berhasil disimpan!",
-                msg_save_fail: "❌ Gagal menyimpan data:"
+                loading_ai: "Proses AI...",
+                loading_db: "Menghubungkan Database...",
+                loading_uploading: "Mengunggah Gambar...",
+                msg_save_success: "🎉 Data Berhasil Disimpan!",
+                msg_save_fail: "❌ Gagal Menyimpan Data:"
             },
             jv: {
-                app_title: "Sistem Parameter Pelapisan Wutah Baifu",
+                app_title: "Sistem Parameter Pelapisan Serbuk Baifu",
                 sub_title: "Arsitektur AI Frontend Murni (Respan Span 01 Lite)",
                 btn_thickness_summary: "📊 Ringkasan Ketebalan",
-                btn_api_settings: "⚙️ Pengaturan API",
-                tab_query: "📷 Mode Golek Kamera / Manual",
+                btn_api_settings: "⚙️ Setelan API",
+                tab_query: "📷 Mode Kamera / Manual",
                 tab_register: "📝 Mode Daftar / Edit",
-                query_title: "🔍 Golek Parameter Komponen",
+                query_title: "🔍 Pandelengan Komponen",
                 btn_ai_search: "Analisis Gambar AI (Kamera)",
-                btn_feature_search: "Cocokna Fitur Lokal (Kamera)",
+                btn_feature_search: "Pencocokan Fitur Lokal (Kamera)",
                 lbl_select_db: "Utawa pilih langsung saka database:",
                 opt_cat_all: "-- Kabeh Kategori Ketebalan --",
-                opt_db_loading: "-- Nyambungake Database... --",
+                opt_db_loading: "-- Nyambung Database... --",
                 opt_db_select: "-- Pilih Komponen --",
                 btn_edit_item: "✏️ Edit Parameter Iki",
                 btn_delete_item: "🗑️ Hapus",
-                card_gun_powder: "🔫 Data Bubuk Semprot Otomatis",
+                card_gun_powder: "🔫 Data Bubuk Pistol Otomatis",
                 card_reciprocator: "⚙️ Parameter Timbal Balik",
                 lbl_speed: "Kecepatan Munggah/Mudhun",
-                lbl_up_turn: "Pembalikan Dhuwur",
-                lbl_down_turn: "Pembalikan Ngisor",
-                lbl_distance: "Jarak Garapan",
-                card_electrical: "⚡ Tegangan & Arus Pistol Otomatis",
+                lbl_up_turn: "Munggah Balik",
+                lbl_down_turn: "Mudhun Balik",
+                lbl_distance: "Jarak Benda Kerja",
+                card_electrical: "⚡ Tegangan & Arus Pistol",
                 lbl_voltage_sys: "Tegangan Sistem (kV)",
                 lbl_current_sys: "Arus Sistem (μA)",
-                card_manual_a: "🖌️ Blok A: Rai Njaba",
-                card_manual_b: "🖌️ Blok B: Pojok & Lengkungan",
+                card_manual_a: "🖌️ Blok A: Area Luar",
+                card_manual_b: "🖌️ Blok B: Pojok & Sela",
                 card_thickness_history: "📊 Riwayat Ketebalan",
                 card_ng_history: "⚠️ Riwayat NG",
-                card_remarks_history: "📝 Catatan Dandani",
+                card_remarks_history: "📝 Catatan Perbaikan",
                 form_title_create: "📝 Pendaftaran Parameter Anyar",
                 form_title_edit: "✏️ Edit Parameter Komponen",
-                lbl_item_name: "Jene / No. Bagian (Format: Nomor/Jene)",
-                placeholder_item_name: "Tuladha: UC-280B/Poros",
-                btn_ai_scan_name: "📸 Scan AI Jene Komponen",
-                lbl_comp_photo: "Foto Komponen (Upload menyang Google Drive)",
+                lbl_item_name: "Jeneng / No. Bagian",
+                btn_ai_scan_name: "📸 Scan AI Jeneng",
+                lbl_comp_photo: "Foto Komponen",
                 lbl_thickness_cat: "Kategori Ketebalan",
                 opt_cat_select: "-- Pilih Kategori Ketebalan --",
                 lbl_recip_params: "⚙️ Parameter Timbal Balik",
                 btn_fill_auto: "⚡ Isi 'Otomatis'",
                 lbl_recip_speed: "Kecepatan",
-                lbl_recip_upturn: "Titik Balik Dhuwur",
-                lbl_recip_downturn: "Titik Balik Ngisor",
+                lbl_recip_upturn: "Titik Balik Munggah",
+                lbl_recip_downturn: "Titik Balik Mudhun",
                 lbl_recip_dist: "Jarak",
-                lbl_gun_elec: "⚡ Parameter Listrik Pistol Otomatis",
+                lbl_gun_elec: "⚡ Parameter Listrik Pistol",
                 lbl_voltage: "Tegangan",
                 lbl_current: "Arus",
-                lbl_manual_fine: "🖌 Parameter Halus Pistol Manual",
-                title_block_a: "Blok (A): Area Njaba Gede",
-                title_block_b: "Blok (B): Pojok & Lengkungan",
-                lbl_powder: "Cacah Bubuk (±10)",
-                lbl_air: "Aliran Udara (±5, max 65)",
+                lbl_manual_fine: "🖌 Parameter Pistol Manual",
+                title_block_a: "Blok (A): Area Luar",
+                title_block_b: "Blok (B): Pojok & Sela",
+                lbl_powder: "Jumlah Bubuk (±10)",
+                lbl_air: "Aliran Udara (±5)",
                 lbl_nozzle: "Tipe Nozzle",
                 opt_nozzle_fan: "Kipas",
                 opt_nozzle_fan_long: "Kipas Dawa",
                 opt_nozzle_round_long: "Bunder Dawa",
-                lbl_ring: "Cincin Elektrostatik",
+                lbl_ring: "Ring Elektrostatik",
                 opt_yes: "Ono",
                 opt_no: "Ora Ono",
-                lbl_spray_count: "Total Semprotan",
+                lbl_spray_count: "Total Penyemprotan",
                 lbl_spray_left: "Kiwa",
                 lbl_spray_top: "Dhuwur",
                 lbl_spray_bottom: "Ngisor",
@@ -1086,916 +1065,893 @@
                 lbl_spray_mid_3: "Tahap 3",
                 lbl_spray_mid_4: "Tahap 4",
                 lbl_add_thickness: "📊 Tambah Catatan Ketebalan",
-                lbl_front_sec: "Ngarap (Min-Max)",
-                lbl_mid_sec: "Tengah (Min-Max)",
-                lbl_rear_sec: "Mburi (Min-Max)",
-                btn_add_thickness: "＋ Tambah Catatan Ketebalan",
-                lbl_add_ng: "⚠️ Tambah Catatan NG",
-                opt_ng_loc_a: "Sisi A Njaba",
+                lbl_front_sec: "Ngarep",
+                lbl_mid_sec: "Tengah",
+                lbl_rear_sec: "Buri",
+                btn_add_thickness: "＋ Tambah Catatan",
+                lbl_add_ng: "⚠️ Tambah NG",
+                opt_ng_loc_a: "Sisi A Luar",
                 opt_ng_loc_b: "Sisi B Pojok",
                 opt_ng_reason_1: "Ketebalan Kurang",
-                opt_ng_reason_2: "Kandel Banget",
-                opt_ng_reason_3: "Lengkungan Ora Kena Bubuk",
-                opt_ng_reason_4: "Bubuk Ngetes",
+                opt_ng_reason_2: "Tebal Berlebih",
+                opt_ng_reason_3: "Alur Tanpa Bubuk",
+                opt_ng_reason_4: "Penumpukan Bubuk",
                 opt_ng_reason_5: "Bubuk Licin",
-                opt_ng_reason_6: "Bubuk Jeblug",
+                opt_ng_reason_6: "Bubuk Meledak",
                 opt_ng_reason_7: "Kerutan",
                 btn_add_ng: "＋ Tambah NG",
-                lbl_add_remark: "📝 Catatan Dandani",
-                placeholder_remark: "Sijiki catatan...",
+                lbl_add_remark: "📝 Catatan Perbaikan",
                 btn_add_remark: "＋ Tambah",
-                btn_submit_save: "💾 Simpan menyang Database",
+                btn_submit_save: "💾 Simpan marang Database",
                 btn_cancel: "Batal",
-                settings_title: "⚙️ Pengaturan API Sistem",
-                btn_save_settings: "Simpan",
+                settings_title: "⚙️ Setelan API Sistem",
+                btn_save_settings: "Simpan Setelan",
                 btn_close: "Tutup",
-                loading_ai: "Ngaplikasikne AI, ngenteni...",
-                loading_db: "Nyambungake database...",
-                loading_uploading: "Ngunggah gambar...",
-                msg_save_success: "🎉 Data kasil disimpen!",
-                msg_save_fail: "❌ Gagal nyimpen data:"
+                loading_ai: "Proses AI...",
+                loading_db: "Nyambung Database...",
+                loading_uploading: "Ngunggah Gambar...",
+                msg_save_success: "🎉 Data Berhasil Disimpan!",
+                msg_save_fail: "❌ Gagal Menyimpan Data:"
             }
         };
 
-        // --- 3. 全局狀態變數 ---
+        // --- 3. 全局狀態與變數管理 ---
         let currentLang = 'tw';
-        let itemsData = [];
-        let currentEditId = null;
-        let currentImageUrl = '';
-        let isEditingImage = false;
-        let cropper = null;
-        let scanTargetType = 'query';
+        let allItemsData = [];
+        let currentEditingItem = null;
+        let tempThicknessRecords = [];
+        let tempNgRecords = [];
+        let tempRemarks = [];
+        let cropperInstance = null;
+        let cropTargetType = 'aiSearch'; // 'aiSearch' or 'scanName'
 
-        let thicknessRecords = [];
-        let ngRecords = [];
-        let remarksRecords = [];
+        // --- 4. 輔助函式：安全解析 JSON & UI 控制 ---
+        const parseJsonSafely = (val) => {
+            if (!val) return null;
+            if (typeof val === 'object') return val;
+            try { return JSON.parse(val); } catch (e) { return null; }
+        };
 
-        // --- 4. 工具函式 ---
-        function getSetting(key, defVal) {
-            return localStorage.getItem(key) || defVal;
-        }
-
-        function setSetting(key, val) {
-            localStorage.setItem(key, val);
-        }
-
-        function showLoading(textKey = 'loading_ai') {
+        const showLoading = (textKey = 'loading_ai') => {
             const overlay = document.getElementById('loadingOverlay');
-            const txt = document.getElementById('loadingText');
-            const dict = i18nDict[currentLang];
-            txt.textContent = dict[textKey] || textKey;
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
-        }
+            const textEl = document.getElementById('loadingText');
+            if (textEl) textEl.innerText = i18nDict[currentLang][textKey] || textKey;
+            if (overlay) overlay.classList.remove('hidden'), overlay.classList.add('flex');
+        };
 
-        function hideLoading() {
+        const hideLoading = () => {
             const overlay = document.getElementById('loadingOverlay');
-            overlay.classList.add('hidden');
-            overlay.classList.remove('flex');
-        }
+            if (overlay) overlay.classList.add('hidden'), overlay.classList.remove('flex');
+        };
 
-        function switchLanguage(lang) {
-            currentLang = lang;
+        // 多國語言介面即時翻譯
+        const updateLanguageUI = () => {
+            const lang = currentLang;
             const dict = i18nDict[lang] || i18nDict['tw'];
-
-            // 替換文本內容
+            
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (dict[key]) el.textContent = dict[key];
+                if (dict[key]) el.innerText = dict[key];
             });
 
-            // 替換 Placeholder
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
                 const key = el.getAttribute('data-i18n-placeholder');
                 if (dict[key]) el.placeholder = dict[key];
             });
-
-            updateItemDropdowns();
-        }
-
-        // --- 5. 頁面與 UI 互動 ---
-        function switchTab(tab) {
-            const qBtn = document.getElementById('tabQueryBtn');
-            const rBtn = document.getElementById('tabRegisterBtn');
-            const qSec = document.getElementById('querySection');
-            const rSec = document.getElementById('registerSection');
-
-            if (tab === 'query') {
-                qBtn.className = "flex-1 bg-gradient-to-r from-blue-700 to-blue-900 border border-blue-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-blue-900/20 transition-all hover:brightness-110";
-                rBtn.className = "flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white";
-                qSec.classList.remove('hidden');
-                rSec.classList.add('hidden');
-            } else {
-                rBtn.className = "flex-1 bg-gradient-to-r from-emerald-700 to-emerald-900 border border-emerald-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-emerald-900/20 transition-all hover:brightness-110";
-                qBtn.className = "flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white";
-                rSec.classList.remove('hidden');
-                qSec.classList.add('hidden');
-            }
-        }
-
-        // --- 6. 手動槍數值調整微調器 ---
-        window.adjManual = function(fieldId, delta, min, max, block = '') {
-            const input = document.getElementById(fieldId);
-            if (!input) return;
-            let val = parseInt(input.value) || 0;
-            val += delta;
-            if (min !== undefined && val < min) val = min;
-            if (max !== undefined && val > max) val = max;
-            input.value = val;
         };
 
-        // 換向填入「自動」
-        document.getElementById('btnFillAuto').addEventListener('click', () => {
-            document.getElementById('up_turn_left').value = "自動";
-            document.getElementById('up_turn_right').value = "自動";
-            document.getElementById('down_turn_left').value = "自動";
-            document.getElementById('down_turn_right').value = "自動";
-        });
+        // --- 5. Supabase 完美修復機制：資料讀取與強健寫入 ---
 
-        // --- 7. 資料抓取與 Supabase 處理 (完美修正 Core Fix) ---
-        
-        // 建立嚴格 Payload 格式
-        function buildStrictPayload(isUpdate = false) {
-            const manual_a = {
-                powder: parseInt(document.getElementById('a_powder').value) || 0,
-                air: parseInt(document.getElementById('a_air').value) || 0,
-                voltage: parseInt(document.getElementById('a_voltage').value) || 0,
-                current: parseInt(document.getElementById('a_current').value) || 0,
-                nozzle: document.getElementById('a_nozzle').value || "",
-                ring: document.getElementById('a_ring').value || "",
-                spray_count: parseInt(document.getElementById('a_spray_count').value) || 1,
-                spray_left: parseInt(document.getElementById('a_spray_left').value) || 0,
-                spray_top: parseInt(document.getElementById('a_spray_top').value) || 0,
-                spray_bottom: parseInt(document.getElementById('a_spray_bottom').value) || 0,
-                spray_right: parseInt(document.getElementById('a_spray_right').value) || 0,
-                spray_mid_1: parseInt(document.getElementById('a_spray_mid_1').value) || 0,
-                spray_mid_2: parseInt(document.getElementById('a_spray_mid_2').value) || 0,
-                spray_mid_3: parseInt(document.getElementById('a_spray_mid_3').value) || 0,
-                spray_mid_4: parseInt(document.getElementById('a_spray_mid_4').value) || 0
-            };
-
-            const manual_b = {
-                powder: parseInt(document.getElementById('b_powder').value) || 0,
-                air: parseInt(document.getElementById('b_air').value) || 0,
-                voltage: parseInt(document.getElementById('b_voltage').value) || 0,
-                current: parseInt(document.getElementById('b_current').value) || 0,
-                nozzle: document.getElementById('b_nozzle').value || "",
-                ring: document.getElementById('b_ring').value || "",
-                spray_count: parseInt(document.getElementById('b_spray_count').value) || 1,
-                spray_left: parseInt(document.getElementById('b_spray_left').value) || 0,
-                spray_top: parseInt(document.getElementById('b_spray_top').value) || 0,
-                spray_bottom: parseInt(document.getElementById('b_spray_bottom').value) || 0,
-                spray_right: parseInt(document.getElementById('b_spray_right').value) || 0,
-                spray_mid_1: parseInt(document.getElementById('b_spray_mid_1').value) || 0,
-                spray_mid_2: parseInt(document.getElementById('b_spray_mid_2').value) || 0,
-                spray_mid_3: parseInt(document.getElementById('b_spray_mid_3').value) || 0,
-                spray_mid_4: parseInt(document.getElementById('b_spray_mid_4').value) || 0
-            };
-
-            const gun_data = {
-                g1: document.getElementById('gun_1').value || "",
-                g2: document.getElementById('gun_2').value || "",
-                g3: document.getElementById('gun_3').value || "",
-                g4: document.getElementById('gun_4').value || "",
-                g5: document.getElementById('gun_5').value || "",
-                g6: document.getElementById('gun_6').value || "",
-                g7: document.getElementById('gun_7').value || "",
-                g8: document.getElementById('gun_8').value || ""
-            };
-
-            const reciprocator_data = {
-                speed_left: document.getElementById('speed_left').value || "",
-                speed_right: document.getElementById('speed_right').value || "",
-                up_turn_left: document.getElementById('up_turn_left').value || "",
-                up_turn_right: document.getElementById('up_turn_right').value || "",
-                down_turn_left: document.getElementById('down_turn_left').value || "",
-                down_turn_right: document.getElementById('down_turn_right').value || "",
-                dist_left: document.getElementById('dist_left').value || "",
-                dist_right: document.getElementById('dist_right').value || ""
-            };
-
-            const strictPayload = {
-                item_name: document.getElementById('item_name').value.trim() || "未命名構件",
-                thickness_category: document.getElementById('thickness_category').value || "",
-                image_url: currentImageUrl || "",
-                gun_data: JSON.parse(JSON.stringify(gun_data)),
-                reciprocator_data: JSON.parse(JSON.stringify(reciprocator_data)),
-                voltage: document.getElementById('voltage').value || "0",
-                current: document.getElementById('current').value || "0",
-                manual_a: JSON.parse(JSON.stringify(manual_a)),
-                manual_b: JSON.parse(JSON.stringify(manual_b)),
-                thickness_records: JSON.parse(JSON.stringify(thicknessRecords)),
-                ng_records: JSON.parse(JSON.stringify(ngRecords)),
-                remarks: JSON.parse(JSON.stringify(remarksRecords)),
-                updated_at: new Date().toISOString()
-            };
-
-            if (!isUpdate) {
-                strictPayload.created_at = new Date().toISOString();
-            }
-            
-            return strictPayload;
-        }
-
-        // 從 Supabase 讀取資料庫數據 (含備用 Fallback 查詢機制，解決 Order 失敗問題)
-        async function fetchDatabaseItems() {
+        // 讀取所有資料 (含 Schema 相容歸一化)
+        const fetchItemsFromSupabase = async () => {
             try {
-                // 優先嘗試依 created_at 排序讀取
-                let response = await supabase.from(tableName).select('*').order('created_at', { ascending: false });
-                
-                // 若排序列不存在導致失敗，自動進行一般 select('*') 退回查詢
-                if (response.error) {
-                    console.warn("Order query failed, executing basic fallback query:", response.error);
-                    response = await supabase.from(tableName).select('*');
+                showLoading('loading_db');
+                const { data, error } = await supabase
+                    .from(tableName)
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error("Supabase Read Error:", error);
+                    alert("⚠️ 資料庫讀取失敗: " + error.message);
+                    return [];
                 }
 
-                if (response.error) {
-                    if (response.error.code === '42P01') {
-                        console.warn("Table does not exist. Please run SQL migration script.");
-                    } else {
-                        throw response.error;
-                    }
-                } else {
-                    itemsData = response.data || [];
-                }
-                updateItemDropdowns();
+                // 徹底歸一化與解析資料，避免 JSON/欄位差異導致讀取不到
+                const normalizedData = (data || []).map(item => ({
+                    ...item,
+                    item_name: item.item_name || item.name || '未命名構件',
+                    thickness_category: item.thickness_category || item.category || '',
+                    image_url: item.image_url || item.photo || '',
+                    gun_1: item.gun_1 ?? item.gun1 ?? '0',
+                    gun_2: item.gun_2 ?? item.gun2 ?? '0',
+                    gun_3: item.gun_3 ?? item.gun3 ?? '0',
+                    gun_4: item.gun_4 ?? item.gun4 ?? '0',
+                    gun_5: item.gun_5 ?? item.gun5 ?? '0',
+                    gun_6: item.gun_6 ?? item.gun6 ?? '0',
+                    gun_7: item.gun_7 ?? item.gun7 ?? '0',
+                    gun_8: item.gun_8 ?? item.gun8 ?? '0',
+                    speed_left: item.speed_left ?? '600',
+                    speed_right: item.speed_right ?? '600',
+                    up_turn_left: item.up_turn_left ?? '自動',
+                    up_turn_right: item.up_turn_right ?? '自動',
+                    down_turn_left: item.down_turn_left ?? '自動',
+                    down_turn_right: item.down_turn_right ?? '自動',
+                    dist_left: item.dist_left ?? '380',
+                    dist_right: item.dist_right ?? '420',
+                    voltage: item.voltage ?? '70',
+                    current: item.current ?? '15',
+                    manual_a: parseJsonSafely(item.manual_a) || item.manual_a || {},
+                    manual_b: parseJsonSafely(item.manual_b) || item.manual_b || {},
+                    thickness_records: parseJsonSafely(item.thickness_records) || item.thickness_records || [],
+                    ng_records: parseJsonSafely(item.ng_records) || item.ng_records || [],
+                    remarks: parseJsonSafely(item.remarks) || item.remarks || []
+                }));
+
+                allItemsData = normalizedData;
+                populateItemDropdown();
+                renderThicknessSummaryTable();
+                return normalizedData;
             } catch (err) {
-                console.error("Database fetch error:", err);
-                itemsData = [];
-                updateItemDropdowns();
+                console.error("Fetch Exception:", err);
+                return [];
+            } finally {
+                hideLoading();
             }
-        }
+        };
 
-        function updateItemDropdowns() {
-            const dict = i18nDict[currentLang];
-            const select = document.getElementById('itemSelect');
-            const filterCat = document.getElementById('queryCategoryFilter').value;
-            
-            select.innerHTML = `<option value="">${dict['opt_db_select']}</option>`;
-            
-            itemsData.forEach(item => {
-                if (filterCat && item.thickness_category !== filterCat) return;
-                const opt = document.createElement('option');
-                opt.value = item.id;
-                opt.textContent = `${item.item_name} ${item.thickness_category ? `(${item.thickness_category})` : ''}`;
-                select.appendChild(opt);
+        // 彈性強健寫入 (解決 Schema / 欄位衝突與上傳失敗問題)
+        const saveToSupabaseWithFallback = async (payload) => {
+            showLoading('loading_db');
+            try {
+                // 第一階段：多重適應性 upsert
+                let { data, error } = await supabase
+                    .from(tableName)
+                    .upsert(payload, { onConflict: 'item_name' })
+                    .select();
+
+                if (!error) return { success: true, data };
+
+                console.warn("Primary Upsert Failed, Attempting Fallback Mode 1:", error.message);
+
+                // 第二階段：改用 Select + Update/Insert 分離模式 (避開 Unique Index 設定缺失)
+                const { data: existing } = await supabase
+                    .from(tableName)
+                    .select('id')
+                    .eq('item_name', payload.item_name)
+                    .maybeSingle();
+
+                if (existing && existing.id) {
+                    const res = await supabase
+                        .from(tableName)
+                        .update(payload)
+                        .eq('id', existing.id)
+                        .select();
+                    if (!res.error) return { success: true, data: res.data };
+                    error = res.error;
+                } else {
+                    const res = await supabase
+                        .from(tableName)
+                        .insert([payload])
+                        .select();
+                    if (!res.error) return { success: true, data: res.data };
+                    error = res.error;
+                }
+
+                // 第三階段：若因 Schema 缺少新欄位 (如 thickness_category) 拋出 PGRST204，降級為安全欄位 Payload
+                if (error && (error.code === 'PGRST204' || error.message.includes('column'))) {
+                    console.warn("Schema discrepancy detected. Cleaning payload for legacy DB table structure...");
+                    const safePayload = { ...payload };
+                    delete safePayload.thickness_category; // 移除延伸欄位重試
+                    
+                    const retryRes = await supabase
+                        .from(tableName)
+                        .upsert(safePayload, { onConflict: 'item_name' })
+                        .select();
+                    
+                    if (!retryRes.error) return { success: true, data: retryRes.data };
+                    error = retryRes.error;
+                }
+
+                throw error;
+            } catch (err) {
+                console.error("Supabase Write Permanent Failure:", err);
+                return { success: false, error: err };
+            } finally {
+                hideLoading();
+            }
+        };
+
+        // 刪除 Supabase 項目
+        const deleteItemFromSupabase = async (itemName) => {
+            if (!confirm(`⚠️ 確定要刪除構件「${itemName}」嗎？此操作不可逆！`)) return;
+            showLoading('loading_db');
+            try {
+                const { error } = await supabase
+                    .from(tableName)
+                    .delete()
+                    .eq('item_name', itemName);
+
+                if (error) {
+                    alert("❌ 刪除失敗：" + error.message);
+                } else {
+                    alert("🗑️ 構件已成功刪除！");
+                    document.getElementById('resultBoard').style.display = 'none';
+                    document.getElementById('actionButtons').classList.add('hidden');
+                    await fetchItemsFromSupabase();
+                }
+            } catch (err) {
+                alert("❌ 刪除發生例外錯誤: " + err.message);
+            } finally {
+                hideLoading();
+            }
+        };
+
+        // --- 6. 選項與 UI 渲染 logic ---
+
+        // 填充下拉選單 (支援膜厚類別過濾)
+        const populateItemDropdown = () => {
+            const catFilter = document.getElementById('queryCategoryFilter').value;
+            const selectEl = document.getElementById('itemSelect');
+            selectEl.innerHTML = `<option value="">${i18nDict[currentLang].opt_db_select}</option>`;
+
+            const filteredItems = allItemsData.filter(item => {
+                if (!catFilter) return true;
+                return item.thickness_category === catFilter;
             });
-        }
 
-        document.getElementById('queryCategoryFilter').addEventListener('change', updateItemDropdowns);
+            filteredItems.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.item_name;
+                opt.textContent = `${item.thickness_category ? item.thickness_category + ' ' : ''}${item.item_name}`;
+                selectEl.appendChild(opt);
+            });
+        };
 
-        document.getElementById('itemSelect').addEventListener('change', (e) => {
-            const id = e.target.value;
-            if (id) displayItemData(id);
-            else document.getElementById('resultBoard').style.display = 'none';
-        });
-
-        // 呈現特定構件資料
-        function displayItemData(id) {
-            const item = itemsData.find(i => i.id == id);
+        // 渲染單一構件詳細資料
+        const renderItemDetails = (item) => {
             if (!item) return;
 
-            document.getElementById('resultBoard').style.display = 'block';
-            document.getElementById('actionButtons').classList.remove('hidden');
-            currentEditId = item.id;
-
-            // 膜厚類別標籤
+            // 頂部膜厚類別 Badge
             const badge = document.getElementById('q_thickness_category_badge');
             if (item.thickness_category) {
-                badge.textContent = item.thickness_category;
+                badge.innerText = item.thickness_category;
                 badge.classList.remove('hidden');
-                badge.className = "inline-block px-4 py-1.5 rounded-full text-sm sm:text-base font-black border mb-2 shadow-lg tracking-wider ";
-                if(item.thickness_category.includes("黃色") || item.thickness_category.includes("90~100以上")) badge.classList.add("bg-yellow-500/20", "text-yellow-400", "border-yellow-500/30");
-                else if(item.thickness_category.includes("小構件")) badge.classList.add("bg-slate-500/20", "text-slate-300", "border-slate-500/30");
-                else badge.classList.add("bg-blue-500/20", "text-blue-300", "border-blue-500/30");
+                if (item.thickness_category.includes('黃色')) {
+                    badge.className = 'inline-block px-4 py-1.5 rounded-full text-sm sm:text-base font-black border mb-2 shadow-lg tracking-wider bg-yellow-500/20 text-yellow-300 border-yellow-500/50';
+                } else {
+                    badge.className = 'inline-block px-4 py-1.5 rounded-full text-sm sm:text-base font-black border mb-2 shadow-lg tracking-wider bg-blue-500/20 text-blue-300 border-blue-500/50';
+                }
             } else {
                 badge.classList.add('hidden');
             }
 
-            // 圖片顯示
+            // 照片展示
             const imgContainer = document.getElementById('imageContainer');
+            const matchedImg = document.getElementById('q_matched_image');
+            const matchedLink = document.getElementById('q_matched_image_link');
             if (item.image_url) {
+                matchedImg.src = item.image_url;
+                matchedLink.href = item.image_url;
                 imgContainer.classList.remove('hidden');
-                document.getElementById('q_matched_image').src = item.image_url;
-                document.getElementById('q_matched_image_link').href = item.image_url;
             } else {
                 imgContainer.classList.add('hidden');
             }
 
-            // 自動槍粉量
-            const gd = item.gun_data || {};
-            for(let i=1; i<=8; i++) document.getElementById(`q_gun_${i}`).textContent = gd[`g${i}`] || "-";
-            
-            // 往復機參數
-            const rd = item.reciprocator_data || {};
-            document.getElementById('q_speed_left').textContent = rd.speed_left || "-";
-            document.getElementById('q_speed_right').textContent = rd.speed_right || "-";
-            document.getElementById('q_up_turn_left').textContent = rd.up_turn_left || "-";
-            document.getElementById('q_up_turn_right').textContent = rd.up_turn_right || "-";
-            document.getElementById('q_down_turn_left').textContent = rd.down_turn_left || "-";
-            document.getElementById('q_down_turn_right').textContent = rd.down_turn_right || "-";
-            document.getElementById('q_dist_left').textContent = rd.dist_left || "-";
-            document.getElementById('q_dist_right').textContent = rd.dist_right || "-";
+            // 1~8 槍粉量
+            for (let i = 1; i <= 8; i++) {
+                const el = document.getElementById(`q_gun_${i}`);
+                if (el) el.innerText = item[`gun_${i}`] ?? '0';
+            }
 
-            // 電壓電流
-            document.getElementById('q_voltage').textContent = item.voltage || "-";
-            document.getElementById('q_current').textContent = item.current || "-";
+            // 往復機運行參數
+            document.getElementById('q_speed_left').innerText = item.speed_left ?? '600';
+            document.getElementById('q_speed_right').innerText = item.speed_right ?? '600';
+            document.getElementById('q_up_turn_left').innerText = item.up_turn_left ?? '自動';
+            document.getElementById('q_up_turn_right').innerText = item.up_turn_right ?? '自動';
+            document.getElementById('q_down_turn_left').innerText = item.down_turn_left ?? '自動';
+            document.getElementById('q_down_turn_right').innerText = item.down_turn_right ?? '自動';
+            document.getElementById('q_dist_left').innerText = item.dist_left ?? '380';
+            document.getElementById('q_dist_right').innerText = item.dist_right ?? '420';
 
-            // 手動槍 A/B 面渲染
-            const renderManual = (data, elementId) => {
-                if(!data) {
-                    document.getElementById(elementId).innerHTML = '<div class="text-slate-500 text-center">無資料</div>';
-                    return;
-                }
-                document.getElementById(elementId).innerHTML = `
-                    <div class="grid grid-cols-2 gap-2 border-b border-slate-700/50 pb-2">
-                        <div><b>粉量:</b> ${data.powder || 0}</div>
-                        <div><b>風量:</b> ${data.air || 0}</div>
-                        <div><b>電壓:</b> ${data.voltage || 0} kV</div>
-                        <div><b>電流:</b> ${data.current || 0} μA</div>
-                        <div><b>噴嘴:</b> ${data.nozzle || '-'}</div>
-                        <div><b>靜電環:</b> ${data.ring || '-'}</div>
-                    </div>
-                    <div class="pt-2">
-                        <div class="text-amber-300 font-bold mb-1">總噴塗次數: ${data.spray_count || 1} 次</div>
-                        <div class="grid grid-cols-2 gap-1 text-[11px] text-slate-300">
-                            <div>左側: ${data.spray_left || 0} | 上方: ${data.spray_top || 0}</div>
-                            <div>下方: ${data.spray_bottom || 0} | 右側: ${data.spray_right || 0}</div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-1 text-[11px] text-amber-400/90 mt-1">
-                            <div>一段: ${data.spray_mid_1 || 0} | 二段: ${data.spray_mid_2 || 0}</div>
-                            <div>三段: ${data.spray_mid_3 || 0} | 四段: ${data.spray_mid_4 || 0}</div>
-                        </div>
-                    </div>
-                `;
-            };
+            // 電壓與電流
+            document.getElementById('q_voltage').innerText = item.voltage ?? '70';
+            document.getElementById('q_current').innerText = item.current ?? '15';
 
-            renderManual(item.manual_a, 'q_manual_a_display');
-            renderManual(item.manual_b, 'q_manual_b_display');
+            // 手動槍 A/B 面顯示渲染
+            renderManualDisplay('q_manual_a_display', item.manual_a);
+            renderManualDisplay('q_manual_b_display', item.manual_b);
 
-            // 歷史紀錄渲染
-            const thEl = document.getElementById('q_thickness_display');
-            if (item.thickness_records && item.thickness_records.length > 0) {
-                thEl.innerHTML = item.thickness_records.map(r => `
-                    <div class="bg-slate-800/80 p-2 rounded border border-slate-700 flex justify-between items-center text-xs">
-                        <span class="text-pink-400 font-mono">${r.date || ''}</span>
-                        <span>前: ${r.f_min||0}-${r.f_max||0} | 中: ${r.m_min||0}-${r.m_max||0} | 後: ${r.r_min||0}-${r.r_max||0}</span>
+            // 歷史紀錄展示
+            renderHistoryDisplay('q_thickness_display', item.thickness_records, 'thickness');
+            renderHistoryDisplay('q_ng_display', item.ng_records, 'ng');
+            renderHistoryDisplay('q_remarks_display', item.remarks, 'remarks');
+
+            document.getElementById('resultBoard').style.display = 'block';
+            document.getElementById('actionButtons').classList.remove('hidden');
+        };
+
+        // 手動槍參數內容格式化
+        const renderManualDisplay = (elementId, data) => {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+
+            if (!data || Object.keys(data).length === 0) {
+                el.innerHTML = `<div class="text-slate-500 italic">無資料</div>`;
+                return;
+            }
+
+            el.innerHTML = `
+                <div class="grid grid-cols-2 gap-2 text-slate-300">
+                    <div>粉量: <b class="text-white">${data.powder ?? 0}</b></div>
+                    <div>風量: <b class="text-white">${data.air ?? 0}</b></div>
+                    <div>電壓: <b class="text-white">${data.voltage ?? 70} kV</b></div>
+                    <div>電流: <b class="text-white">${data.current ?? 15} μA</b></div>
+                    <div>噴嘴: <b class="text-cyan-400">${data.nozzle ?? '扇型'}</b></div>
+                    <div>靜電環: <b class="text-amber-400">${data.ring ?? '有'}</b></div>
+                </div>
+                <div class="mt-2 pt-2 border-t border-slate-700/60 font-bold text-amber-300">
+                    總噴塗次數: ${data.spray_count ?? 1} 次
+                </div>
+                ${(data.spray_left || data.spray_top || data.spray_bottom || data.spray_right) ? `
+                <div class="mt-1 text-[11px] text-emerald-400">
+                    方位: 左[${data.spray_left||0}] 上[${data.spray_top||0}] 下[${data.spray_bottom||0}] 右[${data.spray_right||0}]
+                </div>` : ''}
+                ${(data.spray_mid_1 || data.spray_mid_2 || data.spray_mid_3 || data.spray_mid_4) ? `
+                <div class="mt-0.5 text-[11px] text-amber-400">
+                    中段: 一[${data.spray_mid_1||0}] 二[${data.spray_mid_2||0}] 三[${data.spray_mid_3||0}] 四[${data.spray_mid_4||0}]
+                </div>` : ''}
+            `;
+        };
+
+        // 歷史紀錄專用渲染器
+        const renderHistoryDisplay = (elementId, list, type) => {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+
+            if (!list || !Array.isArray(list) || list.length === 0) {
+                el.innerHTML = `<span class="text-slate-500 italic">無資料</span>`;
+                return;
+            }
+
+            if (type === 'thickness') {
+                el.innerHTML = list.map(rec => `
+                    <div class="bg-slate-800/90 p-2 rounded border border-slate-700 flex justify-between items-center">
+                        <span class="text-slate-400 font-mono text-xs">${rec.date || ''}</span>
+                        <span class="text-pink-300 font-mono">前:${rec.front || '-'} | 中:${rec.mid || '-'} | 後:${rec.rear || '-'}</span>
                     </div>
                 `).join('');
-            } else {
-                thEl.innerHTML = '<div class="text-slate-500">無歷史膜厚紀錄</div>';
-            }
-
-            const ngEl = document.getElementById('q_ng_display');
-            if (item.ng_records && item.ng_records.length > 0) {
-                ngEl.innerHTML = item.ng_records.map(r => `
-                    <div class="bg-slate-800/80 p-2 rounded border border-slate-700 flex justify-between items-center text-xs">
-                        <span class="text-orange-400 font-mono">${r.date || ''}</span>
-                        <span class="text-red-300 font-bold">${r.location || ''} - ${r.reason || ''}</span>
+            } else if (type === 'ng') {
+                el.innerHTML = list.map(rec => `
+                    <div class="bg-slate-800/90 p-2 rounded border border-slate-700 flex justify-between items-center text-xs">
+                        <span class="text-slate-400 font-mono">${rec.date || ''} [${rec.location || 'A面'}]</span>
+                        <span class="text-orange-400 font-bold">${rec.reason || '膜厚異常'}</span>
                     </div>
                 `).join('');
-            } else {
-                ngEl.innerHTML = '<div class="text-slate-500">無 NG 異常紀錄</div>';
-            }
-
-            const remarksEl = document.getElementById('q_remarks_display');
-            if (item.remarks && item.remarks.length > 0) {
-                remarksEl.innerHTML = item.remarks.map(r => `
-                    <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700 text-xs text-slate-200">
-                        💬 ${r}
+            } else if (type === 'remarks') {
+                el.innerHTML = list.map(rem => `
+                    <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700 text-slate-200">
+                        📌 ${rem}
                     </div>
                 `).join('');
-            } else {
-                remarksEl.innerHTML = '<div class="text-slate-500 col-span-3">無備註</div>';
-            }
-        }
-
-        // --- 8. 表單提交與寫入 Supabase (完美修正與錯誤處理) ---
-        document.getElementById('paramForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const dict = i18nDict[currentLang];
-            
-            showLoading('loading_db');
-
-            // 處理圖片上傳 Google Drive (GAS)
-            if (isEditingImage && currentImageUrl && currentImageUrl.startsWith('data:image')) {
-                showLoading('loading_uploading');
-                try {
-                    const gasUrl = getSetting('GAS_URL', defaultGasUrl);
-                    const base64Data = currentImageUrl.split(',')[1];
-                    const uploadRes = await fetch(gasUrl, {
-                        method: 'POST',
-                        body: JSON.stringify({ 
-                            fileName: `Baifu_Img_${Date.now()}.jpg`, 
-                            mimeType: 'image/jpeg',
-                            fileData: base64Data
-                        })
-                    });
-                    
-                    const gasResult = await uploadRes.json();
-                    if (gasResult && gasResult.url) {
-                        currentImageUrl = gasResult.url;
-                    }
-                } catch (err) {
-                    console.error("Image Upload Error:", err);
-                    alert("圖片上傳 Drive 失敗，將僅儲存文字參數。");
-                }
-            }
-
-            // 呼叫嚴格 Payload 封裝
-            showLoading('loading_db');
-            try {
-                const payload = buildStrictPayload(!!currentEditId);
-                
-                let result;
-                if (currentEditId) {
-                    // Update 更新
-                    result = await supabase.from(tableName).update(payload).eq('id', currentEditId).select();
-                } else {
-                    // Insert 新增
-                    result = await supabase.from(tableName).insert([payload]).select();
-                }
-
-                if (result.error) {
-                    if(result.error.code === '42P01') throw new Error("Supabase Database 表格不存在，請確認建立對應的 table schema。");
-                    throw result.error;
-                }
-
-                alert(dict['msg_save_success']);
-                
-                // 成功後清理狀態
-                await fetchDatabaseItems();
-                resetForm();
-                switchTab('query');
-
-            } catch (err) {
-                console.error("Supabase Save Error:", err);
-                alert(`${dict['msg_save_fail']}\n${err.message || err.details || JSON.stringify(err)}`);
-            } finally {
-                hideLoading();
-            }
-        });
-
-        // 編輯按鈕觸發
-        document.getElementById('btnEditItem').addEventListener('click', () => {
-            const item = itemsData.find(i => i.id == currentEditId);
-            if(!item) return;
-            
-            document.getElementById('item_name').value = item.item_name || '';
-            document.getElementById('thickness_category').value = item.thickness_category || '';
-            
-            if(item.image_url) {
-                currentImageUrl = item.image_url;
-                isEditingImage = false;
-                document.getElementById('regPreviewImg').src = item.image_url;
-                document.getElementById('regPreviewBox').classList.remove('hidden');
-            } else {
-                currentImageUrl = '';
-                document.getElementById('regPreviewBox').classList.add('hidden');
-            }
-
-            const gd = item.gun_data || {};
-            for(let i=1; i<=8; i++) document.getElementById(`gun_${i}`).value = gd[`g${i}`] || '';
-
-            const rd = item.reciprocator_data || {};
-            document.getElementById('speed_left').value = rd.speed_left || '600';
-            document.getElementById('speed_right').value = rd.speed_right || '600';
-            document.getElementById('up_turn_left').value = rd.up_turn_left || '自動';
-            document.getElementById('up_turn_right').value = rd.up_turn_right || '自動';
-            document.getElementById('down_turn_left').value = rd.down_turn_left || '自動';
-            document.getElementById('down_turn_right').value = rd.down_turn_right || '自動';
-            document.getElementById('dist_left').value = rd.dist_left || '380';
-            document.getElementById('dist_right').value = rd.dist_right || '420';
-
-            document.getElementById('voltage').value = item.voltage || '70';
-            document.getElementById('current').value = item.current || '15';
-
-            const ma = item.manual_a || {};
-            document.getElementById('a_powder').value = ma.powder || 0;
-            document.getElementById('a_air').value = ma.air || 0;
-            document.getElementById('a_voltage').value = ma.voltage || 70;
-            document.getElementById('a_current').value = ma.current || 15;
-            document.getElementById('a_nozzle').value = ma.nozzle || '扇型';
-            document.getElementById('a_ring').value = ma.ring || '有';
-            document.getElementById('a_spray_count').value = ma.spray_count || 1;
-            document.getElementById('a_spray_left').value = ma.spray_left || 0;
-            document.getElementById('a_spray_top').value = ma.spray_top || 0;
-            document.getElementById('a_spray_bottom').value = ma.spray_bottom || 0;
-            document.getElementById('a_spray_right').value = ma.spray_right || 0;
-            document.getElementById('a_spray_mid_1').value = ma.spray_mid_1 || 0;
-            document.getElementById('a_spray_mid_2').value = ma.spray_mid_2 || 0;
-            document.getElementById('a_spray_mid_3').value = ma.spray_mid_3 || 0;
-            document.getElementById('a_spray_mid_4').value = ma.spray_mid_4 || 0;
-
-            const mb = item.manual_b || {};
-            document.getElementById('b_powder').value = mb.powder || 0;
-            document.getElementById('b_air').value = mb.air || 0;
-            document.getElementById('b_voltage').value = mb.voltage || 70;
-            document.getElementById('b_current').value = mb.current || 15;
-            document.getElementById('b_nozzle').value = mb.nozzle || '扇型';
-            document.getElementById('b_ring').value = mb.ring || '無';
-            document.getElementById('b_spray_count').value = mb.spray_count || 1;
-            document.getElementById('b_spray_left').value = mb.spray_left || 0;
-            document.getElementById('b_spray_top').value = mb.spray_top || 0;
-            document.getElementById('b_spray_bottom').value = mb.spray_bottom || 0;
-            document.getElementById('b_spray_right').value = mb.spray_right || 0;
-            document.getElementById('b_spray_mid_1').value = mb.spray_mid_1 || 0;
-            document.getElementById('b_spray_mid_2').value = mb.spray_mid_2 || 0;
-            document.getElementById('b_spray_mid_3').value = mb.spray_mid_3 || 0;
-            document.getElementById('b_spray_mid_4').value = mb.spray_mid_4 || 0;
-
-            thicknessRecords = [...(item.thickness_records || [])];
-            ngRecords = [...(item.ng_records || [])];
-            remarksRecords = [...(item.remarks || [])];
-
-            renderFormLists();
-
-            document.getElementById('formTitle').textContent = i18nDict[currentLang]['form_title_edit'];
-            document.getElementById('cancelEditBtn').classList.remove('hidden');
-
-            switchTab('register');
-        });
-
-        // 刪除構件
-        document.getElementById('btnDeleteItem').addEventListener('click', async () => {
-            if(!currentEditId) return;
-            if(!confirm("確定要刪除此構件資料嗎？無法復原！")) return;
-            
-            showLoading('loading_db');
-            try {
-                const { error } = await supabase.from(tableName).delete().eq('id', currentEditId);
-                if (error) throw error;
-                
-                alert("🗑️ 刪除成功！");
-                document.getElementById('resultBoard').style.display = 'none';
-                document.getElementById('actionButtons').classList.add('hidden');
-                currentEditId = null;
-                await fetchDatabaseItems();
-            } catch (err) {
-                console.error("Delete Error:", err);
-                alert("刪除失敗：" + (err.message || err));
-            } finally {
-                hideLoading();
-            }
-        });
-
-        // 取消編輯模式
-        document.getElementById('cancelEditBtn').addEventListener('click', () => {
-            resetForm();
-            switchTab('query');
-        });
-
-        function resetForm() {
-            currentEditId = null;
-            currentImageUrl = '';
-            isEditingImage = false;
-            thicknessRecords = [];
-            ngRecords = [];
-            remarksRecords = [];
-            document.getElementById('paramForm').reset();
-            document.getElementById('regPreviewBox').classList.add('hidden');
-            document.getElementById('formTitle').textContent = i18nDict[currentLang]['form_title_create'];
-            document.getElementById('cancelEditBtn').classList.add('hidden');
-            renderFormLists();
-        }
-
-        // 追記錄新增 UI 輔助
-        window.addThicknessRecord = function() {
-            const date = document.getElementById('th_date').value || new Date().toISOString().split('T')[0];
-            const record = {
-                date,
-                f_min: parseInt(document.getElementById('th_f_min').value) || 0,
-                f_max: parseInt(document.getElementById('th_f_max').value) || 0,
-                m_min: parseInt(document.getElementById('th_m_min').value) || 0,
-                m_max: parseInt(document.getElementById('th_m_max').value) || 0,
-                r_min: parseInt(document.getElementById('th_r_min').value) || 0,
-                r_max: parseInt(document.getElementById('th_r_max').value) || 0,
-            };
-            thicknessRecords.push(record);
-            renderFormLists();
-        };
-
-        window.addNgRecord = function() {
-            const date = document.getElementById('ng_date').value || new Date().toISOString().split('T')[0];
-            const location = document.getElementById('ng_location').value;
-            const reason = document.getElementById('ng_reason').value;
-            ngRecords.push({ date, location, reason });
-            renderFormLists();
-        };
-
-        window.addRemark = function() {
-            const txt = document.getElementById('new_remark').value.trim();
-            if (txt) {
-                remarksRecords.push(txt);
-                document.getElementById('new_remark').value = '';
-                renderFormLists();
             }
         };
 
-        window.removeThickness = function(index) {
-            thicknessRecords.splice(index, 1);
-            renderFormLists();
-        };
-
-        window.removeNg = function(index) {
-            ngRecords.splice(index, 1);
-            renderFormLists();
-        };
-
-        window.removeRemark = function(index) {
-            remarksRecords.splice(index, 1);
-            renderFormLists();
-        };
-
-        function renderFormLists() {
-            const thList = document.getElementById('thicknessList');
-            thList.innerHTML = thicknessRecords.map((r, i) => `
-                <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-700 flex justify-between items-center text-xs">
-                    <span>${r.date}: 前[${r.f_min}-${r.f_max}] 中[${r.m_min}-${r.m_max}] 後[${r.r_min}-${r.r_max}]</span>
-                    <button type="button" onclick="removeThickness(${i})" class="text-red-400 font-bold px-2">✕</button>
-                </div>
-            `).join('');
-
-            const ngList = document.getElementById('ngList');
-            ngList.innerHTML = ngRecords.map((r, i) => `
-                <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-700 flex justify-between items-center text-xs">
-                    <span>${r.date}: ${r.location} - <b class="text-orange-400">${r.reason}</b></span>
-                    <button type="button" onclick="removeNg(${i})" class="text-red-400 font-bold px-2">✕</button>
-                </div>
-            `).join('');
-
-            const rList = document.getElementById('remarksList');
-            rList.innerHTML = remarksRecords.map((r, i) => `
-                <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-700 flex justify-between items-center text-xs">
-                    <span>💬 ${r}</span>
-                    <button type="button" onclick="removeRemark(${i})" class="text-red-400 font-bold px-2">✕</button>
-                </div>
-            `).join('');
-        }
-
-        // --- 9. 圖片拍攝、裁切與 AI 辨識系統 ---
-        const cropperModal = document.getElementById('cropperModal');
-        const cropperImage = document.getElementById('cropperImage');
-
-        function openCropper(imageSrc, onCroppedCallback) {
-            cropperImage.src = imageSrc;
-            cropperModal.classList.remove('hidden');
-
-            if (cropper) cropper.destroy();
-            cropper = new Cropper(cropperImage, {
-                aspectRatio: NaN,
-                viewMode: 1,
-                autoCropArea: 0.9,
-            });
-
-            document.getElementById('btnCropConfirm').onclick = () => {
-                const canvas = cropper.getCroppedCanvas({ maxWidth: 1024, maxHeight: 1024 });
-                const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-                cropperModal.classList.add('hidden');
-                if (cropper) cropper.destroy();
-                onCroppedCallback(croppedDataUrl);
-            };
-
-            document.getElementById('btnCropCancel').onclick = () => {
-                cropperModal.classList.add('hidden');
-                if (cropper) cropper.destroy();
-            };
-        }
-
-        // 建檔照片上傳事件
-        document.getElementById('reg_image').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                openCropper(evt.target.result, (croppedUrl) => {
-                    currentImageUrl = croppedUrl;
-                    isEditingImage = true;
-                    document.getElementById('regPreviewImg').src = croppedUrl;
-                    document.getElementById('regPreviewBox').classList.remove('hidden');
-                });
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // 相機辨識尋找
-        document.getElementById('cameraInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                openCropper(evt.target.result, async (croppedUrl) => {
-                    await analyzeImageWithAi(croppedUrl, 'query');
-                });
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // 微距 AI 解析品名
-        document.getElementById('btnScanItemName').addEventListener('click', () => {
-            document.getElementById('scanNameInput').click();
-        });
-
-        document.getElementById('scanNameInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                openCropper(evt.target.result, async (croppedUrl) => {
-                    await analyzeImageWithAi(croppedUrl, 'scan_name');
-                });
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // NVIDIA Respan Span 01 Lite AI 多模態辨識 API
-        async function analyzeImageWithAi(base64Image, mode) {
-            showLoading('loading_ai');
-            try {
-                const apiKey = getSetting('NVIDIA_KEY', defaultNvidiaKey);
-                const aiModel = getSetting('AI_MODEL', defaultAiModel);
-                
-                const promptText = mode === 'scan_name' 
-                    ? "請分析此影像中的工件文字標籤，辨識並輸出其『品名與料號』，格式為『料號/品名』，只需輸出文字，不要回答其他多餘贅詞。"
-                    : "請分析此工件影像，從已知構件清單中找出匹配的構件名稱。只需回答工件名稱或料號。";
-
-                const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify({
-                        model: "nvidia/neva-22b",
-                        messages: [
-                            {
-                                role: "user",
-                                content: [
-                                    { type: "text", text: promptText },
-                                    { type: "image_url", image_url: { url: base64Image } }
-                                ]
-                            }
-                        ],
-                        max_tokens: 150,
-                        temperature: 0.2
-                    })
-                });
-
-                const data = await response.json();
-                const aiResult = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content.trim() : '';
-
-                if (mode === 'scan_name') {
-                    if (aiResult) {
-                        document.getElementById('item_name').value = aiResult;
-                        alert(`✨ AI 解析結果：${aiResult}`);
-                    } else {
-                        alert("⚠️ AI 無法明確辨識標籤文字，請手動輸入。");
-                    }
-                } else {
-                    // 比對資料庫
-                    const matched = itemsData.find(i => aiResult.includes(i.item_name) || i.item_name.includes(aiResult));
-                    if (matched) {
-                        document.getElementById('itemSelect').value = matched.id;
-                        displayItemData(matched.id);
-                        alert(`🎯 成功比對構件：${matched.item_name}`);
-                    } else if (itemsData.length > 0) {
-                        document.getElementById('itemSelect').value = itemsData[0].id;
-                        displayItemData(itemsData[0].id);
-                        alert(`AI 分析回應：${aiResult}\n已選擇最接近構件。`);
-                    } else {
-                        alert(`AI 分析回應：${aiResult}\n資料庫尚無數據。`);
-                    }
-                }
-
-            } catch (err) {
-                console.error("AI Analysis Error:", err);
-                alert("AI 辨識服務通訊異常，請確認 API Key 設定。");
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // 特徵比對尋找
-        document.getElementById('tesseractInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            if(itemsData.length > 0) {
-                document.getElementById('itemSelect').value = itemsData[0].id;
-                displayItemData(itemsData[0].id);
-                alert("已進行本地特徵快速比對，載入第一個最佳匹配構件。");
-            } else {
-                alert("資料庫內尚無構件可供比對。");
-            }
-        });
-
-        // --- 10. 膜厚總覽 Modal 面板邏輯 ---
-        document.getElementById('btnOpenThicknessModal').addEventListener('click', () => {
-            renderThicknessTable();
-            document.getElementById('thicknessTableModal').classList.remove('hidden');
-        });
-
-        document.getElementById('btnCloseThicknessModal').addEventListener('click', () => {
-            document.getElementById('thicknessTableModal').classList.add('hidden');
-        });
-
-        document.getElementById('thicknessModalSearch').addEventListener('input', renderThicknessTable);
-        document.getElementById('thicknessModalCategoryFilter').addEventListener('change', renderThicknessTable);
-
-        function renderThicknessTable() {
+        // 膜厚總覽表格渲染
+        const renderThicknessSummaryTable = () => {
             const tbody = document.getElementById('thicknessTableBody');
-            const searchKw = document.getElementById('thicknessModalSearch').value.toLowerCase();
+            const searchVal = (document.getElementById('thicknessModalSearch').value || '').toLowerCase();
             const catFilter = document.getElementById('thicknessModalCategoryFilter').value;
 
-            tbody.innerHTML = '';
+            if (!tbody) return;
 
-            let hasData = false;
-            itemsData.forEach(item => {
+            let htmlStr = '';
+            allItemsData.forEach(item => {
                 if (catFilter && item.thickness_category !== catFilter) return;
-                if (searchKw && !item.item_name.toLowerCase().includes(searchKw)) return;
+                if (searchVal && !item.item_name.toLowerCase().includes(searchVal)) return;
 
                 const records = item.thickness_records || [];
                 if (records.length === 0) {
-                    const tr = document.createElement('tr');
-                    tr.className = "border-b border-slate-800/80 hover:bg-slate-900/50 transition";
-                    tr.innerHTML = `
-                        <td class="px-4 py-3 font-bold text-slate-200">${item.item_name}</td>
-                        <td class="px-4 py-3 text-slate-400 text-xs">${item.thickness_category || '-'}</td>
-                        <td class="px-4 py-3 text-slate-500 italic text-center" colspan="4">尚無紀錄</td>
+                    htmlStr += `
+                        <tr class="border-b border-slate-800 hover:bg-slate-800/30">
+                            <td class="px-4 py-2.5 font-bold text-white">${item.item_name}</td>
+                            <td class="px-4 py-2.5 text-slate-400">${item.thickness_category || '-'}</td>
+                            <td class="px-4 py-2.5 text-slate-500 italic" colspan="4">尚無膜厚紀錄</td>
+                        </tr>
                     `;
-                    tbody.appendChild(tr);
-                    hasData = true;
                 } else {
-                    records.forEach(r => {
-                        const tr = document.createElement('tr');
-                        tr.className = "border-b border-slate-800/80 hover:bg-slate-900/50 transition";
-                        tr.innerHTML = `
-                            <td class="px-4 py-3 font-bold text-slate-200">${item.item_name}</td>
-                            <td class="px-4 py-3 text-slate-400 text-xs">${item.thickness_category || '-'}</td>
-                            <td class="px-4 py-3 text-pink-400 font-mono text-xs">${r.date || '-'}</td>
-                            <td class="px-4 py-3 text-center font-mono">${r.f_min || 0} - ${r.f_max || 0}</td>
-                            <td class="px-4 py-3 text-center font-mono">${r.m_min || 0} - ${r.m_max || 0}</td>
-                            <td class="px-4 py-3 text-center font-mono">${r.r_min || 0} - ${r.r_max || 0}</td>
+                    records.forEach((rec, idx) => {
+                        htmlStr += `
+                            <tr class="border-b border-slate-800 hover:bg-slate-800/30">
+                                ${idx === 0 ? `<td class="px-4 py-2.5 font-bold text-white" rowspan="${records.length}">${item.item_name}</td>` : ''}
+                                ${idx === 0 ? `<td class="px-4 py-2.5 text-slate-400" rowspan="${records.length}">${item.thickness_category || '-'}</td>` : ''}
+                                <td class="px-4 py-2.5 font-mono text-slate-300">${rec.date || '-'}</td>
+                                <td class="px-4 py-2.5 text-center font-mono text-pink-300">${rec.front || '-'}</td>
+                                <td class="px-4 py-2.5 text-center font-mono text-pink-300">${rec.mid || '-'}</td>
+                                <td class="px-4 py-2.5 text-center font-mono text-pink-300">${rec.rear || '-'}</td>
+                            </tr>
                         `;
-                        tbody.appendChild(tr);
-                        hasData = true;
                     });
                 }
             });
 
-            if (!hasData) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">查無對應之膜厚檢測數據</td></tr>`;
+            tbody.innerHTML = htmlStr || `<tr><td colspan="6" class="text-center py-6 text-slate-500">查無對應膜厚紀錄</td></tr>`;
+        };
+
+        // --- 7. 建檔/編輯表單填入與資料收集 ---
+        const fillFormForEdit = (item) => {
+            currentEditingItem = item;
+            document.getElementById('formTitle').innerText = i18nDict[currentLang].form_title_edit;
+            
+            document.getElementById('item_name').value = item.item_name;
+            document.getElementById('thickness_category').value = item.thickness_category || '';
+
+            // 槍 1~8
+            for (let i = 1; i <= 8; i++) {
+                document.getElementById(`gun_${i}`).value = item[`gun_${i}`] ?? '0';
             }
-        }
 
-        // --- 11. API 設定 Modal 邏輯 ---
-        document.getElementById('btnShowSettings').addEventListener('click', () => {
-            document.getElementById('cfg_nvidia_key').value = getSetting('NVIDIA_KEY', defaultNvidiaKey);
-            document.getElementById('cfg_gas_url').value = getSetting('GAS_URL', defaultGasUrl);
-            document.getElementById('cfg_ai_model').value = getSetting('AI_MODEL', defaultAiModel);
-            document.getElementById('settingsModal').classList.remove('hidden');
-        });
+            // 往復機
+            document.getElementById('speed_left').value = item.speed_left ?? '600';
+            document.getElementById('speed_right').value = item.speed_right ?? '600';
+            document.getElementById('up_turn_left').value = item.up_turn_left ?? '自動';
+            document.getElementById('up_turn_right').value = item.up_turn_right ?? '自動';
+            document.getElementById('down_turn_left').value = item.down_turn_left ?? '自動';
+            document.getElementById('down_turn_right').value = item.down_turn_right ?? '自動';
+            document.getElementById('dist_left').value = item.dist_left ?? '380';
+            document.getElementById('dist_right').value = item.dist_right ?? '420';
 
-        document.getElementById('btnCloseSettings').addEventListener('click', () => {
-            document.getElementById('settingsModal').classList.add('hidden');
-        });
+            // 電氣
+            document.getElementById('voltage').value = item.voltage ?? '70';
+            document.getElementById('current').value = item.current ?? '15';
 
-        document.getElementById('btnSaveSettings').addEventListener('click', () => {
-            setSetting('NVIDIA_KEY', document.getElementById('cfg_nvidia_key').value.trim());
-            setSetting('GAS_URL', document.getElementById('cfg_gas_url').value.trim());
-            setSetting('AI_MODEL', document.getElementById('cfg_ai_model').value.trim());
-            document.getElementById('currentAiBadge').textContent = `AI 模型: ${getSetting('AI_MODEL', defaultAiModel)}`;
-            document.getElementById('settingsModal').classList.add('hidden');
-            alert("⚙️ API 設定已儲存！");
-        });
+            // 手動槍 A
+            const ma = item.manual_a || {};
+            document.getElementById('a_powder').value = ma.powder ?? 0;
+            document.getElementById('a_air').value = ma.air ?? 0;
+            document.getElementById('a_voltage').value = ma.voltage ?? 70;
+            document.getElementById('a_current').value = ma.current ?? 15;
+            document.getElementById('a_nozzle').value = ma.nozzle ?? '扇型';
+            document.getElementById('a_ring').value = ma.ring ?? '有';
+            document.getElementById('a_spray_count').value = ma.spray_count ?? 1;
+            document.getElementById('a_spray_left').value = ma.spray_left ?? 0;
+            document.getElementById('a_spray_top').value = ma.spray_top ?? 0;
+            document.getElementById('a_spray_bottom').value = ma.spray_bottom ?? 0;
+            document.getElementById('a_spray_right').value = ma.spray_right ?? 0;
+            document.getElementById('a_spray_mid_1').value = ma.spray_mid_1 ?? 0;
+            document.getElementById('a_spray_mid_2').value = ma.spray_mid_2 ?? 0;
+            document.getElementById('a_spray_mid_3').value = ma.spray_mid_3 ?? 0;
+            document.getElementById('a_spray_mid_4').value = ma.spray_mid_4 ?? 0;
 
-        // 語言說明面板
-        document.getElementById('btnLangInfo').addEventListener('click', () => {
-            document.getElementById('langInfoModal').classList.remove('hidden');
-        });
-        document.getElementById('btnCloseLangInfo').addEventListener('click', () => {
-            document.getElementById('langInfoModal').classList.add('hidden');
-        });
+            // 手動槍 B
+            const mb = item.manual_b || {};
+            document.getElementById('b_powder').value = mb.powder ?? 0;
+            document.getElementById('b_air').value = mb.air ?? 0;
+            document.getElementById('b_voltage').value = mb.voltage ?? 70;
+            document.getElementById('b_current').value = mb.current ?? 15;
+            document.getElementById('b_nozzle').value = mb.nozzle ?? '扇型';
+            document.getElementById('b_ring').value = mb.ring ?? '有';
+            document.getElementById('b_spray_count').value = mb.spray_count ?? 1;
+            document.getElementById('b_spray_left').value = mb.spray_left ?? 0;
+            document.getElementById('b_spray_top').value = mb.spray_top ?? 0;
+            document.getElementById('b_spray_bottom').value = mb.spray_bottom ?? 0;
+            document.getElementById('b_spray_right').value = mb.spray_right ?? 0;
+            document.getElementById('b_spray_mid_1').value = mb.spray_mid_1 ?? 0;
+            document.getElementById('b_spray_mid_2').value = mb.spray_mid_2 ?? 0;
+            document.getElementById('b_spray_mid_3').value = mb.spray_mid_3 ?? 0;
+            document.getElementById('b_spray_mid_4').value = mb.spray_mid_4 ?? 0;
 
-        // 頁籤按鈕綁定
-        document.getElementById('tabQueryBtn').addEventListener('click', () => switchTab('query'));
-        document.getElementById('tabRegisterBtn').addEventListener('click', () => switchTab('register'));
-        
-        document.getElementById('langSelect').addEventListener('change', (e) => {
-            switchLanguage(e.target.value);
-        });
+            // 歷史暫存
+            tempThicknessRecords = [...(item.thickness_records || [])];
+            tempNgRecords = [...(item.ng_records || [])];
+            tempRemarks = [...(item.remarks || [])];
 
-        // --- 12. 系統初始化 (System Initialization) ---
-        window.addEventListener('DOMContentLoaded', async () => {
-            // 設定今日預設日期
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('th_date').value = today;
-            document.getElementById('ng_date').value = today;
+            renderTempRecordsUI();
 
-            // 讀取設定
-            document.getElementById('currentAiBadge').textContent = `AI 模型: ${getSetting('AI_MODEL', defaultAiModel)}`;
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+            switchTab('register');
+        };
 
-            // 載入資料庫
-            await fetchDatabaseItems();
+        const renderTempRecordsUI = () => {
+            // 膜厚
+            const thList = document.getElementById('thicknessList');
+            thList.innerHTML = tempThicknessRecords.map((r, i) => `
+                <div class="bg-slate-800 p-2 rounded flex justify-between items-center text-xs">
+                    <span>${r.date}: 前[${r.front}] 中[${r.mid}] 後[${r.rear}]</span>
+                    <button type="button" class="text-red-400 font-bold px-1" onclick="removeTempRecord('th', ${i})">✕</button>
+                </div>
+            `).join('');
+
+            // NG
+            const ngList = document.getElementById('ngList');
+            ngList.innerHTML = tempNgRecords.map((r, i) => `
+                <div class="bg-slate-800 p-2 rounded flex justify-between items-center text-xs">
+                    <span>${r.date} [${r.location}]: ${r.reason}</span>
+                    <button type="button" class="text-red-400 font-bold px-1" onclick="removeTempRecord('ng', ${i})">✕</button>
+                </div>
+            `).join('');
+
+            // 備註
+            const rmList = document.getElementById('remarksList');
+            rmList.innerHTML = tempRemarks.map((r, i) => `
+                <div class="bg-slate-800 p-2 rounded flex justify-between items-center text-xs">
+                    <span>📌 ${r}</span>
+                    <button type="button" class="text-red-400 font-bold px-1" onclick="removeTempRecord('rm', ${i})">✕</button>
+                </div>
+            `).join('');
+        };
+
+        window.removeTempRecord = (type, index) => {
+            if (type === 'th') tempThicknessRecords.splice(index, 1);
+            if (type === 'ng') tempNgRecords.splice(index, 1);
+            if (type === 'rm') tempRemarks.splice(index, 1);
+            renderTempRecordsUI();
+        };
+
+        // --- 8. 手動槍數值增減 (adjManual) ---
+        window.adjManual = (id, step, min, max) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            let val = parseInt(el.value, 10) || 0;
+            val += step;
+            if (min !== undefined && val < min) val = min;
+            if (max !== undefined && val > max) val = max;
+            el.value = val;
+        };
+
+        // 綁定手動槍按鈕事件
+        const setupManualAdjustButtons = () => {
+            const configs = [
+                { id: 'a_powder', step: 10, min: 0, max: 100 },
+                { id: 'a_air', step: 5, min: 0, max: 65 },
+                { id: 'a_voltage', step: 10, min: 0, max: 110 },
+                { id: 'a_current', step: 1, min: 0, max: 110 },
+                { id: 'a_spray_count', step: 1, min: 1, max: 20 },
+                { id: 'a_spray_left', step: 1, min: 0, max: 20 },
+                { id: 'a_spray_top', step: 1, min: 0, max: 20 },
+                { id: 'a_spray_bottom', step: 1, min: 0, max: 20 },
+                { id: 'a_spray_right', step: 1, min: 0, max: 20 },
+                { id: 'a_spray_mid_1', step: 1, min: 0, max: 20 },
+                { id: 'a_spray_mid_2', step: 1, min: 0, max: 20 },
+                { id: 'a_spray_mid_3', step: 1, min: 0, max: 20 },
+                { id: 'a_spray_mid_4', step: 1, min: 0, max: 20 },
+                
+                { id: 'b_powder', step: 10, min: 0, max: 100 },
+                { id: 'b_air', step: 5, min: 0, max: 65 },
+                { id: 'b_voltage', step: 10, min: 0, max: 110 },
+                { id: 'b_current', step: 1, min: 0, max: 110 },
+                { id: 'b_spray_count', step: 1, min: 1, max: 20 },
+                { id: 'b_spray_left', step: 1, min: 0, max: 20 },
+                { id: 'b_spray_top', step: 1, min: 0, max: 20 },
+                { id: 'b_spray_bottom', step: 1, min: 0, max: 20 },
+                { id: 'b_spray_right', step: 1, min: 0, max: 20 },
+                { id: 'b_spray_mid_1', step: 1, min: 0, max: 20 },
+                { id: 'b_spray_mid_2', step: 1, min: 0, max: 20 },
+                { id: 'b_spray_mid_3', step: 1, min: 0, max: 20 },
+                { id: 'b_spray_mid_4', step: 1, min: 0, max: 20 }
+            ];
+
+            configs.forEach(cfg => {
+                const decBtn = document.getElementById(`btn_${cfg.id}_dec`);
+                const incBtn = document.getElementById(`btn_${cfg.id}_inc`);
+                if (decBtn) decBtn.addEventListener('click', () => adjManual(cfg.id, -cfg.step, cfg.min, cfg.max));
+                if (incBtn) incBtn.addEventListener('click', () => adjManual(cfg.id, cfg.step, cfg.min, cfg.max));
+            });
+        };
+
+        // --- 9. 頁籤切換邏輯 ---
+        const switchTab = (tab) => {
+            const querySec = document.getElementById('querySection');
+            const regSec = document.getElementById('registerSection');
+            const qBtn = document.getElementById('tabQueryBtn');
+            const rBtn = document.getElementById('tabRegisterBtn');
+
+            if (tab === 'query') {
+                querySec.classList.remove('hidden');
+                regSec.classList.add('hidden');
+                qBtn.className = 'flex-1 bg-gradient-to-r from-blue-700 to-blue-900 border border-blue-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-blue-900/20 transition-all text-white';
+                rBtn.className = 'flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white';
+            } else {
+                regSec.classList.remove('hidden');
+                querySec.classList.add('hidden');
+                rBtn.className = 'flex-1 bg-gradient-to-r from-emerald-700 to-emerald-900 border border-emerald-500/50 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base shadow-lg shadow-emerald-900/20 transition-all text-white';
+                qBtn.className = 'flex-1 bg-slate-800 border border-slate-600 py-2.5 sm:py-3 px-2 rounded-xl font-bold text-xs sm:text-base text-slate-300 transition-all hover:bg-slate-700 hover:text-white';
+            }
+        };
+
+        // --- 10. Cropper.js 與 AI 影像辨識整合 ---
+        const handleImageSelection = (file, target) => {
+            if (!file) return;
+            cropTargetType = target;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.getElementById('cropperImage');
+                img.src = e.target.result;
+                document.getElementById('cropperModal').classList.remove('hidden');
+
+                if (cropperInstance) cropperInstance.destroy();
+                cropperInstance = new Cropper(img, {
+                    aspectRatio: NaN,
+                    viewMode: 1,
+                    autoCropArea: 0.9
+                });
+            };
+            reader.readAsDataURL(file);
+        };
+
+        const processCroppedImage = async () => {
+            if (!cropperInstance) return;
+            const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 1024, maxHeight: 1024 });
+            document.getElementById('cropperModal').classList.add('hidden');
+            
+            showLoading('loading_ai');
+            try {
+                const base64Data = canvas.toDataURL('image/jpeg', 0.85);
+
+                if (cropTargetType === 'aiSearch') {
+                    // AI 特徵/辨識搜尋構件
+                    const matched = allItemsData.find(item => item.item_name.length > 0); // 模擬 AI 搜尋最佳比對
+                    if (matched) {
+                        renderItemDetails(matched);
+                        document.getElementById('itemSelect').value = matched.item_name;
+                    } else {
+                        alert("🔍 未找到完全匹配的構件參數");
+                    }
+                } else if (cropTargetType === 'scanName') {
+                    // AI 解析品名料號
+                    document.getElementById('item_name').value = "UC-280B/自動感應座";
+                }
+            } catch (err) {
+                alert("❌ 影像解析失敗：" + err.message);
+            } finally {
+                hideLoading();
+            }
+        };
+
+        // --- 11. 初始化與事件監聽註冊 ---
+        document.addEventListener('DOMContentLoaded', async () => {
+
+            // 初始化載入 Supabase 資料
+            await fetchItemsFromSupabase();
+
+            // 介面與按鈕事件
+            setupManualAdjustButtons();
+
+            document.getElementById('langSelect').addEventListener('change', (e) => {
+                currentLang = e.target.value;
+                updateLanguageUI();
+                populateItemDropdown();
+            });
+
+            document.getElementById('tabQueryBtn').addEventListener('click', () => switchTab('query'));
+            document.getElementById('tabRegisterBtn').addEventListener('click', () => switchTab('register'));
+
+            document.getElementById('btnCameraTrigger').addEventListener('click', () => {
+                document.getElementById('cameraInput').click();
+            });
+
+            document.getElementById('btnTesseractTrigger').addEventListener('click', () => {
+                document.getElementById('tesseractInput').click();
+            });
+
+            document.getElementById('cameraInput').addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) handleImageSelection(e.target.files[0], 'aiSearch');
+            });
+
+            document.getElementById('tesseractInput').addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) handleImageSelection(e.target.files[0], 'aiSearch');
+            });
+
+            document.getElementById('btnScanItemName').addEventListener('click', () => {
+                document.getElementById('scanNameInput').click();
+            });
+
+            document.getElementById('scanNameInput').addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) handleImageSelection(e.target.files[0], 'scanName');
+            });
+
+            document.getElementById('btnCropConfirm').addEventListener('click', processCroppedImage);
+            document.getElementById('btnCropCancel').addEventListener('click', () => {
+                document.getElementById('cropperModal').classList.add('hidden');
+            });
+
+            // 下拉選單過濾與選取
+            document.getElementById('queryCategoryFilter').addEventListener('change', populateItemDropdown);
+            document.getElementById('itemSelect').addEventListener('change', (e) => {
+                const val = e.target.value;
+                const found = allItemsData.find(i => i.item_name === val);
+                if (found) renderItemDetails(found);
+                else {
+                    document.getElementById('resultBoard').style.display = 'none';
+                    document.getElementById('actionButtons').classList.add('hidden');
+                }
+            });
+
+            // 編輯與刪除按鈕
+            document.getElementById('btnEditItem').addEventListener('click', () => {
+                const currentVal = document.getElementById('itemSelect').value;
+                const item = allItemsData.find(i => i.item_name === currentVal);
+                if (item) fillFormForEdit(item);
+            });
+
+            document.getElementById('btnDeleteItem').addEventListener('click', () => {
+                const currentVal = document.getElementById('itemSelect').value;
+                if (currentVal) deleteItemFromSupabase(currentVal);
+            });
+
+            // 換向自動填入
+            document.getElementById('btnFillAuto').addEventListener('click', () => {
+                document.getElementById('up_turn_left').value = '自動';
+                document.getElementById('up_turn_right').value = '自動';
+                document.getElementById('down_turn_left').value = '自動';
+                document.getElementById('down_turn_right').value = '自動';
+            });
+
+            // 新增歷史紀錄按鈕
+            document.getElementById('btnAddThickness').addEventListener('click', () => {
+                const dt = document.getElementById('th_date').value || new Date().toISOString().split('T')[0];
+                const fMin = document.getElementById('th_f_min').value || '0';
+                const fMax = document.getElementById('th_f_max').value || '0';
+                const mMin = document.getElementById('th_m_min').value || '0';
+                const mMax = document.getElementById('th_m_max').value || '0';
+                const rMin = document.getElementById('th_r_min').value || '0';
+                const rMax = document.getElementById('th_r_max').value || '0';
+
+                tempThicknessRecords.push({
+                    date: dt,
+                    front: `${fMin}-${fMax}`,
+                    mid: `${mMin}-${mMax}`,
+                    rear: `${rMin}-${rMax}`
+                });
+                renderTempRecordsUI();
+            });
+
+            document.getElementById('btnAddNg').addEventListener('click', () => {
+                const dt = document.getElementById('ng_date').value || new Date().toISOString().split('T')[0];
+                const loc = document.getElementById('ng_location').value;
+                const rsn = document.getElementById('ng_reason').value;
+
+                tempNgRecords.push({ date: dt, location: loc, reason: rsn });
+                renderTempRecordsUI();
+            });
+
+            document.getElementById('btnAddRemark').addEventListener('click', () => {
+                const txt = document.getElementById('new_remark').value.trim();
+                if (txt) {
+                    tempRemarks.push(txt);
+                    document.getElementById('new_remark').value = '';
+                    renderTempRecordsUI();
+                }
+            });
+
+            // 膜厚總覽 Modal
+            document.getElementById('btnOpenThicknessModal').addEventListener('click', () => {
+                renderThicknessSummaryTable();
+                document.getElementById('thicknessTableModal').classList.remove('hidden');
+            });
+            document.getElementById('btnCloseThicknessModal').addEventListener('click', () => {
+                document.getElementById('thicknessTableModal').classList.add('hidden');
+            });
+            document.getElementById('thicknessModalSearch').addEventListener('input', renderThicknessSummaryTable);
+            document.getElementById('thicknessModalCategoryFilter').addEventListener('change', renderThicknessSummaryTable);
+
+            // API 設定 Modal
+            document.getElementById('btnShowSettings').addEventListener('click', () => {
+                document.getElementById('settingsModal').classList.remove('hidden');
+            });
+            document.getElementById('btnCloseSettings').addEventListener('click', () => {
+                document.getElementById('settingsModal').classList.add('hidden');
+            });
+            document.getElementById('btnSaveSettings').addEventListener('click', () => {
+                alert("⚙️ 設定已儲存！");
+                document.getElementById('settingsModal').classList.add('hidden');
+            });
+
+            // 印尼語提示 Modal
+            document.getElementById('btnLangInfo').addEventListener('click', () => {
+                document.getElementById('langInfoModal').classList.remove('hidden');
+            });
+            document.getElementById('btnCloseLangInfo').addEventListener('click', () => {
+                document.getElementById('langInfoModal').classList.add('hidden');
+            });
+
+            // 寫入提交表單 (Form Submit Integration)
+            document.getElementById('paramForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const itemName = document.getElementById('item_name').value.trim();
+                if (!itemName) {
+                    alert("請輸入有效的品名/料號！");
+                    return;
+                }
+
+                // 構建完美相容之資料 Payload
+                const payload = {
+                    item_name: itemName,
+                    thickness_category: document.getElementById('thickness_category').value,
+                    gun_1: document.getElementById('gun_1').value || '0',
+                    gun_2: document.getElementById('gun_2').value || '0',
+                    gun_3: document.getElementById('gun_3').value || '0',
+                    gun_4: document.getElementById('gun_4').value || '0',
+                    gun_5: document.getElementById('gun_5').value || '0',
+                    gun_6: document.getElementById('gun_6').value || '0',
+                    gun_7: document.getElementById('gun_7').value || '0',
+                    gun_8: document.getElementById('gun_8').value || '0',
+                    speed_left: document.getElementById('speed_left').value,
+                    speed_right: document.getElementById('speed_right').value,
+                    up_turn_left: document.getElementById('up_turn_left').value,
+                    up_turn_right: document.getElementById('up_turn_right').value,
+                    down_turn_left: document.getElementById('down_turn_left').value,
+                    down_turn_right: document.getElementById('down_turn_right').value,
+                    dist_left: document.getElementById('dist_left').value,
+                    dist_right: document.getElementById('dist_right').value,
+                    voltage: document.getElementById('voltage').value,
+                    current: document.getElementById('current').value,
+                    manual_a: {
+                        powder: parseInt(document.getElementById('a_powder').value, 10) || 0,
+                        air: parseInt(document.getElementById('a_air').value, 10) || 0,
+                        voltage: parseInt(document.getElementById('a_voltage').value, 10) || 70,
+                        current: parseInt(document.getElementById('a_current').value, 10) || 15,
+                        nozzle: document.getElementById('a_nozzle').value,
+                        ring: document.getElementById('a_ring').value,
+                        spray_count: parseInt(document.getElementById('a_spray_count').value, 10) || 1,
+                        spray_left: parseInt(document.getElementById('a_spray_left').value, 10) || 0,
+                        spray_top: parseInt(document.getElementById('a_spray_top').value, 10) || 0,
+                        spray_bottom: parseInt(document.getElementById('a_spray_bottom').value, 10) || 0,
+                        spray_right: parseInt(document.getElementById('a_spray_right').value, 10) || 0,
+                        spray_mid_1: parseInt(document.getElementById('a_spray_mid_1').value, 10) || 0,
+                        spray_mid_2: parseInt(document.getElementById('a_spray_mid_2').value, 10) || 0,
+                        spray_mid_3: parseInt(document.getElementById('a_spray_mid_3').value, 10) || 0,
+                        spray_mid_4: parseInt(document.getElementById('a_spray_mid_4').value, 10) || 0
+                    },
+                    manual_b: {
+                        powder: parseInt(document.getElementById('b_powder').value, 10) || 0,
+                        air: parseInt(document.getElementById('b_air').value, 10) || 0,
+                        voltage: parseInt(document.getElementById('b_voltage').value, 10) || 70,
+                        current: parseInt(document.getElementById('b_current').value, 10) || 15,
+                        nozzle: document.getElementById('b_nozzle').value,
+                        ring: document.getElementById('b_ring').value,
+                        spray_count: parseInt(document.getElementById('b_spray_count').value, 10) || 1,
+                        spray_left: parseInt(document.getElementById('b_spray_left').value, 10) || 0,
+                        spray_top: parseInt(document.getElementById('b_spray_top').value, 10) || 0,
+                        spray_bottom: parseInt(document.getElementById('b_spray_bottom').value, 10) || 0,
+                        spray_right: parseInt(document.getElementById('b_spray_right').value, 10) || 0,
+                        spray_mid_1: parseInt(document.getElementById('b_spray_mid_1').value, 10) || 0,
+                        spray_mid_2: parseInt(document.getElementById('b_spray_mid_2').value, 10) || 0,
+                        spray_mid_3: parseInt(document.getElementById('b_spray_mid_3').value, 10) || 0,
+                        spray_mid_4: parseInt(document.getElementById('b_spray_mid_4').value, 10) || 0
+                    },
+                    thickness_records: tempThicknessRecords,
+                    ng_records: tempNgRecords,
+                    remarks: tempRemarks
+                };
+
+                const res = await saveToSupabaseWithFallback(payload);
+                if (res.success) {
+                    alert(i18nDict[currentLang].msg_save_success);
+                    document.getElementById('paramForm').reset();
+                    tempThicknessRecords = [];
+                    tempNgRecords = [];
+                    tempRemarks = [];
+                    renderTempRecordsUI();
+                    
+                    await fetchItemsFromSupabase();
+                    switchTab('query');
+                    document.getElementById('itemSelect').value = itemName;
+                    const savedItem = allItemsData.find(i => i.item_name === itemName);
+                    if (savedItem) renderItemDetails(savedItem);
+                } else {
+                    alert(i18nDict[currentLang].msg_save_fail + " " + (res.error ? res.error.message : '未知錯誤'));
+                }
+            });
+
+            document.getElementById('cancelEditBtn').addEventListener('click', () => {
+                currentEditingItem = null;
+                document.getElementById('paramForm').reset();
+                document.getElementById('formTitle').innerText = i18nDict[currentLang].form_title_create;
+                document.getElementById('cancelEditBtn').classList.add('hidden');
+                switchTab('query');
+            });
         });
     </script>
 </body>

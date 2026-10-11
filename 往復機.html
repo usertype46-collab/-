@@ -4,7 +4,7 @@
     <!-- ========================================================================================== -->
     <!-- 百富粉體塗裝自動槍參數系統 / Sistem Parameter Pelapisan Serbuk Baifu                        -->
     <!-- Architecture: Pure Frontend AI Architecture (Respan Span 01 Lite Enabled)                  -->
-    <!-- 完美修復版本：精準匹配 coating_params 48欄位 Schema 與資料型態，徹底排除不支援欄位        -->
+    <!-- 完美修復版本：精準匹配 coating_params Schema 欄位與資料型態，徹底排除不支援欄位              -->
     <!-- ========================================================================================== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -20,7 +20,7 @@
     <style>
         /* ====================================================================================== */
         /* 自定義樣式與動畫設定                                                                   */
-        /* ====================================================================================== */
+        /* ====================================================================================== -->
         body { background-color: #0f172a; }
         .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -652,7 +652,7 @@
         const tableName = 'coating_params';
 
         // SVG 防破圖備援占位圖 (Base64)
-        const SVG_PLACEHOLDER = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDc1NTY5IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiByeD0iMiIgcnk9IjIiPjwvcmVjdD48Y2lyY2xlIGN4PSI4LjUiIGN5PSI4LjUiIHI9IjEuNSI+PC9jaXJjbGU+PHBvbHlsaW5lIHBvaW50cz0iMjEgMTUgMTYgMTAgNSAyMSI+PC9wb2x5bGluZT48L3N2Zz4=";
+        const SVG_PLACEHOLDER = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDc1setIntYiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiByeD0iMiIgcnk9IjIiPjwvcmVjdD48Y2lyY2xlIGN4PSI4LjUiIGN5PSI4LjUiIHI9IjEuNSI+PC9jaXJjbGU+PHBvbHlsaW5lIHBvaW50cz0iMjEgMTUgMTYgMTAgNSAyMSI+PC9wb2x5bGluZT48L3N2Zz4=";
 
         // 全局狀態
         let allParamsData = [];
@@ -1219,7 +1219,7 @@
             try {
                 let payload = JSON.parse(JSON.stringify(rawPayload));
 
-                // 嚴格確立 coating_params 的合法 Schema 欄位白名單（絕對排除非法的 'guns' 屬性）
+                // 嚴格確立 coating_params 的合法 Schema 欄位白名單（絕對排除 'guns'）
                 const ALLOWED_COLUMNS = new Set([
                     'id', 'item_name',
                     'gun_1', 'gun_2', 'gun_3', 'gun_4', 'gun_5', 'gun_6', 'gun_7', 'gun_8',

@@ -20,7 +20,7 @@
     <style>
         /* ====================================================================================== */
         /* 自定義樣式與動畫設定                                                                   */
-        /* ====================================================================================== */
+        /* ====================================================================================== -->
         body { background-color: #0f172a; }
         .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -146,12 +146,13 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                     <!-- 左側：圖片與自動槍粉量數據 -->
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-blue-500 flex flex-col">
-                        <h3 class="font-bold mb-3 sm:mb-4 text-emerald-300 flex items-center gap-2 text-sm sm:text-base"><span class="text-lg sm:text-xl">🖼️</span> 構件照片</h3>
+                        <h3 class="font-bold mb-3 sm:mb-4 text-emerald-300 flex items-center gap-2 text-sm sm:text-base"><span class="text-lg sm:text-xl">🖼️</span> 構件照片 (點擊放大預覽)</h3>
                         
-                        <div id="imageContainer" class="mb-4 bg-black/50 p-2 rounded-xl text-center border border-slate-700 hidden shadow-inner relative group">
+                        <!-- 圖片容器 (點擊直接開啟燈箱 Modal 預覽原圖) -->
+                        <div id="imageContainer" class="mb-4 bg-black/50 p-2 rounded-xl text-center border border-slate-700 hidden shadow-inner relative group cursor-pointer">
                             <img id="q_matched_image" src="" class="mx-auto rounded-lg h-36 sm:h-48 w-full object-contain">
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                                <a id="q_matched_image_link" href="#" target="_blank" class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">查看原圖</a>
+                                <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">🔍 點擊放大原始圖片</span>
                             </div>
                         </div>
 
@@ -703,6 +704,19 @@
         </div>
     </div>
 
+    <!-- 圖片燈箱放大預覽 Modal 面板 (Lightbox) -->
+    <div id="imageLightboxModal" class="fixed inset-0 bg-slate-950/95 flex items-center justify-center hidden z-[150] p-4 backdrop-blur-md">
+        <div class="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center justify-center">
+            <button id="btnCloseLightbox" class="absolute top-2 right-2 bg-slate-800/80 hover:bg-red-600 text-white w-10 h-10 rounded-full font-bold text-xl flex items-center justify-center border border-slate-700 shadow-lg transition z-10">&times;</button>
+            <div class="bg-slate-900/90 p-3 rounded-2xl border border-slate-700 shadow-2xl max-h-[85vh] overflow-hidden flex items-center justify-center">
+                <img id="lightboxImg" src="" class="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl">
+            </div>
+            <div class="mt-3 text-cyan-400 font-bold text-sm bg-slate-900 px-4 py-2 rounded-xl border border-slate-700 shadow-inner">
+                🔍 構件原始高畫質照片預覽
+            </div>
+        </div>
+    </div>
+
     <!-- 膜厚總覽 Modal 面板 -->
     <div id="thicknessTableModal" class="fixed inset-0 bg-slate-900/95 flex items-center justify-center hidden z-50 p-3 sm:p-4 backdrop-blur-sm">
         <div class="glass-panel p-4 sm:p-6 rounded-2xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-pink-500/30">
@@ -796,7 +810,7 @@
     </div>
 
     <!-- ========================================================================================== -->
-    <!-- 核心 JavaScript 邏輯 (包含 Supabase Schema 欄位完美相容與防護修剪儲存機制)                  -->
+    <!-- 核心 JavaScript 邏輯 (包含 Supabase 48 欄位白名單與自動防護修剪儲存機制)                  -->
     <!-- ========================================================================================== -->
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -1123,12 +1137,10 @@
             url = url.trim();
             if (!url) return '';
             
-            // 如果已經是 Data URI 或 Googleusercontent 直連網址則直接返回
             if (url.startsWith('data:') || url.includes('lh3.googleusercontent.com')) {
                 return url;
             }
 
-            // 支援多種 Google Drive 網址格式轉成直連預覽格式
             const driveMatch1 = url.match(/drive\.google\.com\/file\/d\/([^\/]+)/);
             if (driveMatch1 && driveMatch1[1]) {
                 return `https://lh3.googleusercontent.com/d/${driveMatch1[1]}`;
@@ -1156,12 +1168,11 @@
 
         /**
          * 雙重 Schema 自動相容解析器 (Normalize Data)
-         * 完美相容並自動對應 Supabase coating_params 的各項歷史紀錄欄位
+         * 完美相容並自動對應 Supabase coating_params 的各項歷史紀錄欄位，徹底修復膜厚讀取異常
          */
         function normalizeItemData(raw) {
             if (!raw) return null;
 
-            // 1. 自動槍粉量 guns 處理 (槍1 ~ 槍8 展平欄位)
             const gunsArr = [
                 raw.gun_1 ?? '0',
                 raw.gun_2 ?? '0',
@@ -1173,7 +1184,6 @@
                 raw.gun_8 ?? '0'
             ];
 
-            // 2. 區塊 A 手動槍參數處理
             const parsedA = safeParseJSON(raw.manual_gun_a) || safeParseJSON(raw.manual_a) || {};
             const manualA = {
                 powder: parsedA.powder ?? raw.manual_a_powder ?? 0,
@@ -1193,7 +1203,6 @@
                 spray_mid_4: parsedA.spray_mid_4 ?? 0
             };
 
-            // 3. 區塊 B 手動槍參數處理
             const parsedB = safeParseJSON(raw.manual_gun_b) || safeParseJSON(raw.manual_b) || {};
             const manualB = {
                 powder: parsedB.powder ?? raw.manual_b_powder ?? 0,
@@ -1213,7 +1222,6 @@
                 spray_mid_4: parsedB.spray_mid_4 ?? 0
             };
 
-            // 4. 往復機運行參數
             const formatTurn = (val) => {
                 if (val === 0 || val === '0' || val === '自動' || !val) return '自動';
                 return String(val);
@@ -1230,7 +1238,7 @@
                 dist_right: String(raw.dist_right ?? '420')
             };
 
-            // 5. 膜厚歷史紀錄（修復點：多重鍵名防禦，確保成功讀取陣列資料）
+            // 強化膜厚歷史紀錄欄位多重防禦解析
             let rawTh = raw.thickness_history || raw.film_thickness_records || raw.thickness_records || raw.history_thickness || [];
             if (typeof rawTh === 'string') {
                 try { rawTh = JSON.parse(rawTh); } catch(e) { rawTh = []; }
@@ -1250,21 +1258,18 @@
                 };
             }).filter(Boolean);
 
-            // 6. NG 歷史紀錄
             let rawNg = raw.ng_records || raw.ng_history || raw.history_ng || [];
             if (typeof rawNg === 'string') {
                 try { rawNg = JSON.parse(rawNg); } catch(e) { rawNg = []; }
             }
             if (!Array.isArray(rawNg)) rawNg = [];
 
-            // 7. 備註紀錄
             let rawRemarks = raw.remarks || raw.remarks_list || raw.dynamic_remarks || [];
             if (typeof rawRemarks === 'string') {
                 try { rawRemarks = JSON.parse(rawRemarks); } catch(e) { rawRemarks = [rawRemarks]; }
             }
             if (!Array.isArray(rawRemarks)) rawRemarks = [];
 
-            // 8. 膜厚類別復原
             let catName = raw.thickness_category || raw.category || (parsedA && parsedA.thickness_category) || '';
             if (!catName && raw.remark_1 && raw.remark_1.includes('膜厚類別:')) {
                 catName = raw.remark_1.replace('膜厚類別:', '').trim();
@@ -1381,7 +1386,7 @@
         }
 
         /**
-         * 寫入 Supabase (完美修復：白名單預先清理與自動防護機制)
+         * 寫入 Supabase (完美修復：白名單預先清理與自動防護機制，確保所有膜厚欄位同步寫入)
          */
         async function saveToSupabase(rawPayload) {
             showLoading(true, "資料庫儲存中...");
@@ -1508,12 +1513,16 @@
 
             const imgBox = document.getElementById('imageContainer');
             const imgEl = document.getElementById('q_matched_image');
-            const imgLink = document.getElementById('q_matched_image_link');
             if (item.image_url) {
                 imgEl.src = item.image_url;
                 imgEl.onerror = () => { imgEl.src = SVG_PLACEHOLDER; };
-                imgLink.href = item.image_url;
                 imgBox.classList.remove('hidden');
+
+                // 綁定點擊燈箱放大預覽事件
+                imgBox.onclick = () => {
+                    document.getElementById('lightboxImg').src = item.image_url;
+                    document.getElementById('imageLightboxModal').classList.remove('hidden');
+                };
             } else {
                 imgBox.classList.add('hidden');
             }
@@ -1597,7 +1606,7 @@
 
                 if (matchesSearch && matchesCat) {
                     const imgThumb = item.image_url
-                        ? `<img src="${item.image_url}" class="w-12 h-12 object-cover rounded-lg border border-slate-700 mx-auto shadow-sm hover:scale-110 transition-transform cursor-pointer" onclick="window.open('${item.image_url}', '_blank')" onerror="this.onerror=null; this.src='${SVG_PLACEHOLDER}';">`
+                        ? `<img src="${item.image_url}" class="w-12 h-12 object-cover rounded-lg border border-slate-700 mx-auto shadow-sm hover:scale-110 transition-transform cursor-pointer" onclick="openLightboxModal('${item.image_url}')" onerror="this.onerror=null; this.src='${SVG_PLACEHOLDER}';">`
                         : `<img src="${SVG_PLACEHOLDER}" class="w-12 h-12 object-cover rounded-lg border border-slate-700 mx-auto opacity-50">`;
 
                     const historyArr = item.thickness_history || [];
@@ -1637,6 +1646,11 @@
                 tableBody.innerHTML = html;
             }
         }
+
+        window.openLightboxModal = function(url) {
+            document.getElementById('lightboxImg').src = url;
+            document.getElementById('imageLightboxModal').classList.remove('hidden');
+        };
 
         // --- 7. 表單微調與動態資料維護 ---
 
@@ -1876,6 +1890,15 @@
                 }
             });
 
+            document.getElementById('btnCloseLightbox').addEventListener('click', () => {
+                document.getElementById('imageLightboxModal').classList.add('hidden');
+            });
+            document.getElementById('imageLightboxModal').addEventListener('click', (e) => {
+                if (e.target.id === 'imageLightboxModal') {
+                    document.getElementById('imageLightboxModal').classList.add('hidden');
+                }
+            });
+
             document.getElementById('btnAddThickness').addEventListener('click', () => {
                 const date = document.getElementById('th_date').value;
                 const f_min = document.getElementById('th_f_min').value;
@@ -1920,7 +1943,7 @@
                 }
             });
 
-            // 表單提交
+            // 表單提交 (同步寫入所有對應的膜厚與備註欄位，杜絕讀取異常)
             document.getElementById('paramForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
 

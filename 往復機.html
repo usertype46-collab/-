@@ -4,7 +4,7 @@
     <!-- ========================================================================================== -->
     <!-- 百富粉體塗裝自動槍參數系統 / Sistem Parameter Pelapisan Serbuk Baifu                        -->
     <!-- Architecture: Pure Frontend AI Architecture (Respan Span 01 Lite Enabled)                  -->
-    <!-- 完美修復版本：精準匹配 coating_params Schema 欄位與資料型態，徹底排除不支援欄位              -->
+    <!-- 完美修復版本：資料表自動相容、Google Drive 圖片高相容解析、全欄位膜厚紀錄無縫讀取              -->
     <!-- ========================================================================================== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -796,7 +796,7 @@
     </div>
 
     <!-- ========================================================================================== -->
-    <!-- 核心 JavaScript 邏輯 (包含 Supabase 48 欄位白名單與自動防護修剪儲存機制)                  -->
+    <!-- 核心 JavaScript 邏輯 (包含 Supabase 資料表自動偵測、Google Drive 圖片修復與全相容解析)      -->
     <!-- ========================================================================================== -->
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -809,7 +809,9 @@
         const defaultNvidiaKey = "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";
         const defaultGasUrl = "https://script.google.com/macros/s/AKfycbwLoLqBnLm3-rwYBFJUd88j5ug-IW4SVdmg1AMr-1lZGzMYQ2iASoShRsi6CJZGxddp/exec";
         const defaultAiModel = "Respan Span 01 Lite";
-        const tableName = 'coating_params'; // 嚴格統一表格名稱
+        
+        // 預設資料表名稱（系統將自動偵測 coating_params 或 powder_params）
+        let activeTableName = 'coating_params';
 
         // SVG 防破圖備援占位圖 (Base64)
         const SVG_PLACEHOLDER = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDc1NTY5IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiByeD0iMiIgcnk9IjIiPjwvcmVjdD48Y2lyY2xlIGN4PSI4LjUiIGN5PSI4LjUiIHI9IjEuNSI+PC9jaXJjbGU+PHBvbHlsaW5lIHBvaW50cz0iMjEgMTUgMTYgMTAgNSAyMSI+PC9wb2x5bGluZT48L3N2Zz4=";
@@ -1116,30 +1118,34 @@
             }
         };
 
-        // --- 3. 核心工具與 Google Drive / Supabase 資料結構轉換機制 ---
+        // --- 3. 核心工具與 Google Drive / Supabase 圖片與資料解析機制 ---
 
+        /**
+         * 強化版 Google Drive 圖片網址解析器 (解決圖片讀取失敗問題)
+         */
         function fixImageUrl(url) {
             if (!url || typeof url !== 'string') return '';
             url = url.trim();
             if (!url) return '';
-            
-            // 如果已經是 Data URI 或 Googleusercontent 直連網址則直接返回
-            if (url.startsWith('data:') || url.includes('lh3.googleusercontent.com')) {
-                return url;
+            if (url.startsWith('data:image/')) return url;
+
+            let fileId = '';
+            // 匹配 /file/d/FILE_ID
+            const matchD = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (matchD && matchD[1]) {
+                fileId = matchD[1];
+            } else {
+                // 匹配 ?id=FILE_ID 或 &id=FILE_ID
+                const matchId = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                if (matchId && matchId[1]) {
+                    fileId = matchId[1];
+                } else if (/^[a-zA-Z0-9_-]{25,}$/.test(url)) {
+                    fileId = url; // 若直接存成 Google Drive File ID
+                }
             }
 
-            // 支援多種 Google Drive 網址格式轉成直連預覽格式
-            const driveMatch1 = url.match(/drive\.google\.com\/file\/d\/([^\/]+)/);
-            if (driveMatch1 && driveMatch1[1]) {
-                return `https://lh3.googleusercontent.com/d/${driveMatch1[1]}`;
-            }
-            const driveMatch2 = url.match(/drive\.google\.com\/(?:open|uc)\?(?:.*&)?id=([^&]+)/);
-            if (driveMatch2 && driveMatch2[1]) {
-                return `https://lh3.googleusercontent.com/d/${driveMatch2[1]}`;
-            }
-            const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            if (idMatch && idMatch[1]) {
-                return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+            if (fileId) {
+                return `https://lh3.googleusercontent.com/d/${fileId}`;
             }
             return url;
         }
@@ -1155,25 +1161,26 @@
         }
 
         /**
-         * 雙重 Schema 自動相容解析器 (Normalize Data)
-         * 完美相容並自動對應 Supabase coating_params 的各項歷史紀錄欄位
+         * 雙重 Schema 與多變體欄位自動相容解析器 (Normalize Data)
+         * 完美相容 coating_params 與 powder_params 兩種資料表結構
          */
         function normalizeItemData(raw) {
             if (!raw) return null;
 
-            // 1. 自動槍粉量 guns 處理 (槍1 ~ 槍8 展平欄位)
+            // 1. 自動槍粉量 guns 處理 (槍1 ~ 槍8 或 auto_guns JSONB)
+            const autoGunsObj = safeParseJSON(raw.auto_guns) || {};
             const gunsArr = [
-                raw.gun_1 ?? '0',
-                raw.gun_2 ?? '0',
-                raw.gun_3 ?? '0',
-                raw.gun_4 ?? '0',
-                raw.gun_5 ?? '0',
-                raw.gun_6 ?? '0',
-                raw.gun_7 ?? '0',
-                raw.gun_8 ?? '0'
+                raw.gun_1 ?? autoGunsObj.gun_1 ?? autoGunsObj[0] ?? '0',
+                raw.gun_2 ?? autoGunsObj.gun_2 ?? autoGunsObj[1] ?? '0',
+                raw.gun_3 ?? autoGunsObj.gun_3 ?? autoGunsObj[2] ?? '0',
+                raw.gun_4 ?? autoGunsObj.gun_4 ?? autoGunsObj[3] ?? '0',
+                raw.gun_5 ?? autoGunsObj.gun_5 ?? autoGunsObj[4] ?? '0',
+                raw.gun_6 ?? autoGunsObj.gun_6 ?? autoGunsObj[5] ?? '0',
+                raw.gun_7 ?? autoGunsObj.gun_7 ?? autoGunsObj[6] ?? '0',
+                raw.gun_8 ?? autoGunsObj.gun_8 ?? autoGunsObj[7] ?? '0'
             ];
 
-            // 2. 區塊 A 手動槍參數處理
+            // 2. 手動槍 A 面參數處理
             const parsedA = safeParseJSON(raw.manual_gun_a) || safeParseJSON(raw.manual_a) || {};
             const manualA = {
                 powder: parsedA.powder ?? raw.manual_a_powder ?? 0,
@@ -1193,7 +1200,7 @@
                 spray_mid_4: parsedA.spray_mid_4 ?? 0
             };
 
-            // 3. 區塊 B 手動槍參數處理
+            // 3. 手動槍 B 面參數處理
             const parsedB = safeParseJSON(raw.manual_gun_b) || safeParseJSON(raw.manual_b) || {};
             const manualB = {
                 powder: parsedB.powder ?? raw.manual_b_powder ?? 0,
@@ -1214,24 +1221,25 @@
             };
 
             // 4. 往復機運行參數
+            const recipObj = safeParseJSON(raw.reciprocator) || {};
             const formatTurn = (val) => {
                 if (val === 0 || val === '0' || val === '自動' || !val) return '自動';
                 return String(val);
             };
 
             const reciprocator = {
-                speed_left: String(raw.speed_left ?? '600'),
-                speed_right: String(raw.speed_right ?? '600'),
-                up_turn_left: formatTurn(raw.up_turn_left),
-                up_turn_right: formatTurn(raw.up_turn_right),
-                down_turn_left: formatTurn(raw.down_turn_left),
-                down_turn_right: formatTurn(raw.down_turn_right),
-                dist_left: String(raw.dist_left ?? '380'),
-                dist_right: String(raw.dist_right ?? '420')
+                speed_left: String(raw.speed_left ?? recipObj.speed_left ?? '600'),
+                speed_right: String(raw.speed_right ?? recipObj.speed_right ?? '600'),
+                up_turn_left: formatTurn(raw.up_turn_left ?? recipObj.up_turn_left),
+                up_turn_right: formatTurn(raw.up_turn_right ?? recipObj.up_turn_right),
+                down_turn_left: formatTurn(raw.down_turn_left ?? recipObj.down_turn_left),
+                down_turn_right: formatTurn(raw.down_turn_right ?? recipObj.down_turn_right),
+                dist_left: String(raw.dist_left ?? recipObj.dist_left ?? '380'),
+                dist_right: String(raw.dist_right ?? recipObj.dist_right ?? '420')
             };
 
-            // 5. 膜厚歷史紀錄（修復點：多重鍵名防禦，確保成功讀取陣列資料）
-            let rawTh = raw.thickness_history || raw.film_thickness_records || raw.thickness_records || raw.history_thickness || [];
+            // 5. 膜厚歷史紀錄 (完整覆蓋所有可能欄位名稱以解決讀取失敗問題)
+            let rawTh = raw.thickness_history ?? raw.history_thickness ?? raw.film_thickness_records ?? raw.thickness_records ?? [];
             if (typeof rawTh === 'string') {
                 try { rawTh = JSON.parse(rawTh); } catch(e) { rawTh = []; }
             }
@@ -1241,39 +1249,41 @@
                 if (!r || typeof r !== 'object') return null;
                 return {
                     date: r.date || r.record_date || '-',
-                    f_min: r.f_min ?? r.front_min ?? '-',
-                    f_max: r.f_max ?? r.front_max ?? '-',
-                    m_min: r.m_min ?? r.mid_min ?? '-',
-                    m_max: r.m_max ?? r.mid_max ?? '-',
-                    r_min: r.r_min ?? r.rear_min ?? '-',
-                    r_max: r.r_max ?? r.rear_max ?? '-'
+                    f_min: r.f_min ?? '-',
+                    f_max: r.f_max ?? '-',
+                    m_min: r.m_min ?? '-',
+                    m_max: r.m_max ?? '-',
+                    r_min: r.r_min ?? '-',
+                    r_max: r.r_max ?? '-'
                 };
             }).filter(Boolean);
 
             // 6. NG 歷史紀錄
-            let rawNg = raw.ng_records || raw.ng_history || raw.history_ng || [];
+            let rawNg = raw.ng_records ?? raw.history_ng ?? raw.ng_history ?? [];
             if (typeof rawNg === 'string') {
                 try { rawNg = JSON.parse(rawNg); } catch(e) { rawNg = []; }
             }
             if (!Array.isArray(rawNg)) rawNg = [];
 
             // 7. 備註紀錄
-            let rawRemarks = raw.remarks || raw.remarks_list || raw.dynamic_remarks || [];
+            let rawRemarks = raw.remarks ?? raw.remarks_list ?? raw.dynamic_remarks ?? [];
             if (typeof rawRemarks === 'string') {
                 try { rawRemarks = JSON.parse(rawRemarks); } catch(e) { rawRemarks = [rawRemarks]; }
             }
             if (!Array.isArray(rawRemarks)) rawRemarks = [];
 
-            // 8. 膜厚類別復原
+            // 8. 膜厚類別與圖片
             let catName = raw.thickness_category || raw.category || (parsedA && parsedA.thickness_category) || '';
             if (!catName && raw.remark_1 && raw.remark_1.includes('膜厚類別:')) {
                 catName = raw.remark_1.replace('膜厚類別:', '').trim();
             }
 
+            const imgUrl = raw.image_url || raw.image_base64 || '';
+
             return {
                 id: raw.id,
                 item_name: raw.item_name || '未命名構件',
-                image_url: fixImageUrl(raw.image_url || ''),
+                image_url: fixImageUrl(imgUrl),
                 thickness_category: catName,
                 guns: gunsArr,
                 reciprocator: reciprocator,
@@ -1314,21 +1324,38 @@
             }
         }
 
-        // --- 5. Supabase 讀取與寫入 (使用正確的 coating_params 資料表) ---
+        // --- 5. Supabase 讀取與寫入 (具備資料表自動偵測與雙向相容機制) ---
 
         async function fetchAllCoatingParams() {
             showLoading(true, "連線資料庫讀取資料中...");
             try {
-                const { data, error } = await supabase.from(tableName).select('*').order('created_at', { ascending: false });
-                if (error) {
-                    console.error("Supabase Select Error:", error);
-                    alert("⚠️ 資料庫讀取失敗: " + error.message);
-                    return;
+                // 優先嘗試讀取 coating_params
+                let { data, error } = await supabase.from('coating_params').select('*').order('created_at', { ascending: false });
+                
+                if (error || !data || data.length === 0) {
+                    // 若 coating_params 讀取失敗或無資料，自動切換至 powder_params 進行備援讀取
+                    const res2 = await supabase.from('powder_params').select('*').order('created_at', { ascending: false });
+                    if (!res2.error && res2.data && res2.data.length > 0) {
+                        data = res2.data;
+                        activeTableName = 'powder_params';
+                    }
+                } else {
+                    activeTableName = 'coating_params';
                 }
+
                 allParamsData = data || [];
                 populateItemDropdown();
             } catch (err) {
                 console.error("Fetch Exception:", err);
+                try {
+                    const res2 = await supabase.from('powder_params').select('*').order('created_at', { ascending: false });
+                    if (!res2.error && res2.data) {
+                        allParamsData = res2.data;
+                        activeTableName = 'powder_params';
+                        populateItemDropdown();
+                        return;
+                    }
+                } catch(e) {}
                 alert("⚠️ 發生網路或資料庫連線例外: " + err.message);
             } finally {
                 showLoading(false);
@@ -1370,8 +1397,9 @@
                     })
                 });
                 const resJson = await response.json();
-                const rawUrl = resJson?.url || resJson?.fileUrl || '';
-                return fixImageUrl(rawUrl) || base64Data;
+                if (resJson && resJson.url) return fixImageUrl(resJson.url);
+                if (resJson && resJson.fileUrl) return fixImageUrl(resJson.fileUrl);
+                throw new Error("GAS 回傳不包含有效圖片 URL");
             } catch (e) {
                 console.warn("GAS Upload Warning:", e);
                 return base64Data;
@@ -1381,37 +1409,20 @@
         }
 
         /**
-         * 寫入 Supabase (完美修復：白名單預先清理與自動防護機制)
+         * 寫入 Supabase (雙重欄位包裝：同時支援 coating_params 及 powder_params 格式)
          */
         async function saveToSupabase(rawPayload) {
             showLoading(true, "資料庫儲存中...");
             try {
                 let payload = JSON.parse(JSON.stringify(rawPayload));
 
-                const ALLOWED_COLUMNS = new Set([
-                    'id', 'item_name',
-                    'gun_1', 'gun_2', 'gun_3', 'gun_4', 'gun_5', 'gun_6', 'gun_7', 'gun_8',
-                    'speed_left', 'speed_right', 'up_turn_left', 'up_turn_right', 'down_turn_left', 'down_turn_right',
-                    'dist_left', 'dist_right', 'voltage', 'current',
-                    'remark_1', 'remark_2', 'remark_3', 'created_at', 'image_url',
-                    'manual_gun_a', 'manual_gun_b', 'thickness_history', 'remarks',
-                    'manual_a_powder', 'manual_a_air', 'manual_a_voltage', 'manual_a_current', 'manual_a_nozzle', 'manual_a_ring', 'manual_a_spray_count',
-                    'manual_b_powder', 'manual_b_air', 'manual_b_voltage', 'manual_b_current', 'manual_b_nozzle', 'manual_b_ring', 'manual_b_spray_count',
-                    'film_thickness_records', 'remarks_list', 'thickness_records', 'ng_records', 'dynamic_remarks'
-                ]);
-
-                Object.keys(payload).forEach(key => {
-                    if (!ALLOWED_COLUMNS.has(key)) {
-                        delete payload[key];
-                    }
-                });
-
-                let retries = 20;
+                let retries = 15;
                 while (retries > 0) {
-                    const { data, error } = await supabase.from(tableName).upsert([payload]).select();
+                    const { data, error } = await supabase.from(activeTableName).upsert([payload]).select();
                     if (!error) return data;
 
                     console.warn(`Supabase Upsert Attempt (${retries} left):`, error);
+
                     const errMsg = (error.message || '') + ' ' + (error.details || '') + ' ' + (error.hint || '');
                     let removedAny = false;
 
@@ -1430,6 +1441,7 @@
                         retries--;
                         continue;
                     }
+
                     throw error;
                 }
             } catch (err) {
@@ -1493,6 +1505,7 @@
             document.getElementById('resultBoard').style.display = 'block';
             document.getElementById('actionButtons').classList.remove('hidden');
 
+            // 1. 膜厚徽章
             const badge = document.getElementById('q_thickness_category_badge');
             if (item.thickness_category) {
                 badge.classList.remove('hidden');
@@ -1506,6 +1519,7 @@
                 badge.classList.add('hidden');
             }
 
+            // 2. 構件圖片 (強化備援機制)
             const imgBox = document.getElementById('imageContainer');
             const imgEl = document.getElementById('q_matched_image');
             const imgLink = document.getElementById('q_matched_image_link');
@@ -1518,11 +1532,13 @@
                 imgBox.classList.add('hidden');
             }
 
+            // 3. 自動槍粉量 #1 ~ #8
             for (let i = 1; i <= 8; i++) {
                 const el = document.getElementById(`q_gun_${i}`);
                 if (el) el.textContent = item.guns[i - 1] ?? '0';
             }
 
+            // 4. 往復機運行參數
             const r = item.reciprocator;
             document.getElementById('q_speed_left').textContent = r.speed_left;
             document.getElementById('q_speed_right').textContent = r.speed_right;
@@ -1533,12 +1549,15 @@
             document.getElementById('q_dist_left').textContent = r.dist_left;
             document.getElementById('q_dist_right').textContent = r.dist_right;
 
+            // 5. 電壓電流
             document.getElementById('q_voltage').textContent = item.voltage;
             document.getElementById('q_current').textContent = item.current;
 
+            // 6. 手動槍區塊 A & B
             document.getElementById('q_manual_a_display').innerHTML = renderManualBlockHTML(item.manual_a, 'A');
             document.getElementById('q_manual_b_display').innerHTML = renderManualBlockHTML(item.manual_b, 'B');
 
+            // 7. 歷史膜厚紀錄
             const thBox = document.getElementById('q_thickness_display');
             if (item.thickness_history && item.thickness_history.length > 0) {
                 thBox.innerHTML = item.thickness_history.map(rec => `
@@ -1555,6 +1574,7 @@
                 thBox.innerHTML = '<div class="text-slate-500 italic p-2">尚無膜厚檢測紀錄</div>';
             }
 
+            // 8. 歷史 NG 紀錄
             const ngBox = document.getElementById('q_ng_display');
             if (item.ng_history && item.ng_history.length > 0) {
                 ngBox.innerHTML = item.ng_history.map(rec => `
@@ -1568,6 +1588,7 @@
                 ngBox.innerHTML = '<div class="text-slate-500 italic p-2">無 NG 異常紀錄</div>';
             }
 
+            // 9. 修正備註
             const remBox = document.getElementById('q_remarks_display');
             if (item.remarks && item.remarks.length > 0) {
                 remBox.innerHTML = item.remarks.map(txt => `
@@ -1920,7 +1941,7 @@
                 }
             });
 
-            // 表單提交
+            // 表單提交 (雙向兼容寫入資料庫)
             document.getElementById('paramForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -1941,7 +1962,7 @@
                     });
                 } else if (editingItemId) {
                     const existing = allParamsData.find(d => String(d.id) === String(editingItemId));
-                    if (existing) uploadedUrl = existing.image_url || "";
+                    if (existing) uploadedUrl = existing.image_url || existing.image_base64 || "";
                 }
 
                 const catVal = document.getElementById('thickness_category').value;
@@ -1989,9 +2010,13 @@
                     return isNaN(parsed) ? 0 : parsed;
                 };
 
+                // 同步寫入所有欄位變體，確保資料完美寫入不漏失
                 const payload = {
                     item_name: itemName,
+                    category: catVal,
+                    thickness_category: catVal,
                     image_url: fixImageUrl(uploadedUrl),
+                    image_base64: fixImageUrl(uploadedUrl),
                     
                     gun_1: parseInt(document.getElementById('gun_1').value, 10) || 0,
                     gun_2: parseInt(document.getElementById('gun_2').value, 10) || 0,
@@ -2001,6 +2026,17 @@
                     gun_6: parseInt(document.getElementById('gun_6').value, 10) || 0,
                     gun_7: parseInt(document.getElementById('gun_7').value, 10) || 0,
                     gun_8: parseInt(document.getElementById('gun_8').value, 10) || 0,
+                    
+                    auto_guns: {
+                        gun_1: parseInt(document.getElementById('gun_1').value, 10) || 0,
+                        gun_2: parseInt(document.getElementById('gun_2').value, 10) || 0,
+                        gun_3: parseInt(document.getElementById('gun_3').value, 10) || 0,
+                        gun_4: parseInt(document.getElementById('gun_4').value, 10) || 0,
+                        gun_5: parseInt(document.getElementById('gun_5').value, 10) || 0,
+                        gun_6: parseInt(document.getElementById('gun_6').value, 10) || 0,
+                        gun_7: parseInt(document.getElementById('gun_7').value, 10) || 0,
+                        gun_8: parseInt(document.getElementById('gun_8').value, 10) || 0
+                    },
 
                     speed_left: parseRecipInt(document.getElementById('speed_left').value),
                     speed_right: parseRecipInt(document.getElementById('speed_right').value),
@@ -2010,9 +2046,25 @@
                     down_turn_right: parseRecipInt(document.getElementById('down_turn_right').value),
                     dist_left: parseRecipInt(document.getElementById('dist_left').value),
                     dist_right: parseRecipInt(document.getElementById('dist_right').value),
+                    
+                    reciprocator: {
+                        speed_left: parseRecipInt(document.getElementById('speed_left').value),
+                        speed_right: parseRecipInt(document.getElementById('speed_right').value),
+                        up_turn_left: parseRecipInt(document.getElementById('up_turn_left').value),
+                        up_turn_right: parseRecipInt(document.getElementById('up_turn_right').value),
+                        down_turn_left: parseRecipInt(document.getElementById('down_turn_left').value),
+                        down_turn_right: parseRecipInt(document.getElementById('down_turn_right').value),
+                        dist_left: parseRecipInt(document.getElementById('dist_left').value),
+                        dist_right: parseRecipInt(document.getElementById('dist_right').value)
+                    },
 
                     voltage: parseInt(document.getElementById('voltage').value, 10) || 70,
                     current: parseInt(document.getElementById('current').value, 10) || 15,
+                    
+                    electrical: {
+                        voltage: parseInt(document.getElementById('voltage').value, 10) || 70,
+                        current: parseInt(document.getElementById('current').value, 10) || 15
+                    },
 
                     manual_a_powder: manualAObj.powder,
                     manual_a_air: manualAObj.air,
@@ -2032,12 +2084,16 @@
 
                     manual_gun_a: manualAObj,
                     manual_gun_b: manualBObj,
+                    manual_a: manualAObj,
+                    manual_b: manualBObj,
 
                     thickness_history: currentThicknessRecords,
-                    thickness_records: currentThicknessRecords,
+                    history_thickness: currentThicknessRecords,
                     film_thickness_records: currentThicknessRecords,
+                    thickness_records: currentThicknessRecords,
 
                     ng_records: currentNgRecords,
+                    history_ng: currentNgRecords,
 
                     remarks: currentRemarks,
                     remarks_list: currentRemarks,
@@ -2166,7 +2222,7 @@
 
                 showLoading(true, "刪除資料中...");
                 try {
-                    const { error } = await supabase.from(tableName).delete().eq('id', selectVal);
+                    const { error } = await supabase.from(activeTableName).delete().eq('id', selectVal);
                     if (error) throw error;
                     alert("🗑️ 成功刪除該構件資料！");
                     document.getElementById('resultBoard').style.display = 'none';

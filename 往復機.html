@@ -4,7 +4,7 @@
     <!-- ========================================================================================== -->
     <!-- 百富粉體塗裝自動槍參數系統 / Sistem Parameter Pelapisan Serbuk Baifu                        -->
     <!-- Architecture: Pure Frontend AI Architecture (Respan Span 01 Lite Enabled)                  -->
-    <!-- 完美修復版本：已修復 Supabase 讀取/寫入失敗與 Schema 自動退回查詢機制                      -->
+    <!-- 完美修復版本：精準匹配 coating_params 48欄位 Schema 與資料型態，徹底排除不支援欄位        -->
     <!-- ========================================================================================== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -146,25 +146,30 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                     <!-- 左側：圖片與自動槍粉量數據 -->
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-blue-500 flex flex-col">
-                        <h3 class="font-bold mb-3 sm:mb-4 text-blue-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_gun_powder"><span class="text-lg sm:text-xl">🔫</span> 自動槍粉量數據</h3>
+                        <h3 class="font-bold mb-3 sm:mb-4 text-emerald-300 flex items-center gap-2 text-sm sm:text-base"><span class="text-lg sm:text-xl">🖼️</span> 構件照片</h3>
+                        
                         <div id="imageContainer" class="mb-4 bg-black/50 p-2 rounded-xl text-center border border-slate-700 hidden shadow-inner relative group">
                             <img id="q_matched_image" src="" class="mx-auto rounded-lg h-36 sm:h-48 w-full object-contain">
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
                                 <a id="q_matched_image_link" href="#" target="_blank" class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">查看原圖</a>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm font-mono mt-auto">
-                            <div class="space-y-2">
-                                <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#1</span> <span id="q_gun_1" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
-                                <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#2</span> <span id="q_gun_2" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
-                                <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#3</span> <span id="q_gun_3" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
-                                <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#4</span> <span id="q_gun_4" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
-                            </div>
-                            <div class="space-y-2">
-                                <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#5</span> <span id="q_gun_5" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
-                                <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#6</span> <span id="q_gun_6" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
-                                <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#7</span> <span id="q_gun_7" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
-                                <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#8</span> <span id="q_gun_8" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
+
+                        <div class="mt-auto">
+                            <h3 class="font-bold mb-3 sm:mb-4 text-blue-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_gun_powder"><span class="text-lg sm:text-xl">🔫</span> 自動槍粉量數據</h3>
+                            <div class="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm font-mono">
+                                <div class="space-y-2">
+                                    <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#1</span> <span id="q_gun_1" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
+                                    <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#2</span> <span id="q_gun_2" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
+                                    <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#3</span> <span id="q_gun_3" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
+                                    <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#4</span> <span id="q_gun_4" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#5</span> <span id="q_gun_5" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
+                                    <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#6</span> <span id="q_gun_6" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
+                                    <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#7</span> <span id="q_gun_7" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
+                                    <div class="bg-slate-800/80 p-2 rounded-lg flex justify-between items-center border border-slate-700"><span class="text-slate-400">#8</span> <span id="q_gun_8" class="text-emerald-400 font-bold text-base sm:text-lg"></span></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -212,7 +217,7 @@
                     </div>
                 </div>
 
-                <!-- 手動槍參數展示區 (修正無資料問題) -->
+                <!-- 手動槍參數展示區 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div class="glass-panel p-4 sm:p-5 rounded-2xl border-t-4 border-t-indigo-500">
                         <h3 class="font-bold mb-3 sm:mb-4 text-indigo-300 flex items-center gap-2 text-sm sm:text-base" data-i18n="card_manual_a"><span class="text-lg sm:text-xl">🖌️</span> 區塊 A: 整體外觀面</h3>
@@ -313,13 +318,13 @@
                             </div>
                             <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
                                 <span class="w-20 text-center text-slate-400 font-bold text-xs" data-i18n="lbl_recip_upturn">上換向點</span>
-                                <input type="text" id="up_turn_left" value="自動" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="左1">
-                                <input type="text" id="up_turn_right" value="自動" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="右2">
+                                <input type="text" id="up_turn_left" value="0" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="左1 (預設0表自動)">
+                                <input type="text" id="up_turn_right" value="0" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="右2 (預設0表自動)">
                             </div>
                             <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
                                 <span class="w-20 text-center text-slate-400 font-bold text-xs" data-i18n="lbl_recip_downturn">下換向點</span>
-                                <input type="text" id="down_turn_left" value="自動" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="左1">
-                                <input type="text" id="down_turn_right" value="自動" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="右2">
+                                <input type="text" id="down_turn_left" value="0" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="左1 (預設0表自動)">
+                                <input type="text" id="down_turn_right" value="0" class="flex-1 w-full bg-slate-900 p-2 rounded text-amber-400 font-mono border border-slate-600 text-center text-xs sm:text-sm" placeholder="右2 (預設0表自動)">
                             </div>
                             <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
                                 <span class="w-20 text-center text-slate-400 font-bold text-xs" data-i18n="lbl_recip_dist">工件距離</span>
@@ -407,85 +412,6 @@
                                             <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition" data-target="a_spray_count" data-step="1" data-min="1" data-max="20">+</button>
                                         </div>
                                     </div>
-
-                                    <!-- A 面：方位與中間分段噴塗次數控制區 -->
-                                    <div class="mt-3 pt-3 border-t border-indigo-500/30 space-y-2.5">
-                                        <div class="text-[11px] sm:text-xs font-bold text-indigo-300 flex items-center gap-1">
-                                            <span>📍 方位噴塗次數</span>
-                                        </div>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_left">左側</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_left" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="a_spray_left" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_left" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_top">上方</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_top" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="a_spray_top" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_top" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_bottom">下方</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_bottom" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="a_spray_bottom" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_bottom" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_right">右側</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_right" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="a_spray_right" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_right" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="text-[11px] sm:text-xs font-bold text-amber-300 flex items-center gap-1 pt-1">
-                                            <span>🎯 中間分段噴塗次數</span>
-                                        </div>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_1">一段</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_mid_1" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="a_spray_mid_1" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_mid_1" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_2">二段</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_mid_2" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="a_spray_mid_2" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_mid_2" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_3">三段</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_mid_3" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="a_spray_mid_3" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_mid_3" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_4">四段</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_mid_4" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="a_spray_mid_4" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="a_spray_mid_4" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
 
@@ -548,85 +474,6 @@
                                             <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded font-bold transition" data-target="b_spray_count" data-step="1" data-min="1" data-max="20">+</button>
                                         </div>
                                     </div>
-
-                                    <!-- B 面：方位與中間分段噴塗次數控制區 -->
-                                    <div class="mt-3 pt-3 border-t border-teal-500/30 space-y-2.5">
-                                        <div class="text-[11px] sm:text-xs font-bold text-teal-300 flex items-center gap-1">
-                                            <span>📍 方位噴塗次數</span>
-                                        </div>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_left">左側</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_left" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="b_spray_left" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_left" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_top">上方</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_top" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="b_spray_top" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_top" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_bottom">下方</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_bottom" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="b_spray_bottom" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_bottom" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_right">右側</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_right" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="b_spray_right" value="0" class="w-10 bg-black text-center text-emerald-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_right" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="text-[11px] sm:text-xs font-bold text-amber-300 flex items-center gap-1 pt-1">
-                                            <span>🎯 中間分段噴塗次數</span>
-                                        </div>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_1">一段</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_mid_1" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="b_spray_mid_1" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_mid_1" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_2">二段</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_mid_2" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="b_spray_mid_2" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_mid_2" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_3">三段</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_mid_3" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="b_spray_mid_3" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_mid_3" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between bg-slate-950/60 p-1.5 rounded border border-slate-800">
-                                                <span class="text-slate-300 text-xs" data-i18n="lbl_spray_mid_4">四段</span>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_mid_4" data-step="-1" data-min="0" data-max="20">-</button>
-                                                    <input type="text" id="b_spray_mid_4" value="0" class="w-10 bg-black text-center text-amber-400 font-bold border border-slate-700 rounded py-0.5 text-xs font-mono">
-                                                    <button type="button" class="btn-adj bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-xs font-bold" data-target="b_spray_mid_4" data-step="1" data-min="0" data-max="20">+</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -634,22 +481,20 @@
 
                     <!-- 歷史紀錄追加區 -->
                     <div class="pt-6 sm:pt-8 border-t border-slate-700 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-                        <!-- 膜厚檢測追加 -->
                         <div>
                             <h3 class="text-pink-400 font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2" data-i18n="lbl_add_thickness">📊 新增膜厚檢測紀錄</h3>
                             <div class="bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-700 mb-4 flex flex-col gap-2.5">
                                 <input type="date" id="th_date" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white text-xs sm:text-sm">
                                 <div class="grid grid-cols-3 gap-2 text-xs">
-                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_front_sec">前段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_f_min" placeholder="Min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_f_max" placeholder="Max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
-                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_mid_sec">中段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_m_min" placeholder="Min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_m_max" placeholder="Max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
-                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs" data-i18n="lbl_rear_sec">後段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_r_min" placeholder="Min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_r_max" placeholder="Max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
+                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs">前段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_f_min" placeholder="Min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_f_max" placeholder="Max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
+                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs">中段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_m_min" placeholder="Min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_m_max" placeholder="Max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
+                                    <div class="flex flex-col gap-1"><span class="text-slate-400 text-[10px] sm:text-xs">後段 (Min-Max)</span><div class="flex gap-1"><input type="number" id="th_r_min" placeholder="Min" class="w-full bg-black border border-slate-600 rounded p-1 text-center"><input type="number" id="th_r_max" placeholder="Max" class="w-full bg-black border border-slate-600 rounded p-1 text-center"></div></div>
                                 </div>
-                                <button type="button" id="btnAddThickness" class="bg-pink-600 hover:bg-pink-500 text-white w-full py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm" data-i18n="btn_add_thickness">＋ 加入膜厚紀錄</button>
+                                <button type="button" id="btnAddThickness" class="bg-pink-600 hover:bg-pink-500 text-white w-full py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm">＋ 加入膜厚紀錄</button>
                             </div>
                             <div id="thicknessList" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2"></div>
                         </div>
 
-                        <!-- NG與備註追加 -->
                         <div class="space-y-6 sm:space-y-8">
                             <div>
                                 <h3 class="text-orange-400 font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2" data-i18n="lbl_add_ng">⚠️ 新增 NG 異常紀錄</h3>
@@ -657,21 +502,21 @@
                                     <div class="flex flex-col sm:flex-row gap-2">
                                         <input type="date" id="ng_date" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white text-xs sm:text-sm">
                                         <select id="ng_location" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white text-xs sm:text-sm">
-                                            <option value="整體外觀面噴塗(A)面" data-i18n="opt_ng_loc_a">A面 外觀</option>
-                                            <option value="邊角溝槽噴塗面(B)面" data-i18n="opt_ng_loc_b">B面 邊角</option>
+                                            <option value="整體外觀面噴塗(A)面">A面 外觀</option>
+                                            <option value="邊角溝槽噴塗面(B)面">B面 邊角</option>
                                         </select>
                                     </div>
                                     <div class="flex gap-2">
                                         <select id="ng_reason" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white text-xs sm:text-sm">
-                                            <option value="膜厚不足" data-i18n="opt_ng_reason_1">膜厚不足</option>
-                                            <option value="膜厚太厚" data-i18n="opt_ng_reason_2">膜厚太厚</option>
-                                            <option value="溝槽未上粉" data-i18n="opt_ng_reason_3">溝槽未上粉</option>
-                                            <option value="積粉垂流" data-i18n="opt_ng_reason_4">積粉垂流</option>
-                                            <option value="滑粉" data-i18n="opt_ng_reason_5">滑粉</option>
-                                            <option value="爆粉" data-i18n="opt_ng_reason_6">爆粉</option>
-                                            <option value="皺痕" data-i18n="opt_ng_reason_7">皺痕</option>
+                                            <option value="膜厚不足">膜厚不足</option>
+                                            <option value="膜厚太厚">膜厚太厚</option>
+                                            <option value="溝槽未上粉">溝槽未上粉</option>
+                                            <option value="積粉垂流">積粉垂流</option>
+                                            <option value="滑粉">滑粉</option>
+                                            <option value="爆粉">爆粉</option>
+                                            <option value="皺痕">皺痕</option>
                                         </select>
-                                        <button type="button" id="btnAddNg" class="bg-orange-600 hover:bg-orange-500 text-white px-3 py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm shrink-0" data-i18n="btn_add_ng">＋ 加入 NG</button>
+                                        <button type="button" id="btnAddNg" class="bg-orange-600 hover:bg-orange-500 text-white px-3 py-2 rounded-lg font-bold shadow transition text-xs sm:text-sm shrink-0">＋ 加入 NG</button>
                                     </div>
                                 </div>
                                 <div id="ngList" class="space-y-2 max-h-32 overflow-y-auto custom-scrollbar pr-2"></div>
@@ -681,7 +526,7 @@
                                 <h3 class="text-slate-300 font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2" data-i18n="lbl_add_remark">📝 修正備註欄位</h3>
                                 <div class="flex gap-2 mb-4">
                                     <input type="text" id="new_remark" placeholder="輸入備註或特殊叮嚀..." class="flex-1 bg-slate-900 p-2.5 rounded-lg text-white border border-slate-600 focus:border-blue-500 outline-none text-xs sm:text-sm">
-                                    <button type="button" id="btnAddRemark" class="bg-slate-600 hover:bg-slate-500 px-3 py-2 rounded-lg font-bold text-white shadow transition text-xs sm:text-sm shrink-0" data-i18n="btn_add_remark">＋ 新增</button>
+                                    <button type="button" id="btnAddRemark" class="bg-slate-600 hover:bg-slate-500 px-3 py-2 rounded-lg font-bold text-white shadow transition text-xs sm:text-sm shrink-0">＋ 新增</button>
                                 </div>
                                 <div id="remarksList" class="grid grid-cols-1 gap-2"></div>
                             </div>
@@ -698,7 +543,7 @@
         </div>
     </div>
 
-    <!-- 膜厚總覽 Modal 面板 (第一欄強制定錨為構件圖片) -->
+    <!-- 膜厚總覽 Modal 面板 -->
     <div id="thicknessTableModal" class="fixed inset-0 bg-slate-900/95 flex items-center justify-center hidden z-50 p-3 sm:p-4 backdrop-blur-sm">
         <div class="glass-panel p-4 sm:p-6 rounded-2xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-pink-500/30">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-700">
@@ -791,7 +636,7 @@
     </div>
 
     <!-- ========================================================================================== -->
-    <!-- 核心 JavaScript 邏輯 (包含 Supabase 雙重 Schema 解析與相容機制)                              -->
+    <!-- 核心 JavaScript 邏輯 (包含 Supabase 48 欄位白名單與自動防護修剪儲存機制)                  -->
     <!-- ========================================================================================== -->
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -806,11 +651,14 @@
         const defaultAiModel = "Respan Span 01 Lite";
         const tableName = 'coating_params';
 
-        // --- 全局狀態 ---
+        // SVG 防破圖備援占位圖 (Base64)
+        const SVG_PLACEHOLDER = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDc1NTY5IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiByeD0iMiIgcnk9IjIiPjwvcmVjdD48Y2lyY2xlIGN4PSI4LjUiIGN5PSI4LjUiIHI9IjEuNSI+PC9jaXJjbGU+PHBvbHlsaW5lIHBvaW50cz0iMjEgMTUgMTYgMTAgNSAyMSI+PC9wb2x5bGluZT48L3N2Zz4=";
+
+        // 全局狀態
         let allParamsData = [];
         let editingItemId = null;
         let cropperObj = null;
-        let cropTargetType = 'AI_SEARCH'; // AI_SEARCH | NAME_OCR
+        let cropTargetType = 'AI_SEARCH';
 
         let currentThicknessRecords = [];
         let currentNgRecords = [];
@@ -819,7 +667,7 @@
         // --- 2. 多國語言字典設定 (i18n) ---
         const i18nDict = {
             tw: {
-                app_title: "百富粉體塗裝自動槍參數系統",
+                app_title: "百富粉體塗裝參數系統",
                 sub_title: "Pure Frontend AI Architecture (Respan Span 01 Lite Enabled)",
                 btn_thickness_summary: "📊 膜厚紀錄總覽",
                 btn_api_settings: "⚙️ 系統 API 設定",
@@ -1108,11 +956,24 @@
             }
         };
 
-        // --- 3. 核心工具與 Supabase 資料結構轉換機制 ---
+        // --- 3. 核心工具與 Google Drive / Supabase 資料結構轉換機制 ---
 
-        /**
-         * 安全解析 JSON 字串或直接回傳物件
-         */
+        function fixImageUrl(url) {
+            if (!url || typeof url !== 'string') return '';
+            url = url.trim();
+            if (!url) return '';
+
+            const driveMatch1 = url.match(/drive\.google\.com\/file\/d\/([^\/]+)/);
+            if (driveMatch1 && driveMatch1[1]) {
+                return `https://lh3.googleusercontent.com/d/${driveMatch1[1]}`;
+            }
+            const driveMatch2 = url.match(/drive\.google\.com\/(?:open|uc)\?(?:.*&)?id=([^&]+)/);
+            if (driveMatch2 && driveMatch2[1]) {
+                return `https://lh3.googleusercontent.com/d/${driveMatch2[1]}`;
+            }
+            return url;
+        }
+
         function safeParseJSON(val) {
             if (!val) return null;
             if (typeof val === 'object') return val;
@@ -1125,86 +986,125 @@
 
         /**
          * 雙重 Schema 自動相容解析器 (Normalize Data)
-         * 自動向下相容展平欄位 (a_powder, gun_1...) 與 JSONB 欄位 (manual_a, guns...)
+         * 全面讀取 Supabase coating_params 的 48 個原生欄位
          */
         function normalizeItemData(raw) {
             if (!raw) return null;
 
-            // 1. 自動槍粉量 guns 處理
-            const gunsArr = Array.isArray(raw.guns) ? raw.guns : safeParseJSON(raw.guns) || [
-                raw.gun_1 ?? raw.gun1 ?? '0',
-                raw.gun_2 ?? raw.gun2 ?? '0',
-                raw.gun_3 ?? raw.gun3 ?? '0',
-                raw.gun_4 ?? raw.gun4 ?? '0',
-                raw.gun_5 ?? raw.gun5 ?? '0',
-                raw.gun_6 ?? raw.gun6 ?? '0',
-                raw.gun_7 ?? raw.gun7 ?? '0',
-                raw.gun_8 ?? raw.gun8 ?? '0'
+            // 1. 自動槍粉量 guns 處理 (槍1 ~ 槍8 展平欄位)
+            const gunsArr = [
+                raw.gun_1 ?? '0',
+                raw.gun_2 ?? '0',
+                raw.gun_3 ?? '0',
+                raw.gun_4 ?? '0',
+                raw.gun_5 ?? '0',
+                raw.gun_6 ?? '0',
+                raw.gun_7 ?? '0',
+                raw.gun_8 ?? '0'
             ];
 
             // 2. 區塊 A 手動槍參數處理
-            const parsedA = safeParseJSON(raw.manual_a) || safeParseJSON(raw.block_a) || {};
+            const parsedA = safeParseJSON(raw.manual_gun_a) || safeParseJSON(raw.manual_a) || {};
             const manualA = {
-                powder: parsedA.powder ?? raw.a_powder ?? raw.manual_a_powder ?? 0,
-                air: parsedA.air ?? raw.a_air ?? raw.manual_a_air ?? 0,
-                voltage: parsedA.voltage ?? raw.a_voltage ?? raw.manual_a_voltage ?? 70,
-                current: parsedA.current ?? raw.a_current ?? raw.manual_a_current ?? 15,
-                nozzle: parsedA.nozzle || raw.a_nozzle || raw.manual_a_nozzle || '扇型',
-                ring: parsedA.ring || raw.a_ring || raw.manual_a_ring || '有',
-                spray_count: parsedA.spray_count ?? raw.a_spray_count ?? raw.manual_a_spray_count ?? 1,
-                spray_left: parsedA.spray_left ?? raw.a_spray_left ?? 0,
-                spray_top: parsedA.spray_top ?? raw.a_spray_top ?? 0,
-                spray_bottom: parsedA.spray_bottom ?? raw.a_spray_bottom ?? 0,
-                spray_right: parsedA.spray_right ?? raw.a_spray_right ?? 0,
-                spray_mid_1: parsedA.spray_mid_1 ?? raw.a_spray_mid_1 ?? 0,
-                spray_mid_2: parsedA.spray_mid_2 ?? raw.a_spray_mid_2 ?? 0,
-                spray_mid_3: parsedA.spray_mid_3 ?? raw.a_spray_mid_3 ?? 0,
-                spray_mid_4: parsedA.spray_mid_4 ?? raw.a_spray_mid_4 ?? 0
+                powder: parsedA.powder ?? raw.manual_a_powder ?? 0,
+                air: parsedA.air ?? raw.manual_a_air ?? 0,
+                voltage: parsedA.voltage ?? raw.manual_a_voltage ?? 70,
+                current: parsedA.current ?? raw.manual_a_current ?? 15,
+                nozzle: parsedA.nozzle || raw.manual_a_nozzle || '扇型',
+                ring: parsedA.ring || raw.manual_a_ring || '有',
+                spray_count: parsedA.spray_count ?? raw.manual_a_spray_count ?? 1,
+                spray_left: parsedA.spray_left ?? 0,
+                spray_top: parsedA.spray_top ?? 0,
+                spray_bottom: parsedA.spray_bottom ?? 0,
+                spray_right: parsedA.spray_right ?? 0,
+                spray_mid_1: parsedA.spray_mid_1 ?? 0,
+                spray_mid_2: parsedA.spray_mid_2 ?? 0,
+                spray_mid_3: parsedA.spray_mid_3 ?? 0,
+                spray_mid_4: parsedA.spray_mid_4 ?? 0
             };
 
             // 3. 區塊 B 手動槍參數處理
-            const parsedB = safeParseJSON(raw.manual_b) || safeParseJSON(raw.block_b) || {};
+            const parsedB = safeParseJSON(raw.manual_gun_b) || safeParseJSON(raw.manual_b) || {};
             const manualB = {
-                powder: parsedB.powder ?? raw.b_powder ?? raw.manual_b_powder ?? 0,
-                air: parsedB.air ?? raw.b_air ?? raw.manual_b_air ?? 0,
-                voltage: parsedB.voltage ?? raw.b_voltage ?? raw.manual_b_voltage ?? 70,
-                current: parsedB.current ?? raw.b_current ?? raw.manual_b_current ?? 15,
-                nozzle: parsedB.nozzle || raw.b_nozzle || raw.manual_b_nozzle || '扇型',
-                ring: parsedB.ring || raw.b_ring || raw.manual_b_ring || '有',
-                spray_count: parsedB.spray_count ?? raw.b_spray_count ?? raw.manual_b_spray_count ?? 1,
-                spray_left: parsedB.spray_left ?? raw.b_spray_left ?? 0,
-                spray_top: parsedB.spray_top ?? raw.b_spray_top ?? 0,
-                spray_bottom: parsedB.spray_bottom ?? raw.b_spray_bottom ?? 0,
-                spray_right: parsedB.spray_right ?? raw.b_spray_right ?? 0,
-                spray_mid_1: parsedB.spray_mid_1 ?? raw.b_spray_mid_1 ?? 0,
-                spray_mid_2: parsedB.spray_mid_2 ?? raw.b_spray_mid_2 ?? 0,
-                spray_mid_3: parsedB.spray_mid_3 ?? raw.b_spray_mid_3 ?? 0,
-                spray_mid_4: parsedB.spray_mid_4 ?? raw.b_spray_mid_4 ?? 0
+                powder: parsedB.powder ?? raw.manual_b_powder ?? 0,
+                air: parsedB.air ?? raw.manual_b_air ?? 0,
+                voltage: parsedB.voltage ?? raw.manual_b_voltage ?? 70,
+                current: parsedB.current ?? raw.manual_b_current ?? 15,
+                nozzle: parsedB.nozzle || raw.manual_b_nozzle || '扇型',
+                ring: parsedB.ring || raw.manual_b_ring || '有',
+                spray_count: parsedB.spray_count ?? raw.manual_b_spray_count ?? 1,
+                spray_left: parsedB.spray_left ?? 0,
+                spray_top: parsedB.spray_top ?? 0,
+                spray_bottom: parsedB.spray_bottom ?? 0,
+                spray_right: parsedB.spray_right ?? 0,
+                spray_mid_1: parsedB.spray_mid_1 ?? 0,
+                spray_mid_2: parsedB.spray_mid_2 ?? 0,
+                spray_mid_3: parsedB.spray_mid_3 ?? 0,
+                spray_mid_4: parsedB.spray_mid_4 ?? 0
             };
 
-            // 4. 往復機運行參數 reciprocator 處理
-            const parsedRecip = safeParseJSON(raw.reciprocator) || {};
+            // 4. 往復機運行參數 (int4 轉換回文字顯示，若為 0 則顯示「自動」)
+            const formatTurn = (val) => {
+                if (val === 0 || val === '0' || val === '自動' || !val) return '自動';
+                return String(val);
+            };
+
             const reciprocator = {
-                speed_left: parsedRecip.speed_left ?? raw.speed_left ?? '600',
-                speed_right: parsedRecip.speed_right ?? raw.speed_right ?? '600',
-                up_turn_left: parsedRecip.up_turn_left ?? raw.up_turn_left ?? '自動',
-                up_turn_right: parsedRecip.up_turn_right ?? raw.up_turn_right ?? '自動',
-                down_turn_left: parsedRecip.down_turn_left ?? raw.down_turn_left ?? '自動',
-                down_turn_right: parsedRecip.down_turn_right ?? raw.down_turn_right ?? '自動',
-                dist_left: parsedRecip.dist_left ?? raw.dist_left ?? '380',
-                dist_right: parsedRecip.dist_right ?? raw.dist_right ?? '420'
+                speed_left: String(raw.speed_left ?? '600'),
+                speed_right: String(raw.speed_right ?? '600'),
+                up_turn_left: formatTurn(raw.up_turn_left),
+                up_turn_right: formatTurn(raw.up_turn_right),
+                down_turn_left: formatTurn(raw.down_turn_left),
+                down_turn_right: formatTurn(raw.down_turn_right),
+                dist_left: String(raw.dist_left ?? '380'),
+                dist_right: String(raw.dist_right ?? '420')
             };
 
-            // 5. 陣列欄位歷史紀錄處理
-            const thicknessHistory = Array.isArray(raw.thickness_history) ? raw.thickness_history : safeParseJSON(raw.thickness_history) || [];
-            const ngHistory = Array.isArray(raw.ng_history) ? raw.ng_history : safeParseJSON(raw.ng_history) || [];
-            const remarks = Array.isArray(raw.remarks) ? raw.remarks : safeParseJSON(raw.remarks) || (raw.remark ? [raw.remark] : []);
+            // 5. 膜厚歷史紀錄
+            let rawTh = raw.thickness_history ?? raw.film_thickness_records ?? raw.thickness_records ?? [];
+            if (typeof rawTh === 'string') {
+                try { rawTh = JSON.parse(rawTh); } catch(e) { rawTh = []; }
+            }
+            if (!Array.isArray(rawTh)) rawTh = [];
+
+            let thicknessHistory = rawTh.map(r => {
+                if (!r || typeof r !== 'object') return null;
+                return {
+                    date: r.date || r.record_date || '-',
+                    f_min: r.f_min ?? '-',
+                    f_max: r.f_max ?? '-',
+                    m_min: r.m_min ?? '-',
+                    m_max: r.m_max ?? '-',
+                    r_min: r.r_min ?? '-',
+                    r_max: r.r_max ?? '-'
+                };
+            }).filter(Boolean);
+
+            // 6. NG 歷史紀錄
+            let rawNg = raw.ng_records ?? raw.ng_history ?? [];
+            if (typeof rawNg === 'string') {
+                try { rawNg = JSON.parse(rawNg); } catch(e) { rawNg = []; }
+            }
+            if (!Array.isArray(rawNg)) rawNg = [];
+
+            // 7. 備註紀錄
+            let rawRemarks = raw.remarks ?? raw.remarks_list ?? raw.dynamic_remarks ?? [];
+            if (typeof rawRemarks === 'string') {
+                try { rawRemarks = JSON.parse(rawRemarks); } catch(e) { rawRemarks = [rawRemarks]; }
+            }
+            if (!Array.isArray(rawRemarks)) rawRemarks = [];
+
+            // 8. 膜厚類別復原
+            let catName = raw.thickness_category || raw.category || (parsedA && parsedA.thickness_category) || '';
+            if (!catName && raw.remark_1 && raw.remark_1.includes('膜厚類別:')) {
+                catName = raw.remark_1.replace('膜厚類別:', '').trim();
+            }
 
             return {
                 id: raw.id,
-                item_name: raw.item_name || raw.name || '未命名構件',
-                image_url: raw.image_url || raw.img_url || raw.photo || '',
-                thickness_category: raw.thickness_category || raw.category || '',
+                item_name: raw.item_name || '未命名構件',
+                image_url: fixImageUrl(raw.image_url || ''),
+                thickness_category: catName,
                 guns: gunsArr,
                 reciprocator: reciprocator,
                 voltage: raw.voltage ?? 70,
@@ -1212,13 +1112,13 @@
                 manual_a: manualA,
                 manual_b: manualB,
                 thickness_history: thicknessHistory,
-                ng_history: ngHistory,
-                remarks: remarks,
+                ng_history: rawNg,
+                remarks: rawRemarks,
                 created_at: raw.created_at
             };
         }
 
-        // --- 4.  UI 狀態與語言切換 ---
+        // --- 4. UI 狀態與語言切換 ---
         function setLanguage(lang) {
             const dict = i18nDict[lang] || i18nDict.tw;
             document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -1244,15 +1144,12 @@
             }
         }
 
-        // --- 5. Supabase 讀取與寫入 (修復寫入與查詢機制) ---
+        // --- 5. Supabase 讀取與寫入 (精準 Schema 白名單與強效防護機制) ---
 
-        /**
-         * 從 Supabase 載入全量數據
-         */
         async function fetchAllCoatingParams() {
             showLoading(true, "連線資料庫讀取資料中...");
             try {
-                const { data, error } = await supabase.from(tableName).select('*').order('id', { ascending: false });
+                const { data, error } = await supabase.from(tableName).select('*').order('created_at', { ascending: false });
                 if (error) {
                     console.error("Supabase Select Error:", error);
                     alert("⚠️ 資料庫讀取失敗: " + error.message);
@@ -1268,9 +1165,6 @@
             }
         }
 
-        /**
-         * 填入構件選單
-         */
         function populateItemDropdown() {
             const selectEl = document.getElementById('itemSelect');
             const catFilter = document.getElementById('queryCategoryFilter').value;
@@ -1294,9 +1188,6 @@
             });
         }
 
-        /**
-         * 上傳圖片至 Google App Script (GAS)
-         */
         async function uploadImageToGas(base64Data, filename) {
             const gasUrl = document.getElementById('cfg_gas_url').value || defaultGasUrl;
             showLoading(true, "上傳構件照片至 Google Drive 中...");
@@ -1309,15 +1200,11 @@
                     })
                 });
                 const resJson = await response.json();
-                if (resJson && resJson.url) {
-                    return resJson.url;
-                } else if (resJson && resJson.fileUrl) {
-                    return resJson.fileUrl;
-                }
+                if (resJson && resJson.url) return fixImageUrl(resJson.url);
+                if (resJson && resJson.fileUrl) return fixImageUrl(resJson.fileUrl);
                 throw new Error("GAS 回傳不包含有效圖片 URL");
             } catch (e) {
                 console.warn("GAS Upload Warning:", e);
-                // 圖片上傳失敗時，備援改回傳 Base64 避免系統中斷
                 return base64Data;
             } finally {
                 showLoading(false);
@@ -1325,51 +1212,82 @@
         }
 
         /**
-         * 寫入 Supabase (包含雙重 Schema 相容性退回機制)
+         * 寫入 Supabase (白名單預先清理 + 自動重試防護機制)
          */
-        async function saveToSupabase(payload) {
+        async function saveToSupabase(rawPayload) {
             showLoading(true, "資料庫儲存中...");
             try {
-                // 主上傳：同時帶入 JSONB 欄位與展平欄位 (雙重包裝)
-                let { data, error } = await supabase.from(tableName).upsert([payload]).select();
-                
-                if (error) {
-                    console.warn("標準 Upsert 失敗，啟動精簡 Schema 相容退回機制上傳...", error);
-                    // 備援上傳：僅帶入核心通用欄位
-                    const sanitizedPayload = {
-                        item_name: payload.item_name,
-                        image_url: payload.image_url,
-                        thickness_category: payload.thickness_category,
-                        guns: payload.guns,
-                        reciprocator: payload.reciprocator,
-                        voltage: payload.voltage,
-                        current: payload.current,
-                        manual_a: payload.manual_a,
-                        manual_b: payload.manual_b,
-                        thickness_history: payload.thickness_history,
-                        ng_history: payload.ng_history,
-                        remarks: payload.remarks
-                    };
-                    if (payload.id) sanitizedPayload.id = payload.id;
+                let payload = JSON.parse(JSON.stringify(rawPayload));
 
-                    const retryRes = await supabase.from(tableName).upsert([sanitizedPayload]).select();
-                    if (retryRes.error) throw retryRes.error;
-                    data = retryRes.data;
+                // 嚴格確立 coating_params 的合法 Schema 欄位白名單（絕對排除非法的 'guns' 屬性）
+                const ALLOWED_COLUMNS = new Set([
+                    'id', 'item_name',
+                    'gun_1', 'gun_2', 'gun_3', 'gun_4', 'gun_5', 'gun_6', 'gun_7', 'gun_8',
+                    'speed_left', 'speed_right', 'up_turn_left', 'up_turn_right', 'down_turn_left', 'down_turn_right',
+                    'dist_left', 'dist_right', 'voltage', 'current',
+                    'remark_1', 'remark_2', 'remark_3', 'created_at', 'image_url',
+                    'manual_gun_a', 'manual_gun_b', 'thickness_history', 'remarks',
+                    'manual_a_powder', 'manual_a_air', 'manual_a_voltage', 'manual_a_current', 'manual_a_nozzle', 'manual_a_ring', 'manual_a_spray_count',
+                    'manual_b_powder', 'manual_b_air', 'manual_b_voltage', 'manual_b_current', 'manual_b_nozzle', 'manual_b_ring', 'manual_b_spray_count',
+                    'film_thickness_records', 'remarks_list', 'thickness_records', 'ng_records', 'dynamic_remarks'
+                ]);
+
+                // 第一關：強制剔除所有不屬於 coating_params 的非法頂層 Key（如 'guns'）
+                Object.keys(payload).forEach(key => {
+                    if (!ALLOWED_COLUMNS.has(key)) {
+                        console.warn(`[Pre-Clean] 剔除非屬 coating_params 的欄位: '${key}'`);
+                        delete payload[key];
+                    }
+                });
+
+                let retries = 20;
+                while (retries > 0) {
+                    const { data, error } = await supabase.from(tableName).upsert([payload]).select();
+                    if (!error) return data;
+
+                    console.warn(`Supabase Upsert Attempt (${retries} left):`, error);
+
+                    const errMsg = (error.message || '') + ' ' + (error.details || '') + ' ' + (error.hint || '');
+                    let removedAny = false;
+
+                    const quoteMatches = errMsg.match(/['"]([^'"]+)['"]/g);
+                    if (quoteMatches) {
+                        quoteMatches.forEach(q => {
+                            const cleanKey = q.replace(/['"]/g, '').trim();
+                            if (payload.hasOwnProperty(cleanKey)) {
+                                console.warn(`[Auto-Fix] 數據庫不支援欄位: '${cleanKey}'，自動剔除...`);
+                                delete payload[cleanKey];
+                                removedAny = true;
+                            }
+                        });
+                    }
+
+                    const colMatch = errMsg.match(/Could not find (?:the )?['"]?([^'"]+)['"]? column/i);
+                    if (colMatch && colMatch[1]) {
+                        const invalidCol = colMatch[1].trim();
+                        if (payload.hasOwnProperty(invalidCol)) {
+                            delete payload[invalidCol];
+                            removedAny = true;
+                        }
+                    }
+
+                    if (removedAny) {
+                        retries--;
+                        continue;
+                    }
+
+                    throw error;
                 }
-                return data;
             } catch (err) {
-                console.error("Supabase Save Error:", err);
+                console.error("Supabase Save Exception:", err);
                 throw err;
             } finally {
                 showLoading(false);
             }
         }
 
-        // --- 6. 畫面渲染邏輯 (徹底修復區塊 A/B 無資料問題) ---
+        // --- 6. 畫面渲染邏輯 ---
 
-        /**
-         * 生成手動槍區塊 (Block A / B) 的漂亮 HTML 內容
-         */
         function renderManualBlockHTML(block, blockType) {
             if (!block) return '<div class="text-slate-500 italic p-2">無資料</div>';
             
@@ -1377,76 +1295,43 @@
             const colorClass = isA ? 'text-indigo-400' : 'text-teal-400';
             const bgClass = isA ? 'bg-indigo-950/40 border-indigo-800/40' : 'bg-teal-950/40 border-teal-800/40';
 
-            const powder = block.powder ?? 0;
-            const air = block.air ?? 0;
-            const voltage = block.voltage ?? 70;
-            const current = block.current ?? 15;
-            const nozzle = block.nozzle || '扇型';
-            const ring = block.ring || '有';
-            const count = block.spray_count ?? 1;
-
-            const left = block.spray_left ?? 0;
-            const top = block.spray_top ?? 0;
-            const bottom = block.spray_bottom ?? 0;
-            const right = block.spray_right ?? 0;
-
-            const m1 = block.spray_mid_1 ?? 0;
-            const m2 = block.spray_mid_2 ?? 0;
-            const m3 = block.spray_mid_3 ?? 0;
-            const m4 = block.spray_mid_4 ?? 0;
-
             return `
                 <div class="space-y-2.5 font-mono">
                     <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div class="bg-slate-800/90 p-2 rounded-lg border border-slate-700/80 flex justify-between items-center">
-                            <span class="text-slate-400">粉量:</span> <span class="font-bold text-white text-sm">${powder}</span>
-                        </div>
-                        <div class="bg-slate-800/90 p-2 rounded-lg border border-slate-700/80 flex justify-between items-center">
-                            <span class="text-slate-400">風量:</span> <span class="font-bold text-white text-sm">${air}</span>
-                        </div>
-                        <div class="bg-slate-800/90 p-2 rounded-lg border border-slate-700/80 flex justify-between items-center">
-                            <span class="text-slate-400">電壓:</span> <span class="font-bold text-red-400 text-sm">${voltage} kV</span>
-                        </div>
-                        <div class="bg-slate-800/90 p-2 rounded-lg border border-slate-700/80 flex justify-between items-center">
-                            <span class="text-slate-400">電流:</span> <span class="font-bold text-red-400 text-sm">${current} μA</span>
-                        </div>
-                        <div class="bg-slate-800/90 p-2 rounded-lg border border-slate-700/80 flex justify-between items-center">
-                            <span class="text-slate-400">噴嘴:</span> <span class="font-bold text-emerald-400 text-xs sm:text-sm">${nozzle}</span>
-                        </div>
-                        <div class="bg-slate-800/90 p-2 rounded-lg border border-slate-700/80 flex justify-between items-center">
-                            <span class="text-slate-400">靜電環:</span> <span class="font-bold text-emerald-400 text-xs sm:text-sm">${ring}</span>
-                        </div>
+                        <div class="bg-slate-800/90 p-2 rounded-lg border border-slate-700/80 flex justify-between items-center"><span class="text-slate-400">粉量:</span> <span class="font-bold text-white text-sm">${block.powder ?? 0}</span></div>
+                        <div class="bg-slate-800/90 p-2 rounded-lg border border-slate-700/80 flex justify-between items-center"><span class="text-slate-400">風量:</span> <span class="font-bold text-white text-sm">${block.air ?? 0}</span></div>
+                        <div class="bg-slate-800/90 p-2 rounded-lg border border-slate-700/80 flex justify-between items-center"><span class="text-slate-400">電壓:</span> <span class="font-bold text-red-400 text-sm">${block.voltage ?? 70} kV</span></div>
+                        <div class="bg-slate-800/90 p-2 rounded-lg border border-slate-700/80 flex justify-between items-center"><span class="text-slate-400">電流:</span> <span class="font-bold text-red-400 text-sm">${block.current ?? 15} μA</span></div>
+                        <div class="bg-slate-800/90 p-2 rounded-lg border border-slate-700/80 flex justify-between items-center"><span class="text-slate-400">噴嘴:</span> <span class="font-bold text-emerald-400 text-xs sm:text-sm">${block.nozzle || '扇型'}</span></div>
+                        <div class="bg-slate-800/90 p-2 rounded-lg border border-slate-700/80 flex justify-between items-center"><span class="text-slate-400">靜電環:</span> <span class="font-bold text-emerald-400 text-xs sm:text-sm">${block.ring || '有'}</span></div>
                     </div>
 
                     <div class="bg-slate-800/90 p-2.5 rounded-xl border border-slate-700 flex justify-between items-center shadow-inner">
                         <span class="text-amber-300 font-bold text-xs">總噴塗次數:</span>
-                        <span class="text-amber-300 font-black text-lg flash-gold">${count} 次</span>
+                        <span class="text-amber-300 font-black text-lg flash-gold">${block.spray_count ?? 1} 次</span>
                     </div>
 
                     <div class="p-2.5 rounded-xl ${bgClass} border space-y-2">
                         <div class="text-[11px] font-bold ${colorClass}">📍 方位噴塗次數：</div>
                         <div class="grid grid-cols-4 gap-1 text-[11px] text-center">
-                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">左</span> <b class="text-emerald-400 text-xs">${left}</b></div>
-                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">上</span> <b class="text-emerald-400 text-xs">${top}</b></div>
-                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">下</span> <b class="text-emerald-400 text-xs">${bottom}</b></div>
-                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">右</span> <b class="text-emerald-400 text-xs">${right}</b></div>
+                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">左</span> <b class="text-emerald-400 text-xs">${block.spray_left ?? 0}</b></div>
+                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">上</span> <b class="text-emerald-400 text-xs">${block.spray_top ?? 0}</b></div>
+                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">下</span> <b class="text-emerald-400 text-xs">${block.spray_bottom ?? 0}</b></div>
+                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">右</span> <b class="text-emerald-400 text-xs">${block.spray_right ?? 0}</b></div>
                         </div>
 
                         <div class="text-[11px] font-bold text-amber-300 pt-1">🎯 中間分段噴塗次數：</div>
                         <div class="grid grid-cols-4 gap-1 text-[11px] text-center">
-                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">一段</span> <b class="text-amber-400 text-xs">${m1}</b></div>
-                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">二段</span> <b class="text-amber-400 text-xs">${m2}</b></div>
-                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">三段</span> <b class="text-amber-400 text-xs">${m3}</b></div>
-                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">四段</span> <b class="text-amber-400 text-xs">${m4}</b></div>
+                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">一段</span> <b class="text-amber-400 text-xs">${block.spray_mid_1 ?? 0}</b></div>
+                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">二段</span> <b class="text-amber-400 text-xs">${block.spray_mid_2 ?? 0}</b></div>
+                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">三段</span> <b class="text-amber-400 text-xs">${block.spray_mid_3 ?? 0}</b></div>
+                            <div class="bg-slate-900/80 p-1.5 rounded border border-slate-700/60"><span class="text-slate-400 block text-[10px]">四段</span> <b class="text-amber-400 text-xs">${block.spray_mid_4 ?? 0}</b></div>
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        /**
-         * 渲染單一構件詳細資料至查詢看板
-         */
         function renderResultBoard(rawItem) {
             const item = normalizeItemData(rawItem);
             if (!item) return;
@@ -1454,7 +1339,6 @@
             document.getElementById('resultBoard').style.display = 'block';
             document.getElementById('actionButtons').classList.remove('hidden');
 
-            // 1. 膜厚徽章
             const badge = document.getElementById('q_thickness_category_badge');
             if (item.thickness_category) {
                 badge.classList.remove('hidden');
@@ -1468,44 +1352,39 @@
                 badge.classList.add('hidden');
             }
 
-            // 2. 構件圖片
             const imgBox = document.getElementById('imageContainer');
             const imgEl = document.getElementById('q_matched_image');
             const imgLink = document.getElementById('q_matched_image_link');
             if (item.image_url) {
                 imgEl.src = item.image_url;
+                imgEl.onerror = () => { imgEl.src = SVG_PLACEHOLDER; };
                 imgLink.href = item.image_url;
                 imgBox.classList.remove('hidden');
             } else {
                 imgBox.classList.add('hidden');
             }
 
-            // 3. 自動槍粉量 #1 ~ #8
             for (let i = 1; i <= 8; i++) {
                 const el = document.getElementById(`q_gun_${i}`);
                 if (el) el.textContent = item.guns[i - 1] ?? '0';
             }
 
-            // 4. 往復機運行參數
             const r = item.reciprocator;
-            document.getElementById('q_speed_left').textContent = r.speed_left ?? '600';
-            document.getElementById('q_speed_right').textContent = r.speed_right ?? '600';
-            document.getElementById('q_up_turn_left').textContent = r.up_turn_left ?? '自動';
-            document.getElementById('q_up_turn_right').textContent = r.up_turn_right ?? '自動';
-            document.getElementById('q_down_turn_left').textContent = r.down_turn_left ?? '自動';
-            document.getElementById('q_down_turn_right').textContent = r.down_turn_right ?? '自動';
-            document.getElementById('q_dist_left').textContent = r.dist_left ?? '380';
-            document.getElementById('q_dist_right').textContent = r.dist_right ?? '420';
+            document.getElementById('q_speed_left').textContent = r.speed_left;
+            document.getElementById('q_speed_right').textContent = r.speed_right;
+            document.getElementById('q_up_turn_left').textContent = r.up_turn_left;
+            document.getElementById('q_up_turn_right').textContent = r.up_turn_right;
+            document.getElementById('q_down_turn_left').textContent = r.down_turn_left;
+            document.getElementById('q_down_turn_right').textContent = r.down_turn_right;
+            document.getElementById('q_dist_left').textContent = r.dist_left;
+            document.getElementById('q_dist_right').textContent = r.dist_right;
 
-            // 5. 電壓電流
-            document.getElementById('q_voltage').textContent = item.voltage ?? 70;
-            document.getElementById('q_current').textContent = item.current ?? 15;
+            document.getElementById('q_voltage').textContent = item.voltage;
+            document.getElementById('q_current').textContent = item.current;
 
-            // 6. 手動槍區塊 A & B (完美修復無資料問題)
             document.getElementById('q_manual_a_display').innerHTML = renderManualBlockHTML(item.manual_a, 'A');
             document.getElementById('q_manual_b_display').innerHTML = renderManualBlockHTML(item.manual_b, 'B');
 
-            // 7. 歷史膜厚紀錄
             const thBox = document.getElementById('q_thickness_display');
             if (item.thickness_history && item.thickness_history.length > 0) {
                 thBox.innerHTML = item.thickness_history.map(rec => `
@@ -1519,10 +1398,9 @@
                     </div>
                 `).join('');
             } else {
-                thBox.innerHTML = '<div class="text-slate-500 italic p-2">尚無歷史膜厚紀錄</div>';
+                thBox.innerHTML = '<div class="text-slate-500 italic p-2">尚無膜厚檢測紀錄</div>';
             }
 
-            // 8. 歷史 NG 紀錄
             const ngBox = document.getElementById('q_ng_display');
             if (item.ng_history && item.ng_history.length > 0) {
                 ngBox.innerHTML = item.ng_history.map(rec => `
@@ -1536,7 +1414,6 @@
                 ngBox.innerHTML = '<div class="text-slate-500 italic p-2">無 NG 異常紀錄</div>';
             }
 
-            // 9. 修正備註
             const remBox = document.getElementById('q_remarks_display');
             if (item.remarks && item.remarks.length > 0) {
                 remBox.innerHTML = item.remarks.map(txt => `
@@ -1549,9 +1426,6 @@
             }
         }
 
-        /**
-         * 渲染全構件膜厚數據 Modal 表格 (強制定錨第一欄為構件圖片)
-         */
         function renderThicknessModalTable() {
             const tableBody = document.getElementById('thicknessTableBody');
             if (!tableBody) return;
@@ -1569,8 +1443,8 @@
 
                 if (matchesSearch && matchesCat) {
                     const imgThumb = item.image_url
-                        ? `<img src="${item.image_url}" class="w-12 h-12 object-cover rounded-lg border border-slate-700 mx-auto shadow-sm hover:scale-110 transition-transform cursor-pointer" onclick="window.open('${item.image_url}', '_blank')">`
-                        : `<div class="w-12 h-12 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-500 text-[10px] mx-auto">無圖片</div>`;
+                        ? `<img src="${item.image_url}" class="w-12 h-12 object-cover rounded-lg border border-slate-700 mx-auto shadow-sm hover:scale-110 transition-transform cursor-pointer" onclick="window.open('${item.image_url}', '_blank')" onerror="this.onerror=null; this.src='${SVG_PLACEHOLDER}';">`
+                        : `<img src="${SVG_PLACEHOLDER}" class="w-12 h-12 object-cover rounded-lg border border-slate-700 mx-auto opacity-50">`;
 
                     const historyArr = item.thickness_history || [];
 
@@ -1610,10 +1484,9 @@
             }
         }
 
-        // --- 7. 表單微調與動態資料維護 (Thickness, NG, Remark) ---
+        // --- 7. 表單微調與動態資料維護 ---
 
         function updateFormDynamicLists() {
-            // 1. 膜厚列表
             const thContainer = document.getElementById('thicknessList');
             thContainer.innerHTML = currentThicknessRecords.map((rec, idx) => `
                 <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-700 flex justify-between items-center text-xs">
@@ -1623,7 +1496,6 @@
                 </div>
             `).join('');
 
-            // 2. NG 列表
             const ngContainer = document.getElementById('ngList');
             ngContainer.innerHTML = currentNgRecords.map((rec, idx) => `
                 <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-700 flex justify-between items-center text-xs">
@@ -1634,7 +1506,6 @@
                 </div>
             `).join('');
 
-            // 3. 備註列表
             const remContainer = document.getElementById('remarksList');
             remContainer.innerHTML = currentRemarks.map((txt, idx) => `
                 <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-700 flex justify-between items-center text-xs">
@@ -1653,9 +1524,6 @@
 
         // --- 8. AI 影像分析與 Cropper.js 邏輯 ---
 
-        /**
-         * 呼叫 NVIDIA API Vision 進行品名辨識或構件比對
-         */
         async function analyzeImageWithNvidiaAi(base64Image, mode) {
             const apiKey = document.getElementById('cfg_nvidia_key').value || defaultNvidiaKey;
             const modelName = document.getElementById('cfg_ai_model').value || defaultAiModel;
@@ -1702,7 +1570,6 @@
                         alert("⚠️ AI 無法明確辨識文字，請手動輸入。");
                     }
                 } else {
-                    // 比對最佳構件
                     const matched = allParamsData.find(d => textResult.includes(d.item_name) || d.item_name.includes(textResult));
                     if (matched) {
                         document.getElementById('itemSelect').value = matched.id;
@@ -1720,9 +1587,6 @@
             }
         }
 
-        /**
-         * 開啟 Cropper Modal 準備裁切
-         */
         function openCropper(file, targetType) {
             cropTargetType = targetType;
             const reader = new FileReader();
@@ -1744,31 +1608,25 @@
         // --- 9. 事件監聽器與初始化綁定 ---
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 初始化載入 API 設定
             document.getElementById('cfg_nvidia_key').value = localStorage.getItem('cfg_nvidia_key') || defaultNvidiaKey;
             document.getElementById('cfg_gas_url').value = localStorage.getItem('cfg_gas_url') || defaultGasUrl;
             document.getElementById('cfg_ai_model').value = localStorage.getItem('cfg_ai_model') || defaultAiModel;
 
-            // 預設日期設定
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('th_date').value = todayStr;
             document.getElementById('ng_date').value = todayStr;
 
-            // 載入資料庫
             fetchAllCoatingParams();
 
-            // 語言切換
             document.getElementById('langSelect').addEventListener('change', (e) => {
                 setLanguage(e.target.value);
                 populateItemDropdown();
             });
 
-            // 類別過濾器觸發
             document.getElementById('queryCategoryFilter').addEventListener('change', () => {
                 populateItemDropdown();
             });
 
-            // 選取構件觸發渲染
             document.getElementById('itemSelect').addEventListener('change', (e) => {
                 const id = e.target.value;
                 if (!id) {
@@ -1780,7 +1638,6 @@
                 if (raw) renderResultBoard(raw);
             });
 
-            // 頁籤切換邏輯
             const tabQueryBtn = document.getElementById('tabQueryBtn');
             const tabRegisterBtn = document.getElementById('tabRegisterBtn');
             const querySection = document.getElementById('querySection');
@@ -1800,7 +1657,6 @@
                 querySection.classList.add('hidden');
             });
 
-            // 按鈕數值微調 (+ / -) 邏輯處理
             document.querySelectorAll('.btn-adj').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const targetId = btn.getAttribute('data-target');
@@ -1819,15 +1675,13 @@
                 });
             });
 
-            // 換向自動填入按鈕
             document.getElementById('btnFillAuto').addEventListener('click', () => {
-                document.getElementById('up_turn_left').value = '自動';
-                document.getElementById('up_turn_right').value = '自動';
-                document.getElementById('down_turn_left').value = '自動';
-                document.getElementById('down_turn_right').value = '自動';
+                document.getElementById('up_turn_left').value = '0';
+                document.getElementById('up_turn_right').value = '0';
+                document.getElementById('down_turn_left').value = '0';
+                document.getElementById('down_turn_right').value = '0';
             });
 
-            // 相機拍照輸入觸發
             document.getElementById('btnAiSearchTrigger').addEventListener('click', () => {
                 document.getElementById('cameraInput').click();
             });
@@ -1848,7 +1702,6 @@
                 }
             });
 
-            // Cropper 確認按鈕
             document.getElementById('btnCropConfirm').addEventListener('click', () => {
                 if (!cropperObj) return;
                 const canvas = cropperObj.getCroppedCanvas({ maxWidth: 1024, maxHeight: 1024 });
@@ -1869,7 +1722,6 @@
                 }
             });
 
-            // 動態欄位新增按鈕
             document.getElementById('btnAddThickness').addEventListener('click', () => {
                 const date = document.getElementById('th_date').value;
                 const f_min = document.getElementById('th_f_min').value;
@@ -1903,7 +1755,6 @@
                 }
             });
 
-            // 預覽建檔照片
             document.getElementById('reg_image').addEventListener('change', (e) => {
                 if (e.target.files && e.target.files[0]) {
                     const reader = new FileReader();
@@ -1915,7 +1766,7 @@
                 }
             });
 
-            // 表單提交 (儲存與修改 Supabase)
+            // 表單提交處理 (嚴格對應 coating_params 欄位白名單，徹底排除 'guns')
             document.getElementById('paramForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -1939,113 +1790,119 @@
                     if (existing) uploadedUrl = existing.image_url || "";
                 }
 
-                // 構建完整 Payload (兼具 JSONB 與舊版展平欄位)
-                const payload = {
-                    item_name: itemName,
-                    image_url: uploadedUrl,
-                    thickness_category: document.getElementById('thickness_category').value,
-                    
-                    // 自動槍 1~8
-                    guns: [
-                        document.getElementById('gun_1').value || '0',
-                        document.getElementById('gun_2').value || '0',
-                        document.getElementById('gun_3').value || '0',
-                        document.getElementById('gun_4').value || '0',
-                        document.getElementById('gun_5').value || '0',
-                        document.getElementById('gun_6').value || '0',
-                        document.getElementById('gun_7').value || '0',
-                        document.getElementById('gun_8').value || '0'
-                    ],
-                    gun_1: document.getElementById('gun_1').value || '0',
-                    gun_2: document.getElementById('gun_2').value || '0',
-                    gun_3: document.getElementById('gun_3').value || '0',
-                    gun_4: document.getElementById('gun_4').value || '0',
-                    gun_5: document.getElementById('gun_5').value || '0',
-                    gun_6: document.getElementById('gun_6').value || '0',
-                    gun_7: document.getElementById('gun_7').value || '0',
-                    gun_8: document.getElementById('gun_8').value || '0',
+                const catVal = document.getElementById('thickness_category').value;
 
-                    // 往復機
-                    reciprocator: {
-                        speed_left: document.getElementById('speed_left').value,
-                        speed_right: document.getElementById('speed_right').value,
-                        up_turn_left: document.getElementById('up_turn_left').value,
-                        up_turn_right: document.getElementById('up_turn_right').value,
-                        down_turn_left: document.getElementById('down_turn_left').value,
-                        down_turn_right: document.getElementById('down_turn_right').value,
-                        dist_left: document.getElementById('dist_left').value,
-                        dist_right: document.getElementById('dist_right').value
-                    },
-                    speed_left: document.getElementById('speed_left').value,
-                    speed_right: document.getElementById('speed_right').value,
-                    up_turn_left: document.getElementById('up_turn_left').value,
-                    up_turn_right: document.getElementById('up_turn_right').value,
-                    down_turn_left: document.getElementById('down_turn_left').value,
-                    down_turn_right: document.getElementById('down_turn_right').value,
-                    dist_left: document.getElementById('dist_left').value,
-                    dist_right: document.getElementById('dist_right').value,
-
-                    voltage: document.getElementById('voltage').value,
-                    current: document.getElementById('current').value,
-
-                    // 區塊 A
-                    manual_a: {
-                        powder: parseInt(document.getElementById('a_powder').value, 10) || 0,
-                        air: parseInt(document.getElementById('a_air').value, 10) || 0,
-                        voltage: parseInt(document.getElementById('a_voltage').value, 10) || 70,
-                        current: parseInt(document.getElementById('a_current').value, 10) || 15,
-                        nozzle: document.getElementById('a_nozzle').value,
-                        ring: document.getElementById('a_ring').value,
-                        spray_count: parseInt(document.getElementById('a_spray_count').value, 10) || 1,
-                        spray_left: parseInt(document.getElementById('a_spray_left').value, 10) || 0,
-                        spray_top: parseInt(document.getElementById('a_spray_top').value, 10) || 0,
-                        spray_bottom: parseInt(document.getElementById('a_spray_bottom').value, 10) || 0,
-                        spray_right: parseInt(document.getElementById('a_spray_right').value, 10) || 0,
-                        spray_mid_1: parseInt(document.getElementById('a_spray_mid_1').value, 10) || 0,
-                        spray_mid_2: parseInt(document.getElementById('a_spray_mid_2').value, 10) || 0,
-                        spray_mid_3: parseInt(document.getElementById('a_spray_mid_3').value, 10) || 0,
-                        spray_mid_4: parseInt(document.getElementById('a_spray_mid_4').value, 10) || 0
-                    },
-                    a_powder: parseInt(document.getElementById('a_powder').value, 10) || 0,
-                    a_air: parseInt(document.getElementById('a_air').value, 10) || 0,
-                    a_voltage: parseInt(document.getElementById('a_voltage').value, 10) || 70,
-                    a_current: parseInt(document.getElementById('a_current').value, 10) || 15,
-
-                    // 區塊 B
-                    manual_b: {
-                        powder: parseInt(document.getElementById('b_powder').value, 10) || 0,
-                        air: parseInt(document.getElementById('b_air').value, 10) || 0,
-                        voltage: parseInt(document.getElementById('b_voltage').value, 10) || 70,
-                        current: parseInt(document.getElementById('b_current').value, 10) || 15,
-                        nozzle: document.getElementById('b_nozzle').value,
-                        ring: document.getElementById('b_ring').value,
-                        spray_count: parseInt(document.getElementById('b_spray_count').value, 10) || 1,
-                        spray_left: parseInt(document.getElementById('b_spray_left').value, 10) || 0,
-                        spray_top: parseInt(document.getElementById('b_spray_top').value, 10) || 0,
-                        spray_bottom: parseInt(document.getElementById('b_spray_bottom').value, 10) || 0,
-                        spray_right: parseInt(document.getElementById('b_spray_right').value, 10) || 0,
-                        spray_mid_1: parseInt(document.getElementById('b_spray_mid_1').value, 10) || 0,
-                        spray_mid_2: parseInt(document.getElementById('b_spray_mid_2').value, 10) || 0,
-                        spray_mid_3: parseInt(document.getElementById('b_spray_mid_3').value, 10) || 0,
-                        spray_mid_4: parseInt(document.getElementById('b_spray_mid_4').value, 10) || 0
-                    },
-                    b_powder: parseInt(document.getElementById('b_powder').value, 10) || 0,
-                    b_air: parseInt(document.getElementById('b_air').value, 10) || 0,
-                    b_voltage: parseInt(document.getElementById('b_voltage').value, 10) || 70,
-                    b_current: parseInt(document.getElementById('b_current').value, 10) || 15,
-
-                    thickness_history: currentThicknessRecords,
-                    ng_history: currentNgRecords,
-                    remarks: currentRemarks
+                const manualAObj = {
+                    powder: parseInt(document.getElementById('a_powder').value, 10) || 0,
+                    air: parseInt(document.getElementById('a_air').value, 10) || 0,
+                    voltage: parseInt(document.getElementById('a_voltage').value, 10) || 70,
+                    current: parseInt(document.getElementById('a_current').value, 10) || 15,
+                    nozzle: document.getElementById('a_nozzle').value || '扇型',
+                    ring: document.getElementById('a_ring').value || '有',
+                    spray_count: parseInt(document.getElementById('a_spray_count').value, 10) || 1,
+                    spray_left: parseInt(document.getElementById('a_spray_left').value, 10) || 0,
+                    spray_top: parseInt(document.getElementById('a_spray_top').value, 10) || 0,
+                    spray_bottom: parseInt(document.getElementById('a_spray_bottom').value, 10) || 0,
+                    spray_right: parseInt(document.getElementById('a_spray_right').value, 10) || 0,
+                    spray_mid_1: parseInt(document.getElementById('a_spray_mid_1').value, 10) || 0,
+                    spray_mid_2: parseInt(document.getElementById('a_spray_mid_2').value, 10) || 0,
+                    spray_mid_3: parseInt(document.getElementById('a_spray_mid_3').value, 10) || 0,
+                    spray_mid_4: parseInt(document.getElementById('a_spray_mid_4').value, 10) || 0,
+                    thickness_category: catVal
                 };
 
-                if (editingItemId) payload.id = editingItemId;
+                const manualBObj = {
+                    powder: parseInt(document.getElementById('b_powder').value, 10) || 0,
+                    air: parseInt(document.getElementById('b_air').value, 10) || 0,
+                    voltage: parseInt(document.getElementById('b_voltage').value, 10) || 70,
+                    current: parseInt(document.getElementById('b_current').value, 10) || 15,
+                    nozzle: document.getElementById('b_nozzle').value || '扇型',
+                    ring: document.getElementById('b_ring').value || '有',
+                    spray_count: parseInt(document.getElementById('b_spray_count').value, 10) || 1,
+                    spray_left: parseInt(document.getElementById('b_spray_left').value, 10) || 0,
+                    spray_top: parseInt(document.getElementById('b_spray_top').value, 10) || 0,
+                    spray_bottom: parseInt(document.getElementById('b_spray_bottom').value, 10) || 0,
+                    spray_right: parseInt(document.getElementById('b_spray_right').value, 10) || 0,
+                    spray_mid_1: parseInt(document.getElementById('b_spray_mid_1').value, 10) || 0,
+                    spray_mid_2: parseInt(document.getElementById('b_spray_mid_2').value, 10) || 0,
+                    spray_mid_3: parseInt(document.getElementById('b_spray_mid_3').value, 10) || 0,
+                    spray_mid_4: parseInt(document.getElementById('b_spray_mid_4').value, 10) || 0,
+                    thickness_category: catVal
+                };
+
+                const parseRecipInt = (val) => {
+                    if (val === '自動' || !val) return 0;
+                    const parsed = parseInt(val, 10);
+                    return isNaN(parsed) ? 0 : parsed;
+                };
+
+                const payload = {
+                    item_name: itemName,
+                    image_url: fixImageUrl(uploadedUrl),
+                    
+                    gun_1: parseInt(document.getElementById('gun_1').value, 10) || 0,
+                    gun_2: parseInt(document.getElementById('gun_2').value, 10) || 0,
+                    gun_3: parseInt(document.getElementById('gun_3').value, 10) || 0,
+                    gun_4: parseInt(document.getElementById('gun_4').value, 10) || 0,
+                    gun_5: parseInt(document.getElementById('gun_5').value, 10) || 0,
+                    gun_6: parseInt(document.getElementById('gun_6').value, 10) || 0,
+                    gun_7: parseInt(document.getElementById('gun_7').value, 10) || 0,
+                    gun_8: parseInt(document.getElementById('gun_8').value, 10) || 0,
+
+                    speed_left: parseRecipInt(document.getElementById('speed_left').value),
+                    speed_right: parseRecipInt(document.getElementById('speed_right').value),
+                    up_turn_left: parseRecipInt(document.getElementById('up_turn_left').value),
+                    up_turn_right: parseRecipInt(document.getElementById('up_turn_right').value),
+                    down_turn_left: parseRecipInt(document.getElementById('down_turn_left').value),
+                    down_turn_right: parseRecipInt(document.getElementById('down_turn_right').value),
+                    dist_left: parseRecipInt(document.getElementById('dist_left').value),
+                    dist_right: parseRecipInt(document.getElementById('dist_right').value),
+
+                    voltage: parseInt(document.getElementById('voltage').value, 10) || 70,
+                    current: parseInt(document.getElementById('current').value, 10) || 15,
+
+                    manual_a_powder: manualAObj.powder,
+                    manual_a_air: manualAObj.air,
+                    manual_a_voltage: manualAObj.voltage,
+                    manual_a_current: manualAObj.current,
+                    manual_a_nozzle: manualAObj.nozzle,
+                    manual_a_ring: manualAObj.ring,
+                    manual_a_spray_count: manualAObj.spray_count,
+
+                    manual_b_powder: manualBObj.powder,
+                    manual_b_air: manualBObj.air,
+                    manual_b_voltage: manualBObj.voltage,
+                    manual_b_current: manualBObj.current,
+                    manual_b_nozzle: manualBObj.nozzle,
+                    manual_b_ring: manualBObj.ring,
+                    manual_b_spray_count: manualBObj.spray_count,
+
+                    manual_gun_a: manualAObj,
+                    manual_gun_b: manualBObj,
+
+                    thickness_history: currentThicknessRecords,
+                    thickness_records: currentThicknessRecords,
+                    film_thickness_records: currentThicknessRecords,
+
+                    ng_records: currentNgRecords,
+
+                    remarks: currentRemarks,
+                    remarks_list: currentRemarks,
+                    dynamic_remarks: currentRemarks,
+
+                    remark_1: catVal ? `膜厚類別: ${catVal}` : ''
+                };
+
+                if (editingItemId && String(editingItemId).trim() !== '') {
+                    payload.id = editingItemId;
+                } else {
+                    payload.created_at = new Date().toISOString();
+                }
 
                 try {
                     await saveToSupabase(payload);
                     alert("🎉 參數資料成功儲存至 Supabase！");
                     
-                    // 重設表單與重新載入
                     editingItemId = null;
                     document.getElementById('paramForm').reset();
                     currentThicknessRecords = [];
@@ -2061,7 +1918,6 @@
                 }
             });
 
-            // 編輯構件按鈕
             document.getElementById('btnEditItem').addEventListener('click', () => {
                 const selectVal = document.getElementById('itemSelect').value;
                 if (!selectVal) return;
@@ -2071,7 +1927,6 @@
                 const item = normalizeItemData(raw);
                 editingItemId = item.id;
 
-                // 填入表單
                 document.getElementById('item_name').value = item.item_name;
                 document.getElementById('thickness_category').value = item.thickness_category || '';
 
@@ -2080,19 +1935,18 @@
                 }
 
                 const r = item.reciprocator;
-                document.getElementById('speed_left').value = r.speed_left ?? '600';
-                document.getElementById('speed_right').value = r.speed_right ?? '600';
-                document.getElementById('up_turn_left').value = r.up_turn_left ?? '自動';
-                document.getElementById('up_turn_right').value = r.up_turn_right ?? '自動';
-                document.getElementById('down_turn_left').value = r.down_turn_left ?? '自動';
-                document.getElementById('down_turn_right').value = r.down_turn_right ?? '自動';
-                document.getElementById('dist_left').value = r.dist_left ?? '380';
-                document.getElementById('dist_right').value = r.dist_right ?? '420';
+                document.getElementById('speed_left').value = r.speed_left;
+                document.getElementById('speed_right').value = r.speed_right;
+                document.getElementById('up_turn_left').value = r.up_turn_left;
+                document.getElementById('up_turn_right').value = r.up_turn_right;
+                document.getElementById('down_turn_left').value = r.down_turn_left;
+                document.getElementById('down_turn_right').value = r.down_turn_right;
+                document.getElementById('dist_left').value = r.dist_left;
+                document.getElementById('dist_right').value = r.dist_right;
 
-                document.getElementById('voltage').value = item.voltage ?? 70;
-                document.getElementById('current').value = item.current ?? 15;
+                document.getElementById('voltage').value = item.voltage;
+                document.getElementById('current').value = item.current;
 
-                // A面
                 const ma = item.manual_a;
                 document.getElementById('a_powder').value = ma.powder;
                 document.getElementById('a_air').value = ma.air;
@@ -2110,7 +1964,6 @@
                 document.getElementById('a_spray_mid_3').value = ma.spray_mid_3;
                 document.getElementById('a_spray_mid_4').value = ma.spray_mid_4;
 
-                // B面
                 const mb = item.manual_b;
                 document.getElementById('b_powder').value = mb.powder;
                 document.getElementById('b_air').value = mb.air;
@@ -2142,7 +1995,6 @@
                 tabRegisterBtn.click();
             });
 
-            // 取消編輯按鈕
             document.getElementById('cancelEditBtn').addEventListener('click', () => {
                 editingItemId = null;
                 document.getElementById('paramForm').reset();
@@ -2154,7 +2006,6 @@
                 tabQueryBtn.click();
             });
 
-            // 刪除構件按鈕
             document.getElementById('btnDeleteItem').addEventListener('click', async () => {
                 const selectVal = document.getElementById('itemSelect').value;
                 if (!selectVal) return;
@@ -2175,7 +2026,6 @@
                 }
             });
 
-            // 膜厚總覽 Modal 控制
             document.getElementById('btnOpenThicknessModal').addEventListener('click', () => {
                 renderThicknessModalTable();
                 document.getElementById('thicknessTableModal').classList.remove('hidden');
@@ -2188,7 +2038,6 @@
             document.getElementById('thicknessModalSearch').addEventListener('input', renderThicknessModalTable);
             document.getElementById('thicknessModalCategoryFilter').addEventListener('change', renderThicknessModalTable);
 
-            // API 設定 Modal 控制
             document.getElementById('btnShowSettings').addEventListener('click', () => {
                 document.getElementById('settingsModal').classList.remove('hidden');
             });
@@ -2211,7 +2060,6 @@
                 alert("⚙️ API 設定已儲存至本機快取！");
             });
 
-            // 印尼語提示 Modal
             document.getElementById('btnLangInfo').addEventListener('click', () => {
                 document.getElementById('langInfoModal').classList.remove('hidden');
             });

@@ -821,27 +821,6 @@
         let currentNgRecords = [];
         let currentRemarks = [];
 
-        // --- 2. 多國語言字典設定 (i18n) ---
-        const i18nDict = {
-            tw: {
-                app_title: "百富粉體塗裝參數系統",
-                sub_title: "2026 Local Feature Matching Engine (Offline Enabled)"
-            },
-            id: {
-                app_title: "Sistem Parameter Pelapisan Serbuk Baifu",
-                sub_title: "Mesin Pencocokan Fitur Lokal 2026 (Offline)"
-            },
-            jv: {
-                app_title: "Sistem Parameter Pelapisan Serbuk Baifu",
-                sub_title: "Mesin Pencocokan Fitur Lokal 2026 (Offline)"
-            }
-        };
-
-        function setLanguage(lang) {
-            const dict = i18nDict[lang] || i18nDict.tw;
-            // 可擴充多國語言文字
-        }
-
         function showLoading(show, text) {
             const overlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
@@ -1002,8 +981,6 @@
         function initColorCategoryDropdowns() {
             const queryColorSel = document.getElementById('queryColorFilter');
             const regColorSel = document.getElementById('color_category');
-            const thickModalCat = document.getElementById('thicknessModalCategoryFilter');
-
             const colorOpts = COLOR_CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
             
             if (queryColorSel) queryColorSel.innerHTML = `<option value="">-- 1. 優先選擇顏色類別 --</option>` + colorOpts;
@@ -1053,8 +1030,6 @@
         }
 
         // --- 4. 2026 本地特徵比對搜尋引擎 (純前端 Image Feature Matching) ---
-        
-        // 將圖片轉為 32x32 灰階/色彩特徵矩陣以計算相似度
         function getImageFeatureVector(imgElement) {
             return new Promise((resolve) => {
                 const canvas = document.createElement('canvas');
@@ -1063,20 +1038,16 @@
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(imgElement, 0, 0, 32, 32);
                 const imgData = ctx.getImageData(0, 0, 32, 32).data;
-                
-                // 計算簡易色彩直方圖 / 特徵向量
                 let vector = [];
                 for (let i = 0; i < imgData.length; i += 4) {
-                    // 降維採樣 RGB
-                    vector.push(Math.floor(imgData[i] / 32));     // R
-                    vector.push(Math.floor(imgData[i+1] / 32)); // G
-                    vector.push(Math.floor(imgData[i+2] / 32)); // B
+                    vector.push(Math.floor(imgData[i] / 32));
+                    vector.push(Math.floor(imgData[i+1] / 32));
+                    vector.push(Math.floor(imgData[i+2] / 32));
                 }
                 resolve(vector);
             });
         }
 
-        // 計算兩個特徵向量的相似度 (歐式距離倒數 / 相關係數)
         function calculateSimilarity(vec1, vec2) {
             let sumSqDiff = 0;
             for (let i = 0; i < vec1.length; i++) {
@@ -1084,17 +1055,13 @@
                 sumSqDiff += diff * diff;
             }
             const distance = Math.sqrt(sumSqDiff);
-            // 轉換為 0~100 分數
             const maxDist = Math.sqrt(vec1.length * Math.pow(7, 2));
-            const score = Math.max(0, 100 - (distance / maxDist) * 100);
-            return score;
+            return Math.max(0, 100 - (distance / maxDist) * 100);
         }
 
         async function executeLocalFeatureSearch(base64QueryImage) {
             showLoading(true, "2026 本地特徵比對引擎運算中...");
-            
             try {
-                // 載入查詢圖片
                 const queryImg = new Image();
                 queryImg.src = base64QueryImage;
                 await new Promise((resolve, reject) => {
@@ -1103,11 +1070,9 @@
                 });
 
                 const queryVector = await getImageFeatureVector(queryImg);
-
                 let bestMatch = null;
                 let highestScore = -1;
 
-                // 逐一與資料庫中有圖片的項目進行特徵比對
                 for (const raw of allParamsData) {
                     const item = normalizeItemData(raw);
                     if (!item.image_url) continue;
@@ -1118,7 +1083,7 @@
                         dbImg.src = item.image_url;
                         await new Promise((resolve) => {
                             dbImg.onload = resolve;
-                            dbImg.onerror = resolve; // 略過載入失敗的圖片
+                            dbImg.onerror = resolve;
                         });
 
                         if (dbImg.complete && dbImg.naturalWidth > 0) {
@@ -1138,7 +1103,6 @@
 
                 if (bestMatch && highestScore > 20) {
                     const normalized = normalizeItemData(bestMatch);
-                    // 自動設定下拉選單並展示結果
                     if (normalized.color_category) {
                         document.getElementById('queryColorFilter').value = normalized.color_category;
                     }
@@ -1258,7 +1222,6 @@
             document.getElementById('resultBoard').style.display = 'block';
             document.getElementById('actionButtons').classList.remove('hidden');
 
-            // 顏色與膜厚徽章
             const colorBadge = document.getElementById('q_color_category_badge');
             if (item.color_category) {
                 colorBadge.classList.remove('hidden');
@@ -1719,7 +1682,7 @@
 
                 if (item.image_url) {
                     document.getElementById('regPreviewImg').src = item.image_url;
-                    document.getElementById('regPreviewBox').classList.remove('hidden');
+                    document.getElementById('regPreviewBox').classList.add('hidden').remove('hidden');
                 }
 
                 document.getElementById('cancelEditBtn').classList.remove('hidden');
